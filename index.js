@@ -14,7 +14,10 @@ const authRoute = require("./routes/user")
 
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+    origin: "https://phyo.ai",
+    credentials: true
+}))
 connectToMongo(process.env.MONGO_URI)
     .then(console.log("Mongo Connected"))
 
@@ -89,9 +92,9 @@ app.post("/api/ask", async (req, res) => {
         const math_reasoning = response.choices[0].message.parsed || {};
         const result = {
             city: math_reasoning.city || "",
-            state: math_reasoning.state || "", 
+            state: math_reasoning.state || "",
             minFollowers: math_reasoning.minFollowers || 0,
-            maxFollowers: math_reasoning.maxFollowers || Infinity, 
+            maxFollowers: math_reasoning.maxFollowers || Infinity,
             category: math_reasoning.category || "",
             maleRatio: math_reasoning.maleRatio || null,
             femaleRatio: math_reasoning.femaleRatio || null,
@@ -239,7 +242,7 @@ app.post("/api/ask", async (req, res) => {
             foundInfluencers.forEach((inf) => {
                 urls.push({ url: `https://www.instagram.com/${inf.user_name}/` });
             });
-        
+
             // Send request to Brightdata API without awaiting the result
             axios({
                 method: "post",
@@ -252,7 +255,7 @@ app.post("/api/ask", async (req, res) => {
                 timeout: 10000 // 10 second timeout
             }).then(async resp => {
                 console.log(`Background Brightdata request started, Snapshot ID: ${resp.data.snapshot_id}`);
-                
+
                 // You could optionally fetch the data here if needed
                 try {
                     const snapshotData = await getSnapshot(resp.data.snapshot_id, 5, 5000);
@@ -261,7 +264,7 @@ app.post("/api/ask", async (req, res) => {
                 } catch (snapshotError) {
                     console.error('Error getting snapshot data:', snapshotError.message);
                 }
-                
+
             }).catch(error => {
                 console.error('Error starting Brightdata request:', error.message);
             });
@@ -291,12 +294,12 @@ const getSnapshot = async (snapshotId, maxRetries = 5, retryDelay = 5000) => {
     if (!snapshotId) {
         throw new Error('Snapshot ID is required');
     }
-    
+
     // Initial delay before first attempt
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    
+
     let retries = 0;
-    
+
     while (retries < maxRetries) {
         try {
             // Using the direct format=json endpoint instead of compress=true
@@ -308,26 +311,26 @@ const getSnapshot = async (snapshotId, maxRetries = 5, retryDelay = 5000) => {
                 },
                 timeout: 15000 // 15 second timeout
             });
-            
+
             console.log(`Snapshot status: ${resp.data.status}`);
-            
+
             // If data is already available in the response
             if (resp.data && Array.isArray(resp.data)) {
                 console.log('Snapshot data received directly');
                 return resp.data;
             }
-            
+
             if (resp.data.status === 'running') {
                 if (retries >= maxRetries - 1) {
                     throw new Error('Maximum retries reached while waiting for snapshot');
                 }
-                
-                console.log(`Retry ${retries + 1}/${maxRetries}: Snapshot is not ready yet, retrying in ${retryDelay/1000}s...`);
+
+                console.log(`Retry ${retries + 1}/${maxRetries}: Snapshot is not ready yet, retrying in ${retryDelay / 1000}s...`);
                 await new Promise((resolve) => setTimeout(resolve, retryDelay));
                 retries++;
             } else if (resp.data.status === 'success' || resp.data.status === 'complete') {
                 console.log('Snapshot is ready, fetching data');
-                
+
                 // Fetch the actual data using the format=json endpoint
                 const dataResp = await axios({
                     method: "get",
@@ -337,24 +340,24 @@ const getSnapshot = async (snapshotId, maxRetries = 5, retryDelay = 5000) => {
                     },
                     timeout: 15000
                 });
-                
+
                 return dataResp.data;
             } else {
                 throw new Error(`Unexpected snapshot status: ${resp.data.status}`);
             }
         } catch (error) {
             console.error(`Error fetching snapshot ${snapshotId}:`, error.message);
-            
+
             if (retries >= maxRetries - 1) {
                 throw new Error(`Failed to fetch snapshot after ${maxRetries} attempts: ${error.message}`);
             }
-            
-            console.log(`Retry ${retries + 1}/${maxRetries}: Error occurred, retrying in ${retryDelay/1000}s...`);
+
+            console.log(`Retry ${retries + 1}/${maxRetries}: Error occurred, retrying in ${retryDelay / 1000}s...`);
             await new Promise((resolve) => setTimeout(resolve, retryDelay));
             retries++;
         }
     }
-    
+
     throw new Error(`Failed to fetch snapshot after ${maxRetries} attempts`);
 };
 
@@ -389,7 +392,7 @@ app.get("/details", async (req, res) => {
         // Wait for the snapshot data with the correct snapshotId parameter
         const snapshotData = await getSnapshot(snapshotId, 10, 8000); // Increased retries and delay
         console.log('Details snapshot data received');
-        
+
         if (!snapshotData || !snapshotData[0]) {
             return res.status(404).json({
                 success: false,

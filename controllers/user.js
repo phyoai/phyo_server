@@ -54,8 +54,9 @@ async function handleLogin(req, res) {
 
         res.cookie("authtoken", token, {
             httpOnly: true,
-            secure: true,         
-            sameSite: "None",     
+            secure: true,
+            sameSite: "None",
+            domain: '.phyo.ai'
             maxAge: 30 * 24 * 60 * 60 * 1000
         })
         res.status(200).json({ message: 'Login successful', token, data: foundUser });

@@ -28,6 +28,7 @@ async function handleSignup(req, res) {
             httpOnly: true,
             secure: true,
             sameSite: "None",
+            domain: '.phyo.ai',
             maxAge: 30 * 24 * 60 * 60 * 1000
         })
         res.status(201).json({ message: 'User created successfully', token, data: createdUser });
@@ -56,7 +57,7 @@ async function handleLogin(req, res) {
             httpOnly: true,
             secure: true,
             sameSite: "None",
-            domain: '.phyo.ai'
+            domain: '.phyo.ai',
             maxAge: 30 * 24 * 60 * 60 * 1000
         })
         res.status(200).json({ message: 'Login successful', token, data: foundUser });

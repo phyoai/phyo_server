@@ -24,7 +24,12 @@ async function handleSignup(req, res) {
 
         const token = jwt.sign({ id: createdUser._id, email: createdUser.email }, process.env.JWT_SECRET);
 
-        res.cookie("authtoken", token)
+        res.cookie("authtoken", token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "None",
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        })
         res.status(201).json({ message: 'User created successfully', token, data: createdUser });
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong', error: error.message });
@@ -47,7 +52,12 @@ async function handleLogin(req, res) {
 
         const token = jwt.sign({ id: foundUser._id, email: user.email }, process.env.JWT_SECRET);
 
-        res.cookie("authtoken", token, {maxAge: 30 * 24 * 60 * 60 * 1000})
+        res.cookie("authtoken", token, {
+            httpOnly: true,
+            secure: true,         
+            sameSite: "None",     
+            maxAge: 30 * 24 * 60 * 60 * 1000
+        })
         res.status(200).json({ message: 'Login successful', token, data: foundUser });
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong', error: error.message });

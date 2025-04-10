@@ -15,7 +15,7 @@ const authRoute = require("./routes/user")
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 app.use(cors({
-    origin: "https://phyo.ai",
+    origin: ["https://phyo.ai", "http://localhost:3000", "http://localhost:8000"],
     credentials: true
 }))
 connectToMongo(process.env.MONGO_URI)
@@ -238,15 +238,16 @@ app.post("/api/ask", async (req, res) => {
         // Optional: Start the Brightdata API request in the background
         // This is non-blocking and will not delay the response
         try {
+            // Create URLs from found influencers - maintain the existing logic
             let urls = [];
             foundInfluencers.forEach((inf) => {
                 urls.push({ url: `https://www.instagram.com/${inf.user_name}/` });
             });
 
-            // Send request to Brightdata API without awaiting the result
+            // Updated BrightData API URL
             axios({
                 method: "post",
-                url: "https://api.brightdata.com/datasets/v3/trigger?dataset_id=gd_lk5ns7kz21pck8jpis&include_errors=true&type=discover_new&discover_by=url",
+                url: "https://api.brightdata.com/datasets/v3/trigger?dataset_id=gd_l1vikfch901nx3by4&include_errors=true",
                 data: urls,
                 headers: {
                     Authorization: `Bearer de8a3a9b9ffeaefbf16d559ab912f36407edc8406f05156021e3e69ddc2ad719`,
@@ -289,7 +290,8 @@ app.post("/api/ask", async (req, res) => {
     }
 });
 
-// Updated getSnapshot function
+
+
 const getSnapshot = async (snapshotId, maxRetries = 5, retryDelay = 5000) => {
     if (!snapshotId) {
         throw new Error('Snapshot ID is required');
@@ -302,7 +304,7 @@ const getSnapshot = async (snapshotId, maxRetries = 5, retryDelay = 5000) => {
 
     while (retries < maxRetries) {
         try {
-            // Using the direct format=json endpoint instead of compress=true
+            // Use the provided specific URL format with the passed snapshot ID
             const resp = await axios({
                 method: "get",
                 url: `https://api.brightdata.com/datasets/v3/snapshot/${snapshotId}?format=json`,
@@ -331,7 +333,7 @@ const getSnapshot = async (snapshotId, maxRetries = 5, retryDelay = 5000) => {
             } else if (resp.data.status === 'success' || resp.data.status === 'complete') {
                 console.log('Snapshot is ready, fetching data');
 
-                // Fetch the actual data using the format=json endpoint
+                // Fetch the actual data using the format=json endpoint with the dynamic snapshot ID
                 const dataResp = await axios({
                     method: "get",
                     url: `https://api.brightdata.com/datasets/v3/snapshot/${snapshotId}?format=json`,
@@ -376,6 +378,7 @@ app.get("/details", async (req, res) => {
             });
         }
 
+        // Updated URL for BrightData API
         const resp = await axios({
             method: "post",
             url: "https://api.brightdata.com/datasets/v3/trigger?dataset_id=gd_l1vikfch901nx3by4&include_errors=true",
@@ -389,7 +392,7 @@ app.get("/details", async (req, res) => {
         const snapshotId = resp.data.snapshot_id;
         console.log(`Details Snapshot ID: ${snapshotId}`);
 
-        // Wait for the snapshot data with the correct snapshotId parameter
+        // Wait for the snapshot data with the dynamic snapshot ID
         const snapshotData = await getSnapshot(snapshotId, 10, 8000); // Increased retries and delay
         console.log('Details snapshot data received');
 
@@ -440,7 +443,6 @@ app.get("/details", async (req, res) => {
         });
     }
 });
-
 
 app.post("/influencer", async (req, res) => {
     await influencer.create({

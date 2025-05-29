@@ -11,7 +11,7 @@ const userSchema = mongoose.Schema({
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     isCodeVerified: {
-        tupe: Boolean,
+        type: Boolean,
         default: false,
     }
 }, { timestamps: true })

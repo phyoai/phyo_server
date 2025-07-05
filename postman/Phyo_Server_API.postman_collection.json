@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Phyo Server API",
-    "description": "Complete API collection for Phyo Server TypeScript Backend",
+    "description": "Complete API collection for Phyo Server TypeScript Backend with One-on-One Chat System. Features include real-time messaging, file uploads, online status tracking, typing indicators, and message read receipts.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "phyo-server-api-v1"
   },
@@ -23,6 +23,26 @@
     },
     {
       "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "conversation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "message_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "s3_image_key",
       "value": "",
       "type": "string"
     }
@@ -353,7 +373,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"participantId\": \"OTHER_USER_ID_HERE\"\n}"
+              "raw": "{\n  \"participantId\": \"{{user_id}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/conversation",
@@ -361,7 +381,23 @@
               "path": ["api", "conversation"]
             },
             "description": "Create a new conversation with another user"
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('conversation_id', response.data._id);",
+                  "        console.log('Conversation ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Get User Conversations",
@@ -379,9 +415,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/conversation/user",
+              "raw": "{{base_url}}/api/conversation",
               "host": ["{{base_url}}"],
-              "path": ["api", "conversation", "user"]
+              "path": ["api", "conversation"]
             },
             "description": "Get all conversations for the current user"
           }
@@ -398,7 +434,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "CONVERSATION_ID_HERE"
+                  "value": "{{conversation_id}}"
                 }
               ]
             },
@@ -427,7 +463,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "CONVERSATION_ID_HERE"
+                  "value": "{{conversation_id}}"
                 }
               ]
             },
@@ -441,7 +477,7 @@
       "name": "Messages",
       "item": [
         {
-          "name": "Send Message",
+          "name": "Send Text Message",
           "request": {
             "auth": {
               "type": "bearer",
@@ -462,14 +498,62 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"conversationId\": \"CONVERSATION_ID_HERE\",\n  \"content\": \"Hello, this is a test message!\",\n  \"messageType\": \"text\"\n}"
+              "raw": "{\n  \"conversationId\": \"{{conversation_id}}\",\n  \"content\": \"Hello, this is a test message!\",\n  \"messageType\": \"text\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/messages",
               "host": ["{{base_url}}"],
               "path": ["api", "messages"]
             },
-            "description": "Send a message in a conversation"
+            "description": "Send a text message in a conversation"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('message_id', response.data._id);",
+                  "        console.log('Message ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Send Media Message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": \"{{conversation_id}}\",\n  \"messageType\": \"image\",\n  \"mediaUrl\": \"https://your-s3-bucket.s3.amazonaws.com/chat-images/uuid.jpg\",\n  \"mediaKey\": \"{{s3_image_key}}\",\n  \"fileName\": \"image.jpg\",\n  \"fileSize\": 1024000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages"]
+            },
+            "description": "Send a media message (image/file) in a conversation"
           }
         },
         {
@@ -494,7 +578,7 @@
               "variable": [
                 {
                   "key": "conversationId",
-                  "value": "CONVERSATION_ID_HERE"
+                  "value": "{{conversation_id}}"
                 }
               ],
               "query": [
@@ -535,7 +619,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "MESSAGE_ID_HERE"
+                  "value": "{{message_id}}"
                 }
               ]
             },
@@ -564,7 +648,7 @@
               "variable": [
                 {
                   "key": "id",
-                  "value": "MESSAGE_ID_HERE"
+                  "value": "{{message_id}}"
                 }
               ]
             },
@@ -573,6 +657,95 @@
         }
       ],
       "description": "Message handling endpoints"
+    },
+    {
+      "name": "File Upload",
+      "item": [
+        {
+          "name": "Upload Chat Image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "conversationId",
+                  "value": "{{conversation_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload/chat-image",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "chat-image"]
+            },
+            "description": "Upload an image for chat messages to S3"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.key) {",
+                  "        pm.collectionVariables.set('s3_image_key', response.data.key);",
+                  "        console.log('S3 Image Key saved:', response.data.key);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Chat Image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload/chat-image/:key",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "chat-image", ":key"],
+              "variable": [
+                {
+                  "key": "key",
+                  "value": "{{s3_image_key}}"
+                }
+              ]
+            },
+            "description": "Delete an image from S3 using its key"
+          }
+        }
+      ],
+      "description": "File upload and management endpoints for chat images"
     },
     {
       "name": "Campaigns",
@@ -1059,6 +1232,39 @@
         }
       ],
       "description": "General server endpoints"
+    },
+    {
+      "name": "WebSocket Testing",
+      "item": [
+        {
+          "name": "Test Socket Connection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/socket.io/?EIO=4&transport=polling&t=test",
+              "host": ["{{base_url}}"],
+              "path": ["socket.io", ""],
+              "query": [
+                {
+                  "key": "EIO",
+                  "value": "4"
+                },
+                {
+                  "key": "transport",
+                  "value": "polling"
+                },
+                {
+                  "key": "t",
+                  "value": "test"
+                }
+              ]
+            },
+            "description": "Test socket.io connection endpoint"
+          }
+        }
+      ],
+      "description": "WebSocket connection testing endpoints"
     }
   ],
   "event": [
@@ -1070,7 +1276,16 @@
           "// Auto-set auth token from environment or previous login",
           "if (!pm.collectionVariables.get('auth_token') && pm.environment.get('auth_token')) {",
           "    pm.collectionVariables.set('auth_token', pm.environment.get('auth_token'));",
-          "}"
+          "}",
+          "",
+          "// Log current collection variables for debugging",
+          "console.log('Current Variables:', {",
+          "    'auth_token': pm.collectionVariables.get('auth_token') ? '[SET]' : '[NOT SET]',",
+          "    'conversation_id': pm.collectionVariables.get('conversation_id') || '[NOT SET]',",
+          "    'message_id': pm.collectionVariables.get('message_id') || '[NOT SET]',",
+          "    'user_id': pm.collectionVariables.get('user_id') || '[NOT SET]',",
+          "    's3_image_key': pm.collectionVariables.get('s3_image_key') || '[NOT SET]'",
+          "});"
         ]
       }
     }

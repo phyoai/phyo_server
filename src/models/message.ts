@@ -16,7 +16,9 @@ const messageSchema = new Schema<MessageDocument>({
   },
   content: { 
     type: String, 
-    required: true,
+    required: function(this: MessageDocument) {
+      return this.messageType === 'text';
+    },
     trim: true
   },
   timestamp: { 
@@ -28,9 +30,34 @@ const messageSchema = new Schema<MessageDocument>({
     enum: ['text', 'image', 'file'],
     default: 'text'
   },
+  mediaUrl: {
+    type: String,
+    trim: true
+  },
+  mediaKey: {
+    type: String,
+    trim: true
+  },
+  fileName: {
+    type: String,
+    trim: true
+  },
+  fileSize: {
+    type: Number
+  },
   isRead: { 
     type: Boolean, 
     default: false 
+  },
+  readAt: {
+    type: Date
+  },
+  isDelivered: {
+    type: Boolean,
+    default: false
+  },
+  deliveredAt: {
+    type: Date
   }
 }, {
   timestamps: true

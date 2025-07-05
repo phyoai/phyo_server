@@ -34,7 +34,10 @@ const userSchema = new Schema<UserDocument>({
   },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Number },
-  isCodeVerified: { type: Boolean, default: false }
+  isCodeVerified: { type: Boolean, default: false },
+  isOnline: { type: Boolean, default: false },
+  lastSeen: { type: Date, default: Date.now },
+  socketId: { type: String }
 }, {
   timestamps: true,
   discriminatorKey: 'type'

@@ -5,8 +5,12 @@ import { AuthenticatedRequest } from '../types';
 
 interface SendMessageBody {
   conversationId: string;
-  content: string;
+  content?: string;
   messageType?: 'text' | 'image' | 'file';
+  mediaUrl?: string;
+  mediaKey?: string;
+  fileName?: string;
+  fileSize?: number;
 }
 
 interface GetMessagesParams {
@@ -20,7 +24,7 @@ interface GetMessagesQuery {
 
 export const sendMessage = async (req: AuthenticatedRequest<{}, {}, SendMessageBody>, res: Response): Promise<void> => {
   try {
-    const { conversationId, content, messageType = 'text' } = req.body;
+    const { conversationId, content, messageType = 'text', mediaUrl, mediaKey, fileName, fileSize } = req.body;
     const senderId = req.user?.id;
 
     if (!senderId) {
@@ -28,8 +32,19 @@ export const sendMessage = async (req: AuthenticatedRequest<{}, {}, SendMessageB
       return;
     }
 
-    if (!conversationId || !content) {
-      res.status(400).json({ message: 'Conversation ID and content are required' });
+    if (!conversationId) {
+      res.status(400).json({ message: 'Conversation ID is required' });
+      return;
+    }
+
+    // Validate content based on message type
+    if (messageType === 'text' && !content) {
+      res.status(400).json({ message: 'Content is required for text messages' });
+      return;
+    }
+
+    if ((messageType === 'image' || messageType === 'file') && !mediaUrl) {
+      res.status(400).json({ message: 'Media URL is required for image/file messages' });
       return;
     }
 
@@ -48,19 +63,33 @@ export const sendMessage = async (req: AuthenticatedRequest<{}, {}, SendMessageB
       conversationId,
       senderId,
       content,
-      messageType
+      messageType,
+      mediaUrl,
+      mediaKey,
+      fileName,
+      fileSize,
+      isDelivered: true,
+      deliveredAt: new Date()
     });
 
     await newMessage.save();
 
     // Update conversation with last message info
-    conversation.lastMessage = content;
+    const lastMessageContent = messageType === 'text' ? content : 
+                              messageType === 'image' ? '📷 Image' : 
+                              '📎 File';
+    
+    conversation.lastMessage = lastMessageContent;
     conversation.lastMessageTime = new Date();
     await conversation.save();
 
+    // Populate sender information
+    const populatedMessage = await Message.findById(newMessage._id)
+      .populate('senderId', 'name email username');
+
     res.status(201).json({
       message: 'Message sent successfully',
-      data: newMessage
+      data: populatedMessage
     });
   } catch (error) {
     console.error('Send message error:', error);
@@ -161,6 +190,7 @@ export const markMessageAsRead = async (req: AuthenticatedRequest<{ id: string }
     }
 
     message.isRead = true;
+    message.readAt = new Date();
     await message.save();
 
     res.json({

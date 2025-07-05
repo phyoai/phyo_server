@@ -97,10 +97,17 @@ export interface OpenAIRequirements {
 export interface IMessage {
   conversationId: string;
   senderId: string;
-  content: string;
+  content?: string;
   timestamp: Date;
   messageType: 'text' | 'image' | 'file';
+  mediaUrl?: string;
+  mediaKey?: string;
+  fileName?: string;
+  fileSize?: number;
   isRead: boolean;
+  readAt?: Date;
+  isDelivered: boolean;
+  deliveredAt?: Date;
 }
 
 export interface IConversation {
@@ -119,6 +126,9 @@ export interface IUser {
   resetPasswordToken?: string;
   resetPasswordExpires?: number;
   isCodeVerified?: boolean;
+  isOnline?: boolean;
+  lastSeen?: Date;
+  socketId?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }

@@ -1,6 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import Message from './models/message';
 import Conversation from './models/conversation';
+import { user } from './models/auth';
 
 interface SocketWithUserId extends Socket {
   userId?: string;
@@ -8,10 +9,13 @@ interface SocketWithUserId extends Socket {
 
 interface MessageData {
   sender: string;
-  content: string;
+  content?: string;
   conversationId: string;
   mediaUrl?: string;
-  mediaType?: 'text' | 'image' | 'file';
+  mediaKey?: string;
+  fileName?: string;
+  fileSize?: number;
+  messageType?: 'text' | 'image' | 'file';
 }
 
 interface SeenMessageData {
@@ -19,14 +23,42 @@ interface SeenMessageData {
   userId: string;
 }
 
+interface TypingData {
+  conversationId: string;
+  isTyping: boolean;
+}
+
 const socketHandler = (io: SocketIOServer): void => {
-  io.on('connection', (socket: SocketWithUserId) => {
+  io.on('connection', async (socket: SocketWithUserId) => {
     const userId = socket.handshake.query.userId as string;
     socket.userId = userId;
     
     if (userId) {
       socket.join(userId);
       console.log(`User ${userId} connected`);
+      
+      // Update user online status
+      try {
+        await user.findByIdAndUpdate(userId, {
+          isOnline: true,
+          lastSeen: new Date(),
+          socketId: socket.id
+        });
+        
+        // Notify all conversations about user coming online
+        const conversations = await Conversation.find({
+          participants: userId
+        });
+        
+        conversations.forEach(conversation => {
+          socket.to(String(conversation._id)).emit('userOnline', {
+            userId,
+            isOnline: true
+          });
+        });
+      } catch (error) {
+        console.error('Error updating user online status:', error);
+      }
     }
 
     socket.on('joinConversation', (conversationId: string) => {
@@ -41,15 +73,20 @@ const socketHandler = (io: SocketIOServer): void => {
 
     socket.on('sendMessage', async (data: MessageData) => {
       try {
-        const { sender, content, conversationId, mediaUrl, mediaType = 'text' } = data;
+        const { sender, content, conversationId, mediaUrl, mediaKey, fileName, fileSize, messageType = 'text' } = data;
         
         // Create new message
         const message = await Message.create({ 
           senderId: sender, 
           content, 
           conversationId, 
-          mediaUrl, 
-          messageType: mediaType 
+          mediaUrl,
+          mediaKey,
+          fileName,
+          fileSize,
+          messageType,
+          isDelivered: true,
+          deliveredAt: new Date()
         });
 
         // Update conversation with last message info
@@ -78,28 +115,59 @@ const socketHandler = (io: SocketIOServer): void => {
     socket.on('seenMessage', async ({ messageId, userId }: SeenMessageData) => {
       try {
         await Message.findByIdAndUpdate(messageId, { 
-          isRead: true 
+          isRead: true,
+          readAt: new Date()
         });
         
         // Notify other participants that message was seen
         const message = await Message.findById(messageId);
         if (message) {
-          io.to(message.conversationId).emit('messageSeen', { messageId, userId });
+          io.to(message.conversationId).emit('messageSeen', { 
+            messageId, 
+            userId,
+            readAt: new Date()
+          });
         }
       } catch (error) {
         console.error('Error marking message as seen:', error);
       }
     });
 
-    socket.on('typing', ({ conversationId, isTyping }: { conversationId: string; isTyping: boolean }) => {
+    socket.on('typing', ({ conversationId, isTyping }: TypingData) => {
       socket.to(conversationId).emit('userTyping', {
         userId,
         isTyping
       });
     });
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
       console.log(`User ${userId} disconnected`);
+      
+      if (userId) {
+        try {
+          // Update user offline status
+          await user.findByIdAndUpdate(userId, {
+            isOnline: false,
+            lastSeen: new Date(),
+            socketId: null
+          });
+          
+          // Notify all conversations about user going offline
+          const conversations = await Conversation.find({
+            participants: userId
+          });
+          
+          conversations.forEach(conversation => {
+            socket.to(String(conversation._id)).emit('userOffline', {
+              userId,
+              isOnline: false,
+              lastSeen: new Date()
+            });
+          });
+        } catch (error) {
+          console.error('Error updating user offline status:', error);
+        }
+      }
     });
   });
 };

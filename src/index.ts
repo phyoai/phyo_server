@@ -24,7 +24,7 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 4000;
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cors({
-  origin: ["https://phyo.ai", "http://localhost:3000", "http://localhost:4000"],
+  origin: '*',
   credentials: true
 }));
 

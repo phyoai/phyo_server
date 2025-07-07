@@ -200,4 +200,36 @@ export interface ICampaign {
   selectedInfluencers?: string[];
   createdAt?: Date;
   updatedAt?: Date;
-} 
+}
+
+// Ask endpoint interfaces
+export interface AskRequest {
+  prompt: string;
+}
+
+export interface ProcessedRequirements {
+  city: string;
+  state: string;
+  minFollowers: number;
+  maxFollowers: number;
+  category: string;
+  maleRatio: number | null;
+  femaleRatio: number | null;
+  maleComparison: string;
+  femaleComparison: string;
+  countryComparison: string;
+  countryValue: number | null;
+  country: string | null;
+  ageRanges: string | null;
+  ageComparison: string;
+  ageValue: number | null;
+}
+
+export interface AskResponse {
+  success: boolean;
+  result: ProcessedRequirements;
+  data: IInfluencer[];
+  error?: string;
+}
+
+ 

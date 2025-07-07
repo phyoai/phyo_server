@@ -16,6 +16,7 @@ import messagesRoute from './routes/messages';
 import userRoute from './routes/user';
 import campaignRoute from './routes/campaign';
 import uploadRoute from './routes/upload';
+import askRoute from './routes/ask';
 
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 4000;
@@ -70,6 +71,7 @@ app.use("/api/messages", messagesRoute);
 app.use("/api/users", userRoute);
 app.use("/api/campaigns", campaignRoute);
 app.use("/api/upload", uploadRoute);
+app.use("/api/ask", askRoute);
 
 // Start server
 server.listen(PORT, () => {

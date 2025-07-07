@@ -1141,9 +1141,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/details?userName=influencer_username",
+              "raw": "{{base_url}}/api/ask/details?userName=influencer_username",
               "host": ["{{base_url}}"],
-              "path": ["details"],
+              "path": ["api", "ask", "details"],
               "query": [
                 {
                   "key": "userName",

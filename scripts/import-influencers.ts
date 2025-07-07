@@ -18,7 +18,7 @@ interface ImportInfluencerData {
   language: string;
   gender: 'Male' | 'Female' | 'Other';
   instagramData: {
-    followers: number | null;
+    followers: number | null | { $numberLong: string };
     link: string;
     genderDistribution: Array<{
       gender: string;
@@ -33,7 +33,7 @@ interface ImportInfluencerData {
       name: string;
       value: number;
     }>;
-    collaborationCharges: {
+    collaborationCharges?: {
       reel: number | null;
       story: number | null;
       post: number | null;
@@ -41,7 +41,7 @@ interface ImportInfluencerData {
     };
   };
   youtubeData: {
-    followers: number | null;
+    followers: number | null | { $numberLong: string };
     link: string;
     genderDistribution: Array<{
       gender: string;
@@ -56,7 +56,7 @@ interface ImportInfluencerData {
       name: string;
       value: number;
     }>;
-    collaborationCharges: {
+    collaborationCharges?: {
       reel: number | null;
       story: number | null;
       post: number | null;
@@ -64,6 +64,38 @@ interface ImportInfluencerData {
     };
   };
 }
+
+// Helper function to parse followers from MongoDB export format
+const parseFollowers = (followers: number | null | { $numberLong: string }): number => {
+  if (followers === null || followers === undefined) {
+    return 0;
+  }
+  if (typeof followers === 'number') {
+    return followers;
+  }
+  if (typeof followers === 'object' && followers.$numberLong) {
+    return parseInt(followers.$numberLong, 10) || 0;
+  }
+  return 0;
+};
+
+// Helper function to get collaboration charges with defaults
+const getCollaborationCharges = (charges: any) => {
+  if (!charges || typeof charges !== 'object') {
+    return {
+      reel: 0,
+      story: 0,
+      post: 0,
+      oneMonthDigitalRights: 0,
+    };
+  }
+  return {
+    reel: charges.reel || 0,
+    story: charges.story || 0,
+    post: charges.post || 0,
+    oneMonthDigitalRights: charges.oneMonthDigitalRights || 0,
+  };
+};
 
 const importInfluencers = async () => {
   try {
@@ -105,44 +137,33 @@ const importInfluencers = async () => {
     const errors: string[] = [];
 
     for (let i = 0; i < influencersData.length; i++) {
+      const influencerData = influencersData[i];
       try {
-        const influencerData = influencersData[i];
-        
         // Transform the data to match our schema
         const transformedData = {
-          name: influencerData.name,
-          user_name: influencerData.user_name,
-          categoryInstagram: influencerData.categoryInstagram,
-          categoryYouTube: influencerData.categoryYouTube,
-          city: influencerData.city,
-          state: influencerData.state,
-          language: influencerData.language,
-          gender: influencerData.gender,
+          name: influencerData.name || 'Unknown',
+          user_name: influencerData.user_name || `user_${i}`,
+          categoryInstagram: influencerData.categoryInstagram || '',
+          categoryYouTube: influencerData.categoryYouTube || '',
+          city: influencerData.city || '',
+          state: influencerData.state || '',
+          language: influencerData.language || '',
+          gender: influencerData.gender || 'Other',
           instagramData: {
-            followers: influencerData.instagramData.followers || 0,
-            link: influencerData.instagramData.link,
-            genderDistribution: influencerData.instagramData.genderDistribution,
-            ageDistribution: influencerData.instagramData.ageDistribution,
-            audienceByCountry: influencerData.instagramData.audienceByCountry,
-            collaborationCharges: {
-              reel: influencerData.instagramData.collaborationCharges.reel || 0,
-              story: influencerData.instagramData.collaborationCharges.story || 0,
-              post: influencerData.instagramData.collaborationCharges.post || 0,
-              oneMonthDigitalRights: influencerData.instagramData.collaborationCharges.oneMonthDigitalRights || 0,
-            },
+            followers: parseFollowers(influencerData.instagramData.followers),
+            link: influencerData.instagramData.link || '',
+            genderDistribution: influencerData.instagramData.genderDistribution || [],
+            ageDistribution: influencerData.instagramData.ageDistribution || [],
+            audienceByCountry: influencerData.instagramData.audienceByCountry || [],
+            collaborationCharges: getCollaborationCharges(influencerData.instagramData.collaborationCharges),
           },
           youtubeData: {
-            followers: influencerData.youtubeData.followers || 0,
-            link: influencerData.youtubeData.link,
-            genderDistribution: influencerData.youtubeData.genderDistribution,
-            ageDistribution: influencerData.youtubeData.ageDistribution,
-            audienceByCountry: influencerData.youtubeData.audienceByCountry,
-            collaborationCharges: {
-              reel: influencerData.youtubeData.collaborationCharges.reel || 0,
-              story: influencerData.youtubeData.collaborationCharges.story || 0,
-              post: influencerData.youtubeData.collaborationCharges.post || 0,
-              oneMonthDigitalRights: influencerData.youtubeData.collaborationCharges.oneMonthDigitalRights || 0,
-            },
+            followers: parseFollowers(influencerData.youtubeData.followers),
+            link: influencerData.youtubeData.link || '',
+            genderDistribution: influencerData.youtubeData.genderDistribution || [],
+            ageDistribution: influencerData.youtubeData.ageDistribution || [],
+            audienceByCountry: influencerData.youtubeData.audienceByCountry || [],
+            collaborationCharges: getCollaborationCharges(influencerData.youtubeData.collaborationCharges),
           },
           // Set default values for required fields that might be missing
           averageLikes: 0,
@@ -168,9 +189,22 @@ const importInfluencers = async () => {
         successCount++;
       } catch (error) {
         errorCount++;
-        const errorMsg = `Error importing influencer ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        const influencerName = influencerData?.user_name || influencerData?.name || `record ${i + 1}`;
+        const errorMsg = `Error importing influencer ${influencerName} (${i + 1}): ${error instanceof Error ? error.message : 'Unknown error'}`;
         errors.push(errorMsg);
         console.error(`❌ ${errorMsg}`);
+        
+        // Log additional debug info for troubleshooting
+        if (error instanceof Error && error.message.includes('validation failed')) {
+          console.error(`   Debug info for ${influencerName}:`, {
+            hasGender: !!influencerData?.gender,
+            genderValue: influencerData?.gender,
+            instagramFollowers: influencerData?.instagramData?.followers,
+            youtubeFollowers: influencerData?.youtubeData?.followers,
+            hasInstagramCharges: !!influencerData?.instagramData?.collaborationCharges,
+            hasYoutubeCharges: !!influencerData?.youtubeData?.collaborationCharges,
+          });
+        }
       }
     }
 

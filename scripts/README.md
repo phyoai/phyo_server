@@ -51,4 +51,8 @@ The script expects JSON data with the structure:
 ### Error Handling:
 - Individual influencer import errors won't stop the entire process
 - All errors are logged and summarized at the end
-- Missing required fields are filled with sensible defaults 
+- Missing required fields are filled with sensible defaults
+- Handles MongoDB export formats (e.g., `{ $numberLong: "123" }` for large numbers)
+- Missing `gender` field defaults to 'Other'
+- Missing `collaborationCharges` objects default to all zeros
+- Detailed debug information for validation errors 

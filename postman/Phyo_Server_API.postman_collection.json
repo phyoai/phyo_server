@@ -1154,6 +1154,19 @@
             },
             "description": "Get detailed influencer information including analytics"
           }
+        },
+        {
+          "name": "Debug Database Content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/ask/debug",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ask", "debug"]
+            },
+            "description": "Debug endpoint to check database content, categories, cities, and sample data"
+          }
         }
       ],
       "description": "AI-powered influencer matching and analytics"

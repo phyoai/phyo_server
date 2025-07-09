@@ -230,6 +230,12 @@ export interface AskResponse {
   result: ProcessedRequirements;
   data: IInfluencer[];
   error?: string;
+  debug?: {
+    totalInfluencers: number;
+    categoryMatches: number;
+    cityMatches: number;
+    query: any;
+  };
 }
 
  

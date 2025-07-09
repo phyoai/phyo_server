@@ -104,23 +104,37 @@ export const handleAsk = async (req: Request<{}, AskResponse, AskRequest>, res: 
       ageValue: mathReasoning.ageValue || null,
     };
 
-    // Build MongoDB query
+    // Build MongoDB query with case-insensitive matching
     const query: any = {
-      $and: [
-        { $or: [{ city: result.city }, { state: result.state }] },
-        { $or: [
-          { "instagramData.followers": { $gte: result.minFollowers } }, 
-          { "youtubeData.followers": { $gte: result.minFollowers } }
-        ]},
-      ],
+      $and: []
     };
 
-    // Add category condition only if it's provided
+    // Add location filter (case-insensitive)
+    if (result.city || result.state) {
+      const locationConditions: any[] = [];
+      if (result.city) {
+        locationConditions.push({ city: { $regex: new RegExp(result.city, 'i') } });
+      }
+      if (result.state) {
+        locationConditions.push({ state: { $regex: new RegExp(result.state, 'i') } });
+      }
+      query.$and.push({ $or: locationConditions });
+    }
+
+    // Add followers filter
+    query.$and.push({
+      $or: [
+        { "instagramData.followers": { $gte: result.minFollowers, $lte: result.maxFollowers } }, 
+        { "youtubeData.followers": { $gte: result.minFollowers, $lte: result.maxFollowers } }
+      ]
+    });
+
+    // Add category condition only if it's provided (case-insensitive)
     if (result.category) {
       query.$and.push({ 
         $or: [
-          { categoryInstagram: result.category }, 
-          { categoryYouTube: result.category }
+          { categoryInstagram: { $regex: new RegExp(result.category, 'i') } }, 
+          { categoryYouTube: { $regex: new RegExp(result.category, 'i') } }
         ] 
       });
     }
@@ -165,74 +179,63 @@ export const handleAsk = async (req: Request<{}, AskResponse, AskRequest>, res: 
       query.$and.push({ $or: countryQuery });
     }
 
-    // Add age conditions
-    if (result.ageRanges && result.ageComparison && result.ageValue !== null) {
-      const ageQuery = {
-        $expr: {
-          [result.ageComparison]: [
-            {
-              $sum: {
-                $map: {
-                  input: {
-                    $filter: {
-                      input: "$instagramData.ageDistribution",
-                      as: "age",
-                      cond: {
-                        $and: [
-                          {
-                            $gte: [
-                              {
-                                $convert: {
-                                  input: { $arrayElemAt: [{ $split: ["$$age.age", "-"] }, 0] },
-                                  to: "int",
-                                  onError: 0,
-                                  onNull: 0
-                                }
-                              },
-                              parseInt(result.ageRanges.split("-")[0]) // Lower bound
-                            ]
-                          },
-                          {
-                            $lte: [
-                              {
-                                $convert: {
-                                  input: { $arrayElemAt: [{ $split: ["$$age.age", "-"] }, 1] },
-                                  to: "int",
-                                  onError: 0,
-                                  onNull: 0
-                                }
-                              },
-                              parseInt(result.ageRanges.split("-")[result.ageRanges.split("-").length - 1]) // Upper bound
-                            ]
-                          }
-                        ]
-                      }
-                    }
-                  },
-                  as: "filteredAge",
-                  in: "$$filteredAge.value"
-                }
-              }
-            },
-            result.ageValue
-          ]
-        }
-      };
-      query.$and.push(ageQuery);
+    // Add age conditions - simplified approach
+    if (result.ageRanges) {
+      // For age filtering, we'll look for influencers who have audience in the specified age range
+      // This is a simpler approach that checks if the age range exists in their distribution
+      query.$and.push({
+        $or: [
+          { "instagramData.ageDistribution.age": result.ageRanges },
+          { "youtubeData.ageDistribution.age": result.ageRanges }
+        ]
+      });
     }
 
+    // Log the query for debugging
+    console.log('MongoDB Query:', JSON.stringify(query, null, 2));
+    console.log('Search Criteria:', { 
+      city: result.city, 
+      category: result.category, 
+      minFollowers: result.minFollowers, 
+      maxFollowers: result.maxFollowers,
+      ageRanges: result.ageRanges 
+    });
+
     const foundInfluencers = await Influencer.find(query);
+    
+    // Debug: Also try a simpler query to see if there's any data
+    const totalInfluencers = await Influencer.countDocuments();
+    const categoryMatches = await Influencer.countDocuments({
+      $or: [
+        { categoryInstagram: { $regex: new RegExp(result.category, 'i') } }, 
+        { categoryYouTube: { $regex: new RegExp(result.category, 'i') } }
+      ]
+    });
+    const cityMatches = await Influencer.countDocuments({
+      city: { $regex: new RegExp(result.city, 'i') }
+    });
+
+    console.log('Debug Info:', {
+      totalInfluencers,
+      categoryMatches,
+      cityMatches,
+      foundInfluencers: foundInfluencers.length
+    });
     
     if (!foundInfluencers || foundInfluencers.length === 0) {
       res.status(200).json({
         success: true,
         result,
         data: [],
+        debug: {
+          totalInfluencers,
+          categoryMatches,
+          cityMatches,
+          query: query
+        }
       });
       return;
     }
-
-    console.log({ foundInfluencers: foundInfluencers.length });
 
     // Return influencer data from database
     const results = foundInfluencers.map(inf => inf.toObject());
@@ -287,6 +290,61 @@ export const handleDetails = async (req: Request, res: Response): Promise<void> 
     res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : "Internal server error",
+    });
+  }
+};
+
+// Debug endpoint to check database content
+export const handleDebugData = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const totalCount = await Influencer.countDocuments();
+    
+    // Get a sample of influencers to check data structure
+    const sampleInfluencers = await Influencer.find({}).limit(3).lean();
+    
+    // Get unique cities and categories
+    const cities = await Influencer.distinct('city');
+    const categoriesInstagram = await Influencer.distinct('categoryInstagram');
+    const categoriesYouTube = await Influencer.distinct('categoryYouTube');
+    
+    // Check follower ranges
+    const followerStats = await Influencer.aggregate([
+      {
+        $group: {
+          _id: null,
+          minInstagramFollowers: { $min: "$instagramData.followers" },
+          maxInstagramFollowers: { $max: "$instagramData.followers" },
+          minYoutubeFollowers: { $min: "$youtubeData.followers" },
+          maxYoutubeFollowers: { $max: "$youtubeData.followers" }
+        }
+      }
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        totalCount,
+        cities: cities.slice(0, 10), // First 10 cities
+        categoriesInstagram: categoriesInstagram.slice(0, 10),
+        categoriesYouTube: categoriesYouTube.slice(0, 10),
+        followerStats: followerStats[0] || {},
+        sampleInfluencers: sampleInfluencers.map(inf => ({
+          name: inf.name,
+          user_name: inf.user_name,
+          city: inf.city,
+          categoryInstagram: inf.categoryInstagram,
+          categoryYouTube: inf.categoryYouTube,
+          instagramFollowers: inf.instagramData?.followers,
+          youtubeFollowers: inf.youtubeData?.followers,
+          ageDistribution: inf.instagramData?.ageDistribution?.slice(0, 3) // First 3 age groups
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Debug data error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 }; 

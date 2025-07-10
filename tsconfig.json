@@ -18,7 +18,12 @@
     "emitDecoratorMetadata": true,
     "allowSyntheticDefaultImports": true,
     "moduleResolution": "node",
-    "typeRoots": ["./node_modules/@types", "./src/types"]
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*", "src/types/*"]
+    },
+    "typeRoots": ["./node_modules/@types", "./src/types"],
+    "types": []
   },
   "include": [
     "src/**/*"

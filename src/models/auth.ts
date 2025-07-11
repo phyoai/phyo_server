@@ -32,6 +32,11 @@ const userSchema = new Schema<UserDocument>({
     enum: ['BRAND', 'INFLUENCER', 'SERVICE_PROVIDER'] as UserType[],
     required: true
   },
+  about: {
+    type: String,
+    trim: true,
+    maxlength: 1000
+  },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Number },
   isCodeVerified: { type: Boolean, default: false },

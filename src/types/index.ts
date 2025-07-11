@@ -123,6 +123,7 @@ export interface IUser {
   email: string;
   password: string;
   type: UserType;
+  about?: string;
   resetPasswordToken?: string;
   resetPasswordExpires?: number;
   isCodeVerified?: boolean;
@@ -236,6 +237,41 @@ export interface AskResponse {
     cityMatches: number;
     query: any;
   };
+}
+
+// Project interfaces for Service Providers
+export interface IProject {
+  serviceProviderId: string;
+  name: string;
+  description: string;
+  progressPercentage: number;
+  date: Date;
+  status: 'Planning' | 'In Progress' | 'Completed' | 'On Hold' | 'Cancelled';
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+// Portfolio interfaces for Service Providers
+export interface IPortfolioClient {
+  projectTitle: string;
+  servicesProvided: string[];
+  projectDuration: string;
+  projectStatus: 'Completed' | 'In Progress' | 'On Hold' | 'Cancelled';
+  projectDescription: string;
+  startDate?: Date;
+  endDate?: Date;
+  clientName?: string;
+  budget?: number;
+  images?: string[];
+}
+
+export interface IPortfolio {
+  serviceProviderId: string;
+  title: string;
+  description?: string;
+  clients: IPortfolioClient[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
  

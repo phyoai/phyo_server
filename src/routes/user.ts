@@ -1,4 +1,5 @@
 import express from 'express';
+import { authenticateToken } from '../middleware/auth';
 import { 
   getUserProfile, 
   updateUserProfile, 
@@ -9,10 +10,10 @@ import {
 
 const router = express.Router();
 
-router.get('/profile', getUserProfile);
-router.patch('/profile', updateUserProfile);
+router.get('/profile', authenticateToken, getUserProfile);
+router.patch('/profile', authenticateToken, updateUserProfile);
 router.get('/search', searchUsers);
 router.get('/:id', getUserById);
-router.delete('/profile', deleteUser);
+router.delete('/profile', authenticateToken, deleteUser);
 
 export default router; 

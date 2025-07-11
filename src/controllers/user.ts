@@ -7,6 +7,7 @@ interface UpdateProfileBody {
   username?: string;
   bio?: string;
   profilePicture?: string;
+  about?: string;
   [key: string]: any;
 }
 

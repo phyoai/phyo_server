@@ -45,6 +45,21 @@
       "key": "s3_image_key",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "project_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "portfolio_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -258,14 +273,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Name\",\n  \"bio\": \"Updated bio\",\n  \"profilePicture\": \"https://example.com/avatar.jpg\"\n}"
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"bio\": \"Updated bio\",\n  \"about\": \"I'm a passionate content creator with 5+ years of experience in digital marketing and brand storytelling. I love connecting with audiences through authentic content.\",\n  \"profilePicture\": \"https://example.com/avatar.jpg\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/users/profile",
               "host": ["{{base_url}}"],
               "path": ["api", "users", "profile"]
             },
-            "description": "Update current user's profile"
+            "description": "Update current user's profile including name, bio, about section, and profile picture"
           }
         },
         {
@@ -1247,6 +1262,560 @@
       "description": "General server endpoints"
     },
     {
+      "name": "Service Provider - Projects",
+      "item": [
+        {
+          "name": "Create Project",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"E-commerce Website Development\",\n  \"description\": \"Full-stack e-commerce solution with payment integration, admin panel, and responsive design\",\n  \"progressPercentage\": 25,\n  \"date\": \"2024-02-15T00:00:00.000Z\",\n  \"status\": \"In Progress\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/projects",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects"]
+            },
+            "description": "Create a new project (SERVICE_PROVIDER role required)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('project_id', response.data._id);",
+                  "        console.log('Project ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Projects",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/projects?status=In Progress&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "In Progress",
+                  "description": "Filter by project status",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Projects per page"
+                }
+              ]
+            },
+            "description": "Get all projects for the authenticated service provider with pagination and filtering"
+          }
+        },
+        {
+          "name": "Get Project by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/projects/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{project_id}}"
+                }
+              ]
+            },
+            "description": "Get specific project details by ID"
+          }
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"progressPercentage\": 75,\n  \"status\": \"In Progress\",\n  \"description\": \"Updated project description with latest progress\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/projects/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{project_id}}"
+                }
+              ]
+            },
+            "description": "Update project details including progress and status"
+          }
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/projects/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{project_id}}"
+                }
+              ]
+            },
+            "description": "Delete a project"
+          }
+        },
+        {
+          "name": "Get Project Statistics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/projects/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects", "stats"]
+            },
+            "description": "Get project statistics including total projects, average progress, and status breakdown"
+          }
+        }
+      ],
+      "description": "Project management endpoints for service providers"
+    },
+    {
+      "name": "Service Provider - Portfolios",
+      "item": [
+        {
+          "name": "Create Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Web Development Portfolio\",\n  \"description\": \"Showcase of my web development projects including e-commerce, SaaS platforms, and mobile apps\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/portfolios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios"]
+            },
+            "description": "Create a new portfolio (SERVICE_PROVIDER role required)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('portfolio_id', response.data._id);",
+                  "        console.log('Portfolio ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Portfolios",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/portfolios?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Portfolios per page"
+                }
+              ]
+            },
+            "description": "Get all portfolios for the authenticated service provider with pagination"
+          }
+        },
+        {
+          "name": "Get Portfolio by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{portfolio_id}}"
+                }
+              ]
+            },
+            "description": "Get specific portfolio details including all clients by ID"
+          }
+        },
+        {
+          "name": "Update Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Portfolio Title\",\n  \"description\": \"Updated portfolio description with new achievements\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{portfolio_id}}"
+                }
+              ]
+            },
+            "description": "Update portfolio title and description"
+          }
+        },
+        {
+          "name": "Delete Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{portfolio_id}}"
+                }
+              ]
+            },
+            "description": "Delete a portfolio and all its clients"
+          }
+        },
+        {
+          "name": "Add Client to Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectTitle\": \"E-commerce Platform Development\",\n  \"servicesProvided\": [\"Full-stack Development\", \"UI/UX Design\", \"Payment Integration\", \"SEO Optimization\"],\n  \"projectDuration\": \"4 months\",\n  \"projectStatus\": \"Completed\",\n  \"projectDescription\": \"Developed a complete e-commerce platform with modern design, secure payment processing, inventory management, and admin dashboard. Implemented responsive design for mobile and desktop users.\",\n  \"startDate\": \"2023-08-01T00:00:00.000Z\",\n  \"endDate\": \"2023-11-30T00:00:00.000Z\",\n  \"clientName\": \"TechCorp Solutions\",\n  \"budget\": 25000,\n  \"images\": [\"https://example.com/project1.jpg\", \"https://example.com/project2.jpg\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:portfolioId/clients",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":portfolioId", "clients"],
+              "variable": [
+                {
+                  "key": "portfolioId",
+                  "value": "{{portfolio_id}}"
+                }
+              ]
+            },
+            "description": "Add a new client project to the portfolio"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.clients && response.data.clients.length > 0) {",
+                  "        const lastClient = response.data.clients[response.data.clients.length - 1];",
+                  "        if (lastClient._id) {",
+                  "            pm.collectionVariables.set('client_id', lastClient._id);",
+                  "            console.log('Client ID saved:', lastClient._id);",
+                  "        }",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Client in Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectStatus\": \"Completed\",\n  \"endDate\": \"2024-01-15T00:00:00.000Z\",\n  \"budget\": 30000,\n  \"projectDescription\": \"Updated project description with final deliverables and achievements\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:portfolioId/clients/:clientId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":portfolioId", "clients", ":clientId"],
+              "variable": [
+                {
+                  "key": "portfolioId",
+                  "value": "{{portfolio_id}}"
+                },
+                {
+                  "key": "clientId",
+                  "value": "{{client_id}}"
+                }
+              ]
+            },
+            "description": "Update client project details in the portfolio"
+          }
+        },
+        {
+          "name": "Remove Client from Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:portfolioId/clients/:clientId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":portfolioId", "clients", ":clientId"],
+              "variable": [
+                {
+                  "key": "portfolioId",
+                  "value": "{{portfolio_id}}"
+                },
+                {
+                  "key": "clientId",
+                  "value": "{{client_id}}"
+                }
+              ]
+            },
+            "description": "Remove a client project from the portfolio"
+          }
+        },
+        {
+          "name": "Get Portfolio Statistics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", "stats"]
+            },
+            "description": "Get portfolio statistics including total portfolios, clients, budget, and project status breakdown"
+          }
+        }
+      ],
+      "description": "Portfolio and client management endpoints for service providers"
+    },
+    {
       "name": "WebSocket Testing",
       "item": [
         {
@@ -1291,14 +1860,17 @@
           "    pm.collectionVariables.set('auth_token', pm.environment.get('auth_token'));",
           "}",
           "",
-          "// Log current collection variables for debugging",
-          "console.log('Current Variables:', {",
-          "    'auth_token': pm.collectionVariables.get('auth_token') ? '[SET]' : '[NOT SET]',",
-          "    'conversation_id': pm.collectionVariables.get('conversation_id') || '[NOT SET]',",
-          "    'message_id': pm.collectionVariables.get('message_id') || '[NOT SET]',",
-          "    'user_id': pm.collectionVariables.get('user_id') || '[NOT SET]',",
-          "    's3_image_key': pm.collectionVariables.get('s3_image_key') || '[NOT SET]'",
-          "});"
+                  "// Log current collection variables for debugging",
+        "console.log('Current Variables:', {",
+        "    'auth_token': pm.collectionVariables.get('auth_token') ? '[SET]' : '[NOT SET]',",
+        "    'conversation_id': pm.collectionVariables.get('conversation_id') || '[NOT SET]',",
+        "    'message_id': pm.collectionVariables.get('message_id') || '[NOT SET]',",
+        "    'user_id': pm.collectionVariables.get('user_id') || '[NOT SET]',",
+        "    's3_image_key': pm.collectionVariables.get('s3_image_key') || '[NOT SET]',",
+        "    'project_id': pm.collectionVariables.get('project_id') || '[NOT SET]',",
+        "    'portfolio_id': pm.collectionVariables.get('portfolio_id') || '[NOT SET]',",
+        "    'client_id': pm.collectionVariables.get('client_id') || '[NOT SET]'",
+        "});"
         ]
       }
     }

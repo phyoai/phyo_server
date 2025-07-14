@@ -44,7 +44,7 @@ async function enhanceInfluencerWithBrightData(influencer: IInfluencer): Promise
     if (brightDataResult.profile) {
       const profile = brightDataResult.profile;
       enhanced.brightDataProfile = {
-        // Send all profile data directly
+        // Send profile data directly (no posts or related_accounts in the interface)
         ...profile,
         
         // Add metadata

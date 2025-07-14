@@ -9,6 +9,7 @@ This is a Node.js backend application built with TypeScript, Express, MongoDB, a
 - **Real-time Chat**: Socket.IO integration for real-time messaging
 - **Database**: MongoDB with Mongoose ODM
 - **OpenAI Integration**: AI-powered influencer matching system
+- **Bright Data Integration**: Real-time Instagram influencer data
 - **RESTful APIs**: Well-structured REST API endpoints
 
 ## Project Structure
@@ -20,6 +21,7 @@ src/
 ├── middleware/           # Authentication and other middleware
 ├── models/              # Mongoose data models
 ├── routes/              # API route definitions
+├── services/            # External service integrations (Bright Data, S3)
 ├── types/               # TypeScript type definitions
 ├── index.ts             # Main server entry point
 └── socket.ts            # Socket.IO event handlers
@@ -46,6 +48,7 @@ Create a `.env` file in the root directory with:
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
 OPENAI_API_KEY=your_openai_api_key
+BRIGHTDATA_API_KEY=your_brightdata_api_key
 EMAIL_USER=your_email_username
 EMAIL_PASS=your_email_password
 EMAIL_HOST=your_smtp_host
@@ -102,9 +105,39 @@ npm start
 - `PATCH /api/messages/:id/read` - Mark message as read
 - `DELETE /api/messages/:id` - Delete message
 
-### Influencer Matching
-- `POST /api/ask` - AI-powered influencer search
-- `GET /details?userName=:username` - Get influencer details
+### AI & Influencer Matching
+- `POST /api/ask` - AI-powered influencer search (combines local DB + Bright Data)
+- `GET /api/ask/details?userName=:username` - Get influencer details from local DB
+- `GET /api/ask/debug` - Debug database content
+
+### Bright Data Integration
+- `GET /api/ask/brightdata/status` - Check Bright Data API availability
+- `GET /api/ask/brightdata/details?userName=:username` - Get Bright Data influencer details
+- `GET /api/ask/brightdata/analytics?userName=:username` - Get Bright Data analytics
+- `GET /api/ask/brightdata/posts?userName=:username&limit=:limit` - Get Bright Data posts
+
+## Bright Data Integration
+
+The application now includes Bright Data API integration for enhanced influencer discovery:
+
+### Features
+- **Real-time Instagram Data**: Access to live Instagram influencer data
+- **Dual Data Sources**: Combines local database with Bright Data API results
+- **Advanced Analytics**: Detailed engagement metrics and audience demographics
+- **Automatic Deduplication**: Removes duplicate results from multiple sources
+
+### Setup
+1. Sign up for a Bright Data account at [brightdata.com](https://brightdata.com)
+2. Generate an API key for Instagram data
+3. Add the API key to your `.env` file as `BRIGHTDATA_API_KEY`
+
+### Testing
+Test the Bright Data integration:
+```bash
+npm run test:brightdata
+```
+
+For detailed documentation, see [docs/brightdata-integration.md](docs/brightdata-integration.md)
 
 ## Socket.IO Events
 
@@ -134,6 +167,9 @@ npm start
 - `npm run build` - Compile TypeScript to JavaScript
 - `npm start` - Start production server
 - `npm test` - Run tests (when implemented)
+- `npm run import:influencers` - Import influencer data
+- `npm run import:clear` - Clear and import fresh influencer data
+- `npm run test:brightdata` - Test Bright Data integration
 
 ## Technologies Used
 
@@ -143,6 +179,7 @@ npm start
 - **Socket.IO** - Real-time communication
 - **JWT** - Authentication tokens
 - **OpenAI** - AI integration
+- **Bright Data** - Instagram data API
 - **Nodemailer** - Email functionality
 - **bcryptjs** - Password hashing
 - **CORS** - Cross-origin resource sharing

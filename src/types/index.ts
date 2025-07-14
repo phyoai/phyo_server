@@ -237,6 +237,55 @@ export interface AskResponse {
     cityMatches: number;
     query: any;
   };
+  brightDataResults?: IInfluencer[];
+  dataSource?: 'local' | 'brightdata' | 'both';
+}
+
+// Bright Data interfaces
+export interface BrightDataInfluencer {
+  username: string;
+  full_name: string;
+  followers_count: number;
+  following_count: number;
+  biography: string;
+  external_url?: string;
+  profile_pic_url: string;
+  is_private: boolean;
+  is_verified: boolean;
+  media_count: number;
+  location?: string;
+  category?: string;
+  engagement_rate?: number;
+  average_likes?: number;
+  average_comments?: number;
+  gender_distribution?: {
+    male: number;
+    female: number;
+  };
+  age_distribution?: {
+    '13-17': number;
+    '18-24': number;
+    '25-34': number;
+    '35-44': number;
+    '45-64': number;
+    '65+': number;
+  };
+  top_countries?: Array<{
+    country: string;
+    percentage: number;
+  }>;
+}
+
+export interface BrightDataSearchParams {
+  query?: string;
+  location?: string;
+  category?: string;
+  min_followers?: number;
+  max_followers?: number;
+  gender?: 'male' | 'female';
+  age_range?: string;
+  country?: string;
+  limit?: number;
 }
 
 // Project interfaces for Service Providers

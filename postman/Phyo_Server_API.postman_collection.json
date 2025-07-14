@@ -1182,9 +1182,87 @@
             },
             "description": "Debug endpoint to check database content, categories, cities, and sample data"
           }
+        },
+        {
+          "name": "Bright Data API Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/ask/brightdata/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ask", "brightdata", "status"]
+            },
+            "description": "Check if Bright Data API is available and configured"
+          }
+        },
+        {
+          "name": "Get Bright Data Influencer Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/ask/brightdata/details?userName=influencer_username",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ask", "brightdata", "details"],
+              "query": [
+                {
+                  "key": "userName",
+                  "value": "influencer_username",
+                  "description": "Instagram username of the influencer"
+                }
+              ]
+            },
+            "description": "Get detailed influencer information from Bright Data API"
+          }
+        },
+        {
+          "name": "Get Bright Data Influencer Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/ask/brightdata/analytics?userName=influencer_username",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ask", "brightdata", "analytics"],
+              "query": [
+                {
+                  "key": "userName",
+                  "value": "influencer_username",
+                  "description": "Instagram username of the influencer"
+                }
+              ]
+            },
+            "description": "Get detailed analytics for an influencer from Bright Data"
+          }
+        },
+        {
+          "name": "Get Bright Data Influencer Posts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/ask/brightdata/posts?userName=influencer_username&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ask", "brightdata", "posts"],
+              "query": [
+                {
+                  "key": "userName",
+                  "value": "influencer_username",
+                  "description": "Instagram username of the influencer"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of posts to retrieve (default: 10)"
+                }
+              ]
+            },
+            "description": "Get recent posts from an influencer via Bright Data"
+          }
         }
       ],
-      "description": "AI-powered influencer matching and analytics"
+      "description": "AI-powered influencer matching and analytics with Bright Data integration"
     },
     {
       "name": "Influencer Management",

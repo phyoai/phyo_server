@@ -49,24 +49,60 @@ interface BrightDataSearchParams {
 class BrightDataService {
   private apiKey: string;
   private baseUrl: string;
+  private requestCount: number = 0;
+  private lastRequestTime: number = 0;
+  private readonly rateLimitDelay: number = 100; // 100ms between requests
 
   constructor() {
     this.apiKey = process.env.BRIGHTDATA_API_KEY || '';
     this.baseUrl = 'https://api.brightdata.com/instagram';
   }
 
-  private async makeRequest(endpoint: string, params: any = {}) {
+  private async makeRequest(endpoint: string, params: any = {}): Promise<any> {
     try {
+      // Rate limiting
+      const now = Date.now();
+      const timeSinceLastRequest = now - this.lastRequestTime;
+      if (timeSinceLastRequest < this.rateLimitDelay) {
+        await new Promise(resolve => setTimeout(resolve, this.rateLimitDelay - timeSinceLastRequest));
+      }
+      
+      this.lastRequestTime = Date.now();
+      this.requestCount++;
+
+      console.log(`Bright Data API Request #${this.requestCount}: ${endpoint}`);
+
       const response = await axios.get(`${this.baseUrl}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${this.apiKey}`,
           'Content-Type': 'application/json'
         },
-        params
+        params,
+        timeout: 10000 // 10 second timeout
       });
+      
       return response.data;
     } catch (error) {
       console.error('Bright Data API Error:', error);
+      
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 429) {
+          console.log('Rate limit hit, waiting 5 seconds...');
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          return this.makeRequest(endpoint, params); // Retry once
+        }
+        
+        if (error.response?.status === 404) {
+          console.log(`Resource not found: ${endpoint}`);
+          return null;
+        }
+        
+        if (error.response?.status && error.response.status >= 500) {
+          console.log('Server error from Bright Data, skipping...');
+          return null;
+        }
+      }
+      
       throw error;
     }
   }
@@ -85,8 +121,13 @@ class BrightDataService {
       if (params.country) searchParams.country = params.country;
       if (params.limit) searchParams.limit = params.limit;
 
+      console.log('Bright Data Search Params:', searchParams);
+
       const response = await this.makeRequest('/search', searchParams);
-      return response.data || [];
+      const results = response?.data || [];
+      
+      console.log(`Bright Data search returned ${results.length} results`);
+      return results;
     } catch (error) {
       console.error('Error searching influencers on Bright Data:', error);
       return [];
@@ -95,8 +136,9 @@ class BrightDataService {
 
   async getInfluencerDetails(username: string): Promise<BrightDataInfluencer | null> {
     try {
+      console.log(`Fetching details for: ${username}`);
       const response = await this.makeRequest(`/user/${username}`);
-      return response.data || null;
+      return response?.data || null;
     } catch (error) {
       console.error(`Error getting influencer details for ${username}:`, error);
       return null;
@@ -105,8 +147,9 @@ class BrightDataService {
 
   async getInfluencerAnalytics(username: string): Promise<any> {
     try {
+      console.log(`Fetching analytics for: ${username}`);
       const response = await this.makeRequest(`/user/${username}/analytics`);
-      return response.data || null;
+      return response?.data || null;
     } catch (error) {
       console.error(`Error getting analytics for ${username}:`, error);
       return null;
@@ -115,8 +158,9 @@ class BrightDataService {
 
   async getInfluencerPosts(username: string, limit: number = 10): Promise<any[]> {
     try {
+      console.log(`Fetching posts for: ${username} (limit: ${limit})`);
       const response = await this.makeRequest(`/user/${username}/posts`, { limit });
-      return response.data || [];
+      return response?.data || [];
     } catch (error) {
       console.error(`Error getting posts for ${username}:`, error);
       return [];
@@ -155,7 +199,8 @@ class BrightDataService {
           story: 0,
           post: 0,
           oneMonthDigitalRights: 0
-        }
+        },
+        engagement_rate: brightDataInfluencer.engagement_rate
       },
       youtubeData: {
         followers: 0,
@@ -175,13 +220,24 @@ class BrightDataService {
       averageComments: brightDataInfluencer.average_comments || 0,
       averageEngagement: brightDataInfluencer.engagement_rate || 0,
       image: brightDataInfluencer.profile_pic_url,
-      source: 'brightdata' // Flag to identify data source
+      source: 'brightdata', // Flag to identify data source
+      biography: brightDataInfluencer.biography,
+      is_verified: brightDataInfluencer.is_verified,
+      media_count: brightDataInfluencer.media_count
     };
   }
 
   // Check if Bright Data API is available
   isAvailable(): boolean {
     return !!this.apiKey;
+  }
+
+  // Get API usage statistics
+  getUsageStats(): { requestCount: number; isAvailable: boolean } {
+    return {
+      requestCount: this.requestCount,
+      isAvailable: this.isAvailable()
+    };
   }
 }
 

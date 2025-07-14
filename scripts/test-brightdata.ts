@@ -4,7 +4,7 @@ import axios from 'axios';
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 async function testBrightDataIntegration() {
-  console.log('🧪 Testing Bright Data Integration...\n');
+  console.log('🧪 Testing Enhanced Bright Data Integration...\n');
 
   try {
     // Test 1: Check API Status
@@ -13,17 +13,35 @@ async function testBrightDataIntegration() {
     console.log('✅ Status Response:', statusResponse.data);
     console.log('');
 
-    // Test 2: Test AI Search with Bright Data
-    console.log('2. Testing AI Search with Bright Data...');
+    // Test 2: Test Enhanced AI Search with Detailed Data Fetching
+    console.log('2. Testing Enhanced AI Search with Detailed Data Fetching...');
     const searchResponse = await axios.post(`${BASE_URL}/api/ask`, {
       prompt: "Find fashion influencers in New York with 10k to 100k followers"
     });
-    console.log('✅ Search Response:', {
+    
+    console.log('✅ Enhanced Search Response:', {
       success: searchResponse.data.success,
       dataSource: searchResponse.data.dataSource,
       resultCount: searchResponse.data.data?.length || 0,
-      hasBrightDataResults: !!searchResponse.data.brightDataResults
+      hasBrightDataResults: !!searchResponse.data.brightDataResults,
+      brightDataResultCount: searchResponse.data.brightDataResults?.length || 0
     });
+
+    // Check if we have detailed data in Bright Data results
+    if (searchResponse.data.brightDataResults && searchResponse.data.brightDataResults.length > 0) {
+      const firstBrightDataResult = searchResponse.data.brightDataResults[0];
+      console.log('📊 First Bright Data Result Details:', {
+        name: firstBrightDataResult.name,
+        username: firstBrightDataResult.user_name,
+        followers: firstBrightDataResult.instagramData?.followers,
+        engagement_rate: firstBrightDataResult.instagramData?.engagement_rate,
+        averageLikes: firstBrightDataResult.averageLikes,
+        averageComments: firstBrightDataResult.averageComments,
+        hasRecentPosts: !!firstBrightDataResult.recentPosts,
+        recentPostsCount: firstBrightDataResult.recentPosts?.length || 0,
+        source: firstBrightDataResult.source
+      });
+    }
     console.log('');
 
     // Test 3: Test Bright Data Details (if we have results)
@@ -37,7 +55,8 @@ async function testBrightDataIntegration() {
         console.log('✅ Details Response:', {
           success: detailsResponse.data.success,
           hasData: !!detailsResponse.data.data,
-          source: detailsResponse.data.source
+          source: detailsResponse.data.source,
+          hasAnalytics: !!detailsResponse.data.data?.instagramData?.engagement_rate
         });
       } catch (error) {
         console.log('⚠️  Details test failed (this is normal if the influencer is not found on Bright Data)');
@@ -56,7 +75,9 @@ async function testBrightDataIntegration() {
         console.log('✅ Analytics Response:', {
           success: analyticsResponse.data.success,
           hasData: !!analyticsResponse.data.data,
-          source: analyticsResponse.data.source
+          source: analyticsResponse.data.source,
+          engagementRate: analyticsResponse.data.data?.engagement_rate,
+          averageLikes: analyticsResponse.data.data?.average_likes
         });
       } catch (error) {
         console.log('⚠️  Analytics test failed (this is normal if analytics are not available)');
@@ -75,7 +96,8 @@ async function testBrightDataIntegration() {
         console.log('✅ Posts Response:', {
           success: postsResponse.data.success,
           count: postsResponse.data.count,
-          source: postsResponse.data.source
+          source: postsResponse.data.source,
+          hasPosts: postsResponse.data.data?.length > 0
         });
       } catch (error) {
         console.log('⚠️  Posts test failed (this is normal if posts are not available)');
@@ -83,13 +105,20 @@ async function testBrightDataIntegration() {
       console.log('');
     }
 
-    console.log('🎉 Bright Data Integration Test Completed!');
+    console.log('🎉 Enhanced Bright Data Integration Test Completed!');
     console.log('');
     console.log('📊 Summary:');
     console.log(`   - API Status: ${statusResponse.data.data?.available ? '✅ Available' : '❌ Not Available'}`);
     console.log(`   - Search Working: ${searchResponse.data.success ? '✅ Yes' : '❌ No'}`);
     console.log(`   - Data Source: ${searchResponse.data.dataSource || 'local'}`);
     console.log(`   - Total Results: ${searchResponse.data.data?.length || 0}`);
+    console.log(`   - Bright Data Results: ${searchResponse.data.brightDataResults?.length || 0}`);
+    
+    if (searchResponse.data.brightDataResults && searchResponse.data.brightDataResults.length > 0) {
+      console.log(`   - Detailed Data Fetched: ✅ Yes`);
+      console.log(`   - Average Engagement Rate: ${searchResponse.data.brightDataResults[0]?.instagramData?.engagement_rate || 'N/A'}%`);
+      console.log(`   - Recent Posts Available: ${searchResponse.data.brightDataResults[0]?.recentPosts ? '✅ Yes' : '❌ No'}`);
+    }
 
   } catch (error) {
     console.error('❌ Test failed:', error instanceof Error ? error.message : 'Unknown error');

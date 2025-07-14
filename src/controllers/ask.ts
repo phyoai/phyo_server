@@ -123,8 +123,13 @@ export const handleAsk = async (req: Request<{}, AskResponse, AskRequest>, res: 
     if (brightDataService.isAvailable()) {
       try {
         const brightDataInfluencers = await searchBrightData(result);
-        brightDataResults = brightDataInfluencers;
-        console.log(`Found ${brightDataResults.length} influencers from Bright Data`);
+        console.log(`Found ${brightDataInfluencers.length} influencers from Bright Data search`);
+        
+        // Fetch detailed data for each Bright Data influencer
+        const detailedBrightDataResults = await fetchDetailedBrightDataResults(brightDataInfluencers);
+        brightDataResults = detailedBrightDataResults;
+        
+        console.log(`Successfully fetched detailed data for ${brightDataResults.length} Bright Data influencers`);
         
         if (localResults.length > 0 && brightDataResults.length > 0) {
           dataSource = 'both';
@@ -182,6 +187,80 @@ export const handleAsk = async (req: Request<{}, AskResponse, AskRequest>, res: 
     });
   }
 };
+
+// Helper function to fetch detailed data for Bright Data influencers
+async function fetchDetailedBrightDataResults(brightDataInfluencers: any[]): Promise<any[]> {
+  const detailedResults = [];
+  
+  for (const influencer of brightDataInfluencers) {
+    try {
+      const username = influencer.user_name || influencer.username;
+      if (!username) continue;
+
+      console.log(`Fetching detailed data for: ${username}`);
+      
+      // Get detailed influencer information
+      const detailedInfo = await brightDataService.getInfluencerDetails(username);
+      
+      if (detailedInfo) {
+        // Transform to local schema with detailed data
+        const transformedData = brightDataService.transformToLocalSchema(detailedInfo);
+        
+        // Try to get analytics data
+        try {
+          const analytics = await brightDataService.getInfluencerAnalytics(username);
+          if (analytics) {
+            // Merge analytics data into the transformed data
+            transformedData.instagramData.engagement_rate = analytics.engagement_rate;
+            transformedData.averageEngagement = analytics.engagement_rate || 0;
+            transformedData.averageLikes = analytics.average_likes || 0;
+            transformedData.averageComments = analytics.average_comments || 0;
+            transformedData.averageViews = analytics.average_views || 0;
+          }
+        } catch (analyticsError) {
+          console.log(`Analytics not available for ${username}:`, analyticsError instanceof Error ? analyticsError.message : 'Unknown error');
+        }
+
+        // Try to get recent posts for additional insights
+        try {
+          const posts = await brightDataService.getInfluencerPosts(username, 5);
+          if (posts && posts.length > 0) {
+            // Add post insights to the data
+            transformedData.recentPosts = posts.slice(0, 3).map((post: any) => ({
+              id: post.id,
+              caption: post.caption?.substring(0, 100) + '...',
+              like_count: post.like_count,
+              comment_count: post.comment_count,
+              timestamp: post.timestamp
+            }));
+            
+            // Calculate average engagement from recent posts
+            const totalLikes = posts.reduce((sum: number, post: any) => sum + (post.like_count || 0), 0);
+            const totalComments = posts.reduce((sum: number, post: any) => sum + (post.comment_count || 0), 0);
+            const avgLikes = totalLikes / posts.length;
+            const avgComments = totalComments / posts.length;
+            
+            transformedData.averageLikes = Math.round(avgLikes);
+            transformedData.averageComments = Math.round(avgComments);
+          }
+        } catch (postsError) {
+          console.log(`Posts not available for ${username}:`, postsError instanceof Error ? postsError.message : 'Unknown error');
+        }
+
+        detailedResults.push(transformedData);
+        console.log(`✅ Successfully fetched detailed data for ${username}`);
+      } else {
+        console.log(`⚠️  No detailed data found for ${username}`);
+      }
+    } catch (error) {
+      console.error(`❌ Error fetching detailed data for ${influencer.user_name || influencer.username}:`, error);
+      // Still include the basic data if detailed fetch fails
+      detailedResults.push(influencer);
+    }
+  }
+  
+  return detailedResults;
+}
 
 // Helper function to search local database
 async function searchLocalDatabase(result: ProcessedRequirements): Promise<any[]> {

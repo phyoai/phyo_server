@@ -53,6 +53,7 @@ export interface SocialMediaData {
   ageDistribution: AgeDistribution[];
   audienceByCountry: AudienceByCountry[];
   collaborationCharges: CollaborationCharges;
+  engagement_rate?: number; // Added for Bright Data analytics
 }
 
 // Influencer interface
@@ -72,6 +73,14 @@ export interface IInfluencer {
   averageComments: number;
   averageEngagement: number;
   image: string;
+  source?: 'local' | 'brightdata'; // Added to identify data source
+  recentPosts?: Array<{ // Added for recent posts from Bright Data
+    id: string;
+    caption: string;
+    like_count: number;
+    comment_count: number;
+    timestamp: string;
+  }>;
 }
 
 // OpenAI structured response interface

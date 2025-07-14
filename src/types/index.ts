@@ -53,7 +53,6 @@ export interface SocialMediaData {
   ageDistribution: AgeDistribution[];
   audienceByCountry: AudienceByCountry[];
   collaborationCharges: CollaborationCharges;
-  engagement_rate?: number; // Added for Bright Data analytics
 }
 
 // Influencer interface
@@ -73,14 +72,6 @@ export interface IInfluencer {
   averageComments: number;
   averageEngagement: number;
   image: string;
-  source?: 'local' | 'brightdata'; // Added to identify data source
-  recentPosts?: Array<{ // Added for recent posts from Bright Data
-    id: string;
-    caption: string;
-    like_count: number;
-    comment_count: number;
-    timestamp: string;
-  }>;
 }
 
 // OpenAI structured response interface
@@ -235,66 +226,38 @@ export interface ProcessedRequirements {
   ageValue: number | null;
 }
 
+// Enhanced influencer with Bright Data information
+export interface EnhancedInfluencer extends IInfluencer {
+  brightDataProfile?: {
+    // Raw profile data from Bright Data
+    [key: string]: any;
+    lastUpdated?: string;
+    profileUrl?: string;
+  };
+  brightDataPosts?: {
+    // Raw posts data from Bright Data
+    posts?: any[];
+    postsCount?: number;
+    lastUpdated?: string;
+  };
+}
+
 export interface AskResponse {
   success: boolean;
   result: ProcessedRequirements;
-  data: IInfluencer[];
+  data: EnhancedInfluencer[];
   error?: string;
+  brightDataStatus?: {
+    enabled: boolean;
+    profilesEnhanced: number;
+    errors: number;
+  };
   debug?: {
     totalInfluencers: number;
     categoryMatches: number;
     cityMatches: number;
     query: any;
   };
-  brightDataResults?: IInfluencer[];
-  dataSource?: 'local' | 'brightdata' | 'both';
-}
-
-// Bright Data interfaces
-export interface BrightDataInfluencer {
-  username: string;
-  full_name: string;
-  followers_count: number;
-  following_count: number;
-  biography: string;
-  external_url?: string;
-  profile_pic_url: string;
-  is_private: boolean;
-  is_verified: boolean;
-  media_count: number;
-  location?: string;
-  category?: string;
-  engagement_rate?: number;
-  average_likes?: number;
-  average_comments?: number;
-  gender_distribution?: {
-    male: number;
-    female: number;
-  };
-  age_distribution?: {
-    '13-17': number;
-    '18-24': number;
-    '25-34': number;
-    '35-44': number;
-    '45-64': number;
-    '65+': number;
-  };
-  top_countries?: Array<{
-    country: string;
-    percentage: number;
-  }>;
-}
-
-export interface BrightDataSearchParams {
-  query?: string;
-  location?: string;
-  category?: string;
-  min_followers?: number;
-  max_followers?: number;
-  gender?: 'male' | 'female';
-  age_range?: string;
-  country?: string;
-  limit?: number;
 }
 
 // Project interfaces for Service Providers

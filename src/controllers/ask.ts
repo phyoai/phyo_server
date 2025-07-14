@@ -1,17 +1,129 @@
 import { Request, Response } from 'express';
 import { OpenAI } from 'openai';
 import Influencer from '../models/influencer';
-import brightDataService from '../services/brightdata';
+import BrightDataService, { BrightDataInstagramProfile } from '../services/brightdata';
 import { 
   AskRequest, 
   AskResponse, 
   ProcessedRequirements,
-  BrightDataSearchParams
+  EnhancedInfluencer,
+  IInfluencer
 } from '../types';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!
 });
+
+/**
+ * Helper function to enhance influencer data with Bright Data real-time information
+ */
+async function enhanceInfluencerWithBrightData(influencer: IInfluencer): Promise<EnhancedInfluencer> {
+  const enhanced: EnhancedInfluencer = { ...influencer };
+
+  try {
+    if (!BrightDataService.isAvailable()) {
+      return enhanced;
+    }
+
+    // Extract username from Instagram URL or use the user_name field
+    let username = influencer.user_name;
+    if (influencer.instagramData?.link) {
+      const match = influencer.instagramData.link.match(/instagram\.com\/([^\/\?]+)/);
+      if (match) {
+        username = match[1];
+      }
+    }
+
+    if (!username) {
+      return enhanced;
+    }
+
+    // Get enhanced profile data from Bright Data
+    const brightDataResult = await BrightDataService.getEnhancedProfileData(username);
+    
+    if (brightDataResult.profile) {
+      const profile = brightDataResult.profile;
+      enhanced.brightDataProfile = {
+        // Send all profile data directly
+        ...profile,
+        
+        // Add metadata
+        lastUpdated: new Date().toISOString(),
+        profileUrl: `https://www.instagram.com/${profile.account}/`
+      };
+    }
+
+    if (brightDataResult.recentPosts && brightDataResult.recentPosts.length > 0) {
+      enhanced.brightDataPosts = {
+        // Send all posts data directly
+        posts: brightDataResult.recentPosts,
+        postsCount: brightDataResult.recentPosts.length,
+        lastUpdated: new Date().toISOString()
+      };
+    }
+
+  } catch (error) {
+    console.warn(`Failed to enhance influencer ${influencer.user_name} with Bright Data:`, error);
+  }
+
+  return enhanced;
+}
+
+/**
+ * Helper function to enhance multiple influencers with Bright Data
+ */
+async function enhanceInfluencersWithBrightData(influencers: IInfluencer[]): Promise<{
+  enhancedInfluencers: EnhancedInfluencer[];
+  brightDataStatus: { enabled: boolean; profilesEnhanced: number; errors: number; };
+}> {
+  const brightDataStatus = {
+    enabled: BrightDataService.isAvailable(),
+    profilesEnhanced: 0,
+    errors: 0
+  };
+
+  if (!brightDataStatus.enabled) {
+    console.log('Bright Data service not available, returning basic influencer data');
+    return {
+      enhancedInfluencers: influencers.map(inf => ({ ...inf })),
+      brightDataStatus
+    };
+  }
+
+  const enhancedInfluencers: EnhancedInfluencer[] = [];
+
+  // Process influencers in batches to avoid overwhelming the API
+  const batchSize = 5;
+  for (let i = 0; i < influencers.length; i += batchSize) {
+    const batch = influencers.slice(i, i + batchSize);
+    const batchPromises = batch.map(async (influencer) => {
+      try {
+        const enhanced = await enhanceInfluencerWithBrightData(influencer);
+        console.log(enhanced.brightDataProfile);
+        console.log(enhanced.brightDataPosts);
+        if (enhanced.brightDataProfile || enhanced.brightDataPosts) {
+          brightDataStatus.profilesEnhanced++;
+        }
+        return enhanced;
+        
+      } catch (error) {
+        brightDataStatus.errors++;
+        console.error(`Error enhancing influencer ${influencer.user_name}:`, error);
+        return { ...influencer };
+      }
+    });
+
+    const batchResults = await Promise.all(batchPromises);
+    enhancedInfluencers.push(...batchResults);
+
+    // Add a small delay between batches to be respectful to the API
+    if (i + batchSize < influencers.length) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  return { enhancedInfluencers, brightDataStatus };
+}
 
 interface OpenAIResponse {
   city: string;
@@ -30,6 +142,7 @@ interface OpenAIResponse {
   ageComparison: '>=' | '<=';
   ageValue: number;
 }
+
 
 export const handleAsk = async (req: Request<{}, AskResponse, AskRequest>, res: Response<AskResponse>): Promise<void> => {
   try {
@@ -105,77 +218,160 @@ export const handleAsk = async (req: Request<{}, AskResponse, AskRequest>, res: 
       ageValue: mathReasoning.ageValue || null,
     };
 
-    // Initialize results arrays
-    let localResults: any[] = [];
-    let brightDataResults: any[] = [];
-    let dataSource: 'local' | 'brightdata' | 'both' = 'local';
-
-    // Search local database
-    try {
-      const localInfluencers = await searchLocalDatabase(result);
-      localResults = localInfluencers.map(inf => inf.toObject());
-      console.log(`Found ${localResults.length} influencers in local database`);
-    } catch (error) {
-      console.error('Error searching local database:', error);
-    }
-
-    // Search Bright Data API if available
-    if (brightDataService.isAvailable()) {
-      try {
-        const brightDataInfluencers = await searchBrightData(result);
-        console.log(`Found ${brightDataInfluencers.length} influencers from Bright Data search`);
-        
-        // Fetch detailed data for each Bright Data influencer
-        const detailedBrightDataResults = await fetchDetailedBrightDataResults(brightDataInfluencers);
-        brightDataResults = detailedBrightDataResults;
-        
-        console.log(`Successfully fetched detailed data for ${brightDataResults.length} Bright Data influencers`);
-        
-        if (localResults.length > 0 && brightDataResults.length > 0) {
-          dataSource = 'both';
-        } else if (brightDataResults.length > 0) {
-          dataSource = 'brightdata';
-        }
-      } catch (error) {
-        console.error('Error searching Bright Data:', error);
-      }
-    }
-
-    // Combine and deduplicate results
-    const allResults = [...localResults, ...brightDataResults];
-    const uniqueResults = deduplicateResults(allResults);
-
-    // Prepare response
-    const responseData: AskResponse = {
-      success: true,
-      result,
-      data: uniqueResults,
-      dataSource,
-      brightDataResults: brightDataResults.length > 0 ? brightDataResults : undefined
+    // Build MongoDB query with case-insensitive matching
+    const query: any = {
+      $and: []
     };
 
-    // Add debug info if no results found
-    if (uniqueResults.length === 0) {
-      const totalInfluencers = await Influencer.countDocuments();
-      const categoryMatches = await Influencer.countDocuments({
+    // Add location filter (case-insensitive)
+    if (result.city || result.state) {
+      const locationConditions: any[] = [];
+      if (result.city) {
+        locationConditions.push({ city: { $regex: new RegExp(result.city, 'i') } });
+      }
+      if (result.state) {
+        locationConditions.push({ state: { $regex: new RegExp(result.state, 'i') } });
+      }
+      query.$and.push({ $or: locationConditions });
+    }
+
+    // Add followers filter
+    query.$and.push({
+      $or: [
+        { "instagramData.followers": { $gte: result.minFollowers, $lte: result.maxFollowers } }, 
+        { "youtubeData.followers": { $gte: result.minFollowers, $lte: result.maxFollowers } }
+      ]
+    });
+
+    // Add category condition only if it's provided (case-insensitive)
+    if (result.category) {
+      query.$and.push({ 
         $or: [
           { categoryInstagram: { $regex: new RegExp(result.category, 'i') } }, 
           { categoryYouTube: { $regex: new RegExp(result.category, 'i') } }
-        ]
+        ] 
       });
-      const cityMatches = await Influencer.countDocuments({
-        city: { $regex: new RegExp(result.city, 'i') }
-      });
-
-      responseData.debug = {
-        totalInfluencers,
-        categoryMatches,
-        cityMatches,
-        query: result
-      };
     }
 
-    res.status(200).json(responseData);
+    // Add gender conditions
+    if (result.maleRatio !== null || result.femaleRatio !== null) {
+      const genderQuery: any[] = [];
+
+      if (result.maleRatio !== null) {
+        genderQuery.push(
+          { "instagramData.genderDistribution": { $elemMatch: { gender: "MALE", distribution: { [result.maleComparison]: result.maleRatio } } } },
+          { "youtubeData.genderDistribution": { $elemMatch: { gender: "MALE", distribution: { [result.maleComparison]: result.maleRatio } } } },
+        );
+      }
+
+      if (result.femaleRatio !== null) {
+        genderQuery.push(
+          { "instagramData.genderDistribution": { $elemMatch: { gender: "FEMALE", distribution: { [result.femaleComparison]: result.femaleRatio } } } },
+          { "youtubeData.genderDistribution": { $elemMatch: { gender: "FEMALE", distribution: { [result.femaleComparison]: result.femaleRatio } } } },
+        );
+      }
+
+      query.$and.push({ $or: genderQuery });
+    }
+
+    // Add country conditions
+    if (result.country && result.countryValue !== null) {
+      const countryQuery: any[] = [];
+
+      countryQuery.push({
+        "instagramData.audienceByCountry": {
+          $elemMatch: { name: result.country, value: { [result.countryComparison]: result.countryValue } }
+        }
+      });
+
+      countryQuery.push({
+        "youtubeData.audienceByCountry": {
+          $elemMatch: { name: result.country, value: { [result.countryComparison]: result.countryValue } }
+        }
+      });
+
+      query.$and.push({ $or: countryQuery });
+    }
+
+    // Add age conditions - simplified approach
+    if (result.ageRanges) {
+      // For age filtering, we'll look for influencers who have audience in the specified age range
+      // This is a simpler approach that checks if the age range exists in their distribution
+      query.$and.push({
+        $or: [
+          { "instagramData.ageDistribution.age": result.ageRanges },
+          { "youtubeData.ageDistribution.age": result.ageRanges }
+        ]
+      });
+    }
+
+    // Log the query for debugging
+    console.log('MongoDB Query:', JSON.stringify(query, null, 2));
+    console.log('Search Criteria:', { 
+      city: result.city, 
+      category: result.category, 
+      minFollowers: result.minFollowers, 
+      maxFollowers: result.maxFollowers,
+      ageRanges: result.ageRanges 
+    });
+
+    const foundInfluencers = await Influencer.find(query);
+    
+    // Debug: Also try a simpler query to see if there's any data
+    const totalInfluencers = await Influencer.countDocuments();
+    const categoryMatches = await Influencer.countDocuments({
+      $or: [
+        { categoryInstagram: { $regex: new RegExp(result.category, 'i') } }, 
+        { categoryYouTube: { $regex: new RegExp(result.category, 'i') } }
+      ]
+    });
+    const cityMatches = await Influencer.countDocuments({
+      city: { $regex: new RegExp(result.city, 'i') }
+    });
+
+    console.log('Debug Info:', {
+      totalInfluencers,
+      categoryMatches,
+      cityMatches,
+      foundInfluencers: foundInfluencers.length
+    });
+    
+    if (!foundInfluencers || foundInfluencers.length === 0) {
+      res.status(200).json({
+        success: true,
+        result,
+        data: [],
+        brightDataStatus: {
+          enabled: BrightDataService.isAvailable(),
+          profilesEnhanced: 0,
+          errors: 0
+        },
+        debug: {
+          totalInfluencers,
+          categoryMatches,
+          cityMatches,
+          query: query
+        }
+      });
+      return;
+    }
+
+    // Convert database results to plain objects
+    const baseInfluencers: IInfluencer[] = foundInfluencers.map(inf => inf.toObject());
+
+    console.log(`Found ${baseInfluencers.length} influencers from database. Enhancing with Bright Data...`);
+
+    // Enhance influencer data with real-time information from Bright Data
+    const { enhancedInfluencers, brightDataStatus } = await enhanceInfluencersWithBrightData(baseInfluencers);
+
+    console.log(`Bright Data enhancement complete: ${brightDataStatus.profilesEnhanced} profiles enhanced, ${brightDataStatus.errors} errors`);
+
+    res.status(200).json({
+      success: true,
+      result,
+      data: enhancedInfluencers,
+      brightDataStatus,
+    });
 
   } catch (error) {
     console.error('Error in /api/ask endpoint:', error instanceof Error ? error.message : 'Unknown error');
@@ -184,234 +380,14 @@ export const handleAsk = async (req: Request<{}, AskResponse, AskRequest>, res: 
       result: {} as ProcessedRequirements,
       data: [],
       error: error instanceof Error ? error.message : 'Internal server error',
+      brightDataStatus: {
+        enabled: BrightDataService.isAvailable(),
+        profilesEnhanced: 0,
+        errors: 1
+      }
     });
   }
 };
-
-// Helper function to fetch detailed data for Bright Data influencers
-async function fetchDetailedBrightDataResults(brightDataInfluencers: any[]): Promise<any[]> {
-  const detailedResults = [];
-  
-  for (const influencer of brightDataInfluencers) {
-    try {
-      const username = influencer.user_name || influencer.username;
-      if (!username) continue;
-
-      console.log(`Fetching detailed data for: ${username}`);
-      
-      // Get detailed influencer information
-      const detailedInfo = await brightDataService.getInfluencerDetails(username);
-      
-      if (detailedInfo) {
-        // Transform to local schema with detailed data
-        const transformedData = brightDataService.transformToLocalSchema(detailedInfo);
-        
-        // Try to get analytics data
-        try {
-          const analytics = await brightDataService.getInfluencerAnalytics(username);
-          if (analytics) {
-            // Merge analytics data into the transformed data
-            transformedData.instagramData.engagement_rate = analytics.engagement_rate;
-            transformedData.averageEngagement = analytics.engagement_rate || 0;
-            transformedData.averageLikes = analytics.average_likes || 0;
-            transformedData.averageComments = analytics.average_comments || 0;
-            transformedData.averageViews = analytics.average_views || 0;
-          }
-        } catch (analyticsError) {
-          console.log(`Analytics not available for ${username}:`, analyticsError instanceof Error ? analyticsError.message : 'Unknown error');
-        }
-
-        // Try to get recent posts for additional insights
-        try {
-          const posts = await brightDataService.getInfluencerPosts(username, 5);
-          if (posts && posts.length > 0) {
-            // Add post insights to the data
-            transformedData.recentPosts = posts.slice(0, 3).map((post: any) => ({
-              id: post.id,
-              caption: post.caption?.substring(0, 100) + '...',
-              like_count: post.like_count,
-              comment_count: post.comment_count,
-              timestamp: post.timestamp
-            }));
-            
-            // Calculate average engagement from recent posts
-            const totalLikes = posts.reduce((sum: number, post: any) => sum + (post.like_count || 0), 0);
-            const totalComments = posts.reduce((sum: number, post: any) => sum + (post.comment_count || 0), 0);
-            const avgLikes = totalLikes / posts.length;
-            const avgComments = totalComments / posts.length;
-            
-            transformedData.averageLikes = Math.round(avgLikes);
-            transformedData.averageComments = Math.round(avgComments);
-          }
-        } catch (postsError) {
-          console.log(`Posts not available for ${username}:`, postsError instanceof Error ? postsError.message : 'Unknown error');
-        }
-
-        detailedResults.push(transformedData);
-        console.log(`✅ Successfully fetched detailed data for ${username}`);
-      } else {
-        console.log(`⚠️  No detailed data found for ${username}`);
-      }
-    } catch (error) {
-      console.error(`❌ Error fetching detailed data for ${influencer.user_name || influencer.username}:`, error);
-      // Still include the basic data if detailed fetch fails
-      detailedResults.push(influencer);
-    }
-  }
-  
-  return detailedResults;
-}
-
-// Helper function to search local database
-async function searchLocalDatabase(result: ProcessedRequirements): Promise<any[]> {
-  const query: any = {
-    $and: []
-  };
-
-  // Add location filter (case-insensitive)
-  if (result.city || result.state) {
-    const locationConditions: any[] = [];
-    if (result.city) {
-      locationConditions.push({ city: { $regex: new RegExp(result.city, 'i') } });
-    }
-    if (result.state) {
-      locationConditions.push({ state: { $regex: new RegExp(result.state, 'i') } });
-    }
-    query.$and.push({ $or: locationConditions });
-  }
-
-  // Add followers filter
-  query.$and.push({
-    $or: [
-      { "instagramData.followers": { $gte: result.minFollowers, $lte: result.maxFollowers } }, 
-      { "youtubeData.followers": { $gte: result.minFollowers, $lte: result.maxFollowers } }
-    ]
-  });
-
-  // Add category condition only if it's provided (case-insensitive)
-  if (result.category) {
-    query.$and.push({ 
-      $or: [
-        { categoryInstagram: { $regex: new RegExp(result.category, 'i') } }, 
-        { categoryYouTube: { $regex: new RegExp(result.category, 'i') } }
-      ] 
-    });
-  }
-
-  // Add gender conditions
-  if (result.maleRatio !== null || result.femaleRatio !== null) {
-    const genderQuery: any[] = [];
-
-    if (result.maleRatio !== null) {
-      genderQuery.push(
-        { "instagramData.genderDistribution": { $elemMatch: { gender: "MALE", distribution: { [result.maleComparison]: result.maleRatio } } } },
-        { "youtubeData.genderDistribution": { $elemMatch: { gender: "MALE", distribution: { [result.maleComparison]: result.maleRatio } } } },
-      );
-    }
-
-    if (result.femaleRatio !== null) {
-      genderQuery.push(
-        { "instagramData.genderDistribution": { $elemMatch: { gender: "FEMALE", distribution: { [result.femaleComparison]: result.femaleRatio } } } },
-        { "youtubeData.genderDistribution": { $elemMatch: { gender: "FEMALE", distribution: { [result.femaleComparison]: result.femaleRatio } } } },
-      );
-    }
-
-    query.$and.push({ $or: genderQuery });
-  }
-
-  // Add country conditions
-  if (result.country && result.countryValue !== null) {
-    const countryQuery: any[] = [];
-
-    countryQuery.push({
-      "instagramData.audienceByCountry": {
-        $elemMatch: { name: result.country, value: { [result.countryComparison]: result.countryValue } }
-      }
-    });
-
-    countryQuery.push({
-      "youtubeData.audienceByCountry": {
-        $elemMatch: { name: result.country, value: { [result.countryComparison]: result.countryValue } }
-      }
-    });
-
-    query.$and.push({ $or: countryQuery });
-  }
-
-  // Add age conditions
-  if (result.ageRanges) {
-    query.$and.push({
-      $or: [
-        { "instagramData.ageDistribution.age": result.ageRanges },
-        { "youtubeData.ageDistribution.age": result.ageRanges }
-      ]
-    });
-  }
-
-  console.log('Local Database Query:', JSON.stringify(query, null, 2));
-  return await Influencer.find(query);
-}
-
-// Helper function to search Bright Data
-async function searchBrightData(result: ProcessedRequirements): Promise<any[]> {
-  const searchParams: BrightDataSearchParams = {
-    limit: 50 // Limit results to avoid overwhelming response
-  };
-
-  // Build search query
-  if (result.category) {
-    searchParams.query = result.category;
-  }
-
-  if (result.city) {
-    searchParams.location = result.city;
-  }
-
-  if (result.minFollowers || result.maxFollowers) {
-    searchParams.min_followers = result.minFollowers;
-    searchParams.max_followers = result.maxFollowers;
-  }
-
-  if (result.ageRanges) {
-    searchParams.age_range = result.ageRanges;
-  }
-
-  if (result.country) {
-    searchParams.country = result.country;
-  }
-
-  // Determine gender preference
-  if (result.maleRatio !== null && result.femaleRatio !== null) {
-    // If both are specified, use the higher ratio
-    if (result.maleRatio > result.femaleRatio) {
-      searchParams.gender = 'male';
-    } else {
-      searchParams.gender = 'female';
-    }
-  } else if (result.maleRatio !== null) {
-    searchParams.gender = 'male';
-  } else if (result.femaleRatio !== null) {
-    searchParams.gender = 'female';
-  }
-
-  console.log('Bright Data Search Params:', searchParams);
-
-  const brightDataInfluencers = await brightDataService.searchInfluencers(searchParams);
-  return brightDataInfluencers.map(influencer => brightDataService.transformToLocalSchema(influencer));
-}
-
-// Helper function to deduplicate results
-function deduplicateResults(results: any[]): any[] {
-  const seen = new Set();
-  return results.filter(result => {
-    const key = result.user_name || result.username;
-    if (seen.has(key)) {
-      return false;
-    }
-    seen.add(key);
-    return true;
-  });
-}
 
 export const handleDetails = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -443,168 +419,6 @@ export const handleDetails = async (req: Request, res: Response): Promise<void> 
 
   } catch (error) {
     console.error('Error in /details endpoint:', error instanceof Error ? error.message : 'Unknown error');
-    res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Internal server error",
-    });
-  }
-};
-
-// New endpoint to get Bright Data influencer details
-export const handleBrightDataDetails = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { userName } = req.query as { userName: string };
-
-    if (!userName) {
-      res.status(400).json({
-        success: false,
-        message: "userName query parameter is required",
-      });
-      return;
-    }
-
-    if (!brightDataService.isAvailable()) {
-      res.status(503).json({
-        success: false,
-        message: "Bright Data API is not available",
-      });
-      return;
-    }
-
-    // Get influencer details from Bright Data
-    const influencerDetails = await brightDataService.getInfluencerDetails(userName);
-
-    if (!influencerDetails) {
-      res.status(404).json({
-        success: false,
-        message: "Influencer not found on Bright Data",
-      });
-      return;
-    }
-
-    // Transform to local schema
-    const transformedData = brightDataService.transformToLocalSchema(influencerDetails);
-
-    res.status(200).json({
-      success: true,
-      data: transformedData,
-      source: 'brightdata'
-    });
-
-  } catch (error) {
-    console.error('Error in /brightdata/details endpoint:', error instanceof Error ? error.message : 'Unknown error');
-    res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Internal server error",
-    });
-  }
-};
-
-// New endpoint to get Bright Data influencer analytics
-export const handleBrightDataAnalytics = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { userName } = req.query as { userName: string };
-
-    if (!userName) {
-      res.status(400).json({
-        success: false,
-        message: "userName query parameter is required",
-      });
-      return;
-    }
-
-    if (!brightDataService.isAvailable()) {
-      res.status(503).json({
-        success: false,
-        message: "Bright Data API is not available",
-      });
-      return;
-    }
-
-    // Get influencer analytics from Bright Data
-    const analytics = await brightDataService.getInfluencerAnalytics(userName);
-
-    if (!analytics) {
-      res.status(404).json({
-        success: false,
-        message: "Analytics not found for this influencer",
-      });
-      return;
-    }
-
-    res.status(200).json({
-      success: true,
-      data: analytics,
-      source: 'brightdata'
-    });
-
-  } catch (error) {
-    console.error('Error in /brightdata/analytics endpoint:', error instanceof Error ? error.message : 'Unknown error');
-    res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Internal server error",
-    });
-  }
-};
-
-// New endpoint to get Bright Data influencer posts
-export const handleBrightDataPosts = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { userName, limit = '10' } = req.query as { userName: string; limit?: string };
-
-    if (!userName) {
-      res.status(400).json({
-        success: false,
-        message: "userName query parameter is required",
-      });
-      return;
-    }
-
-    if (!brightDataService.isAvailable()) {
-      res.status(503).json({
-        success: false,
-        message: "Bright Data API is not available",
-      });
-      return;
-    }
-
-    const limitNum = parseInt(limit) || 10;
-
-    // Get influencer posts from Bright Data
-    const posts = await brightDataService.getInfluencerPosts(userName, limitNum);
-
-    res.status(200).json({
-      success: true,
-      data: posts,
-      source: 'brightdata',
-      count: posts.length
-    });
-
-  } catch (error) {
-    console.error('Error in /brightdata/posts endpoint:', error instanceof Error ? error.message : 'Unknown error');
-    res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : "Internal server error",
-    });
-  }
-};
-
-// New endpoint to check Bright Data API status
-export const handleBrightDataStatus = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const isAvailable = brightDataService.isAvailable();
-    
-    res.status(200).json({
-      success: true,
-      data: {
-        available: isAvailable,
-        hasApiKey: !!process.env.BRIGHTDATA_API_KEY,
-        message: isAvailable ? "Bright Data API is available" : "Bright Data API is not configured"
-      }
-    });
-
-  } catch (error) {
-    console.error('Error in /brightdata/status endpoint:', error instanceof Error ? error.message : 'Unknown error');
     res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : "Internal server error",
@@ -663,6 +477,92 @@ export const handleDebugData = async (req: Request, res: Response): Promise<void
     res.status(500).json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
+
+// Test Bright Data integration
+export const handleTestBrightData = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { username } = req.query as { username: string };
+    
+    if (!username) {
+      res.status(400).json({
+        success: false,
+        error: "username query parameter is required"
+      });
+      return;
+    }
+
+    console.log(`Testing Bright Data for username: ${username}`);
+
+    // Test the connection first
+    const connectionTest = await BrightDataService.testConnection();
+    
+    // Get enhanced profile data
+    const enhancedData = await BrightDataService.getEnhancedProfileData(username);
+    
+    res.json({
+      success: true,
+      data: {
+        connectionTest,
+        brightDataAvailable: BrightDataService.isAvailable(),
+        username,
+        profile: enhancedData.profile,
+        recentPosts: enhancedData.recentPosts,
+        apiTokenConfigured: !!process.env.BRIGHT_DATA_API_TOKEN
+      }
+    });
+  } catch (error) {
+    console.error('Bright Data test error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      brightDataAvailable: BrightDataService.isAvailable(),
+      apiTokenConfigured: !!process.env.BRIGHT_DATA_API_TOKEN
+    });
+  }
+};
+
+// Test Bright Data snapshot
+export const handleTestSnapshot = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { snapshotId } = req.query as { snapshotId: string };
+    
+    if (!snapshotId) {
+      res.status(400).json({
+        success: false,
+        error: "snapshotId query parameter is required"
+      });
+      return;
+    }
+
+    console.log(`Testing Bright Data snapshot: ${snapshotId}`);
+
+    // Check progress first
+    const progress = await BrightDataService.checkProgress(snapshotId);
+    
+    // Fetch snapshot data
+    const snapshotData = await BrightDataService.fetchSnapshotData(snapshotId);
+    
+    res.json({
+      success: true,
+      data: {
+        snapshotId,
+        progress,
+        profilesFound: snapshotData.length,
+        profiles: snapshotData.slice(0, 5), // Show first 5 profiles
+        brightDataAvailable: BrightDataService.isAvailable(),
+        apiTokenConfigured: !!process.env.BRIGHT_DATA_API_TOKEN
+      }
+    });
+  } catch (error) {
+    console.error('Bright Data snapshot test error:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      brightDataAvailable: BrightDataService.isAvailable(),
+      apiTokenConfigured: !!process.env.BRIGHT_DATA_API_TOKEN
     });
   }
 }; 

@@ -9,8 +9,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "import:influencers": "ts-node scripts/import-influencers.ts",
-    "import:clear": "ts-node scripts/import-influencers.ts --clear",
-    "test:brightdata": "ts-node scripts/test-brightdata.ts"
+    "import:clear": "ts-node scripts/import-influencers.ts --clear"
   },
   "author": "",
   "license": "ISC",

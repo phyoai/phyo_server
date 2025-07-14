@@ -17,6 +17,9 @@ JWT_EXPIRES_IN=7d
 # OpenAI Configuration
 OPENAI_API_KEY=your_openai_api_key_here
 
+# Bright Data Configuration
+BRIGHT_DATA_API_TOKEN=your_bright_data_api_token_here
+
 # AWS S3 Configuration
 AWS_ACCESS_KEY_ID=your_aws_access_key_id
 AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key

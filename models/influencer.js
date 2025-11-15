@@ -2,6 +2,10 @@ const mongoose = require("mongoose")
 
 const influencerSchema = mongoose.Schema({
     name: String,
+    profile_name: String,
+    biography: String,
+    is_verified: { type: Boolean, default: false },
+    is_business: { type: Boolean, default: false },
     categoryInstagram: String,
     categoryYouTube: String,
     user_name: String,
@@ -9,8 +13,12 @@ const influencerSchema = mongoose.Schema({
     state: String,
     language: String,
     gender: { type: String, enum: ['Male', 'Female', 'Other'] },
+    lastDemographicsFetch: { type: Date },
     instagramData: {
         followers: { type: Number, default: 0 },
+        following: { type: Number, default: 0 },
+        posts_count: { type: Number, default: 0 },
+        avg_engagement: { type: Number, default: 0 },
         link: String,
         genderDistribution: [
             {
@@ -31,6 +39,22 @@ const influencerSchema = mongoose.Schema({
                 value: { type: Number },
             }
         ],
+        audienceByCity: [
+            {
+                name: { type: String },
+                value: { type: Number },
+            }
+        ],
+        languageDistribution: [
+            {
+                language: { type: String },
+                value: { type: Number },
+            }
+        ],
+        audienceQualityScore: { type: Number, default: 0 },
+        fakeFollowersPercent: { type: Number, default: 0 },
+        totalCommentsAnalyzed: { type: Number, default: 0 },
+        realUsersAnalyzed: { type: Number, default: 0 },
         collaborationCharges: {
             reel: { type: Number },
             story: { type: Number },
@@ -72,6 +96,8 @@ const influencerSchema = mongoose.Schema({
     averageComments: Number,
     averageEngagement: Number,
     image: String
+}, {
+    timestamps: true 
 })
 
 const influencer = mongoose.model("influencer", influencerSchema)

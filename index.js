@@ -50,239 +50,407 @@ app.get("/", async (req, res) => {
     res.send("Home page of phyo")
 })
 
+// Debug endpoint to check available influencers
+app.get("/api/debug/influencers", async (req, res) => {
+    try {
+        const count = await influencer.countDocuments();
+        const sampleInfluencers = await influencer.find()
+            .limit(10)
+            .select('user_name city state categoryInstagram lastDemographicsFetch createdAt updatedAt instagramData.followers');
+        
+        return res.json({
+            success: true,
+            total_count: count,
+            sample_data: sampleInfluencers,
+            message: "This shows a sample of influencers in your database with fetch timestamps"
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 app.post("/api/ask", async (req, res) => {
     const { prompt } = req.body
     try {
+        console.log('='.repeat(60));
+        console.log('NEW FLOW: AI Generates Usernames + Fetch Demographics');
+        console.log('='.repeat(60));
+        
+        // Step 1: AI generates influencer usernames based on the request
+        console.log('\n[STEP 1] Asking AI to suggest Instagram usernames...');
         const response = await openai.beta.chat.completions.parse({
             model: "gpt-4o-2024-08-06",
             messages: [
-                { role: "system", content: "You are a influencer marketer. User will tell you there needs and you will have to note the requirements and if you do not understand what they want for some field so leave it empty string. Do not fill with fillers words like not specified etc. If only male ratio is passed than only pass male ratio and vice versa. and for the age distribution you will have to see the user demand and create a range seeing following ranges that in what range do his required audience fit and if it cover more than one range then create one range out of those two and make sure to return range like this [minage]-[maxage]. These are ranges in my schema 13-17, 18-24, 25-34, 35-44, 45-64, 65+ " },
+                { 
+                    role: "system", 
+                    content: "You are an expert Instagram influencer researcher. Based on the user's requirements (category, location, follower count), suggest 5-10 real Instagram usernames that match the criteria. Also extract the search criteria details. Return actual Instagram usernames without @ symbol."
+                },
                 { role: "user", content: prompt }
             ],
             response_format: {
                 type: "json_schema",
                 json_schema: {
-                    name: "influencer_requirements",
+                    name: "influencer_suggestions",
                     schema: {
                         type: "object",
                         properties: {
-                            city: { type: "string" },
-                            state: { type: "string" },
-                            minFollowers: { type: "number" },
-                            maxFollowers: { type: "number" },
-                            category: { type: "string" },
-                            maleRatio: { type: "number" },
-                            femaleRatio: { type: "number" },
-                            maleComparison: { type: "string", enum: [">=", "<="] },
-                            femaleComparison: { type: "string", enum: [">=", "<="] },
-                            country: { type: "string" },
-                            countryComparison: { type: "string", enum: [">=", "<="] },
-                            countryValue: { type: "number" },
-                            ageRange: { type: "string" },
-                            ageComparison: { type: "string", enum: [">=", "<="] },
-                            ageValue: { type: "number" },
+                            searchCriteria: {
+                                type: "object",
+                                properties: {
+                                    city: { type: "string" },
+                                    state: { type: "string" },
+                                    minFollowers: { type: "number" },
+                                    maxFollowers: { type: "number" },
+                                    category: { type: "string" }
+                                },
+                                required: ["city", "state", "minFollowers", "maxFollowers", "category"],
+                                additionalProperties: false
+                            },
+                            usernames: {
+                                type: "array",
+                                items: { type: "string" },
+                                description: "Array of Instagram usernames without @ symbol"
+                            }
                         },
-                        required: ["city", "category", "minFollowers", "maxFollowers", "state", "maleRatio", "femaleRatio", "maleComparison", "femaleComparison", "country", "countryComparison", "countryValue", "ageRange", "ageComparison", "ageValue"],
+                        required: ["searchCriteria", "usernames"],
                         additionalProperties: false,
                     },
                     strict: true,
                 }
             }
-        })
-        const math_reasoning = response.choices[0].message.parsed || {};
-        const result = {
-            city: math_reasoning.city || "",
-            state: math_reasoning.state || "",
-            minFollowers: math_reasoning.minFollowers || 0,
-            maxFollowers: math_reasoning.maxFollowers || Infinity,
-            category: math_reasoning.category || "",
-            maleRatio: math_reasoning.maleRatio || null,
-            femaleRatio: math_reasoning.femaleRatio || null,
-            maleComparison: math_reasoning.maleComparison === ">=" ? "$gte" : math_reasoning.maleComparison === "<=" ? "$lte" : "$gte",
-            femaleComparison: math_reasoning.femaleComparison === ">=" ? "$gte" : math_reasoning.femaleComparison === "<=" ? "$lte" : "$gte",
-            countryComparison: math_reasoning.countryComparison === ">=" ? "$gte" : math_reasoning.countryComparison === "<=" ? "$lte" : "$gte",
-            countryValue: math_reasoning.countryValue || null,
-            country: math_reasoning.country || null,
-            ageRanges: math_reasoning.ageRange || null,
-            ageComparison: math_reasoning.ageComparison === ">=" ? "$gte" : math_reasoning.ageComparison === "<=" ? "$lte" : "$gte",
-            ageValue: math_reasoning.ageValue || null,
-        };
+        });
+        
+        const aiResponse = response.choices[0].message.parsed || {};
+        const searchCriteria = aiResponse.searchCriteria || {};
+        const usernames = aiResponse.usernames || [];
+        
+        console.log('Search Criteria:', searchCriteria);
+        console.log(`AI Suggested ${usernames.length} usernames:`, usernames);
 
-        const query = {
-            $and: [
-                { $or: [{ city: result.city }, { state: result.state }] },
-                { $or: [{ "instagramData.followers": { $gte: result.minFollowers } }, { "youtubeData.followers": { $gte: result.minFollowers } }] },
-            ],
-        };
-
-        // Add category condition only if it's provided
-        if (result.category) {
-            query.$and.push({ $or: [{ categoryInstagram: result.category }, { categoryYouTube: result.category }] });
-        }
-
-        if (result.maleRatio !== null || result.femaleRatio !== null) {
-            const genderQuery = [];
-
-            if (result.maleRatio !== null) {
-                genderQuery.push(
-                    { "instagramData.genderDistribution": { $elemMatch: { gender: "MALE", distribution: { [result.maleComparison]: result.maleRatio } } } },
-                    { "youtubeData.genderDistribution": { $elemMatch: { gender: "MALE", distribution: { [result.maleComparison]: result.maleRatio } } } },
-                );
-            }
-
-            if (result.femaleRatio !== null) {
-                genderQuery.push(
-                    { "instagramData.genderDistribution": { $elemMatch: { gender: "FEMALE", distribution: { [result.femaleComparison]: result.femaleRatio } } } },
-                    { "youtubeData.genderDistribution": { $elemMatch: { gender: "FEMALE", distribution: { [result.femaleComparison]: result.femaleRatio } } } },
-                );
-            }
-
-            query.$and.push({ $or: genderQuery });
-        }
-        if (result.country && result.countryValue !== null) {
-            const countryQuery = [];
-
-            countryQuery.push({
-                "instagramData.audienceByCountry": {
-                    $elemMatch: { name: result.country, value: { [result.countryComparison]: result.countryValue } }
-                }
-            });
-
-            countryQuery.push({
-                "youtubeData.audienceByCountry": {
-                    $elemMatch: { name: result.country, value: { [result.countryComparison]: result.countryValue } }
-                }
-            });
-
-            query.$and.push({ $or: countryQuery });
-        }
-
-        if (result.ageRanges && result.ageComparison && result.ageValue !== null) {
-            const ageQuery = {
-                $expr: {
-                    [result.ageComparison]: [
-                        {
-                            $sum: {
-                                $map: {
-                                    input: {
-                                        $filter: {
-                                            input: "$instagramData.ageDistribution",
-                                            as: "age",
-                                            cond: {
-                                                $and: [
-                                                    {
-                                                        $gte: [
-                                                            {
-                                                                $convert: {
-                                                                    input: { $arrayElemAt: [{ $split: ["$$age.age", "-"] }, 0] },
-                                                                    to: "int",
-                                                                    onError: 0,
-                                                                    onNull: 0
-                                                                }
-                                                            },
-                                                            parseInt(result.ageRanges.split("-")[0]) // Lower bound
-                                                        ]
-                                                    },
-                                                    {
-                                                        $lte: [
-                                                            {
-                                                                $convert: {
-                                                                    input: { $arrayElemAt: [{ $split: ["$$age.age", "-"] }, 1] },
-                                                                    to: "int",
-                                                                    onError: 0,
-                                                                    onNull: 0
-                                                                }
-                                                            },
-                                                            parseInt(result.ageRanges.split("-")[result.ageRanges.split("-").length - 1]) // Upper bound
-                                                        ]
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    as: "filteredAge",
-                                    in: "$$filteredAge.value"
-                                }
-                            }
-                        },
-                        result.ageValue
-                    ]
-                }
-            };
-            query.$and.push(ageQuery);
-        }
-
-        const foundInfluencers = await influencer.find(query);
-        if (!foundInfluencers || foundInfluencers.length === 0) {
+        if (usernames.length === 0) {
             return res.status(200).json({
                 success: true,
-                result,
+                searchCriteria,
                 data: [],
+                message: 'AI could not suggest any influencers for your criteria'
             });
         }
 
-        console.log({ foundInfluencers });
-
-        // Return basic data immediately without waiting for Brightdata API
-        const basicResults = foundInfluencers.map(inf => ({
-            ...inf.toObject(),
-            image: null,
-            instagramData: {
-                ...inf.instagramData,
-                averageLikes: 0,
-                averageComments: 0,
-                averageEngagement: 0,
-            }
-        }));
-
-        // Optional: Start the Brightdata API request in the background
-        // This is non-blocking and will not delay the response
-        try {
-            // Create URLs from found influencers - maintain the existing logic
-            let urls = [];
-            foundInfluencers.forEach((inf) => {
-                urls.push({ url: `https://www.instagram.com/${inf.user_name}/` });
-            });
-
-            // Updated BrightData API URL
-            axios({
-                method: "post",
-                url: "https://api.brightdata.com/datasets/v3/trigger?dataset_id=gd_l1vikfch901nx3by4&include_errors=true",
-                data: urls,
-                headers: {
-                    Authorization: `Bearer de8a3a9b9ffeaefbf16d559ab912f36407edc8406f05156021e3e69ddc2ad719`,
-                    "Content-Type": "application/json",
-                },
-                timeout: 10000 // 10 second timeout
-            }).then(async resp => {
-                console.log(`Background Brightdata request started, Snapshot ID: ${resp.data.snapshot_id}`);
-
-                // You could optionally fetch the data here if needed
-                try {
-                    const snapshotData = await getSnapshot(resp.data.snapshot_id, 5, 5000);
-                    console.log(`Background data loaded for ${snapshotData.length} influencers`);
-                    // Process snapshot data if needed
-                } catch (snapshotError) {
-                    console.error('Error getting snapshot data:', snapshotError.message);
+        // Step 2: Check which usernames need fresh data (15-day cache)
+        console.log('\n[STEP 2] Checking database cache (15-day validity)...');
+        const CACHE_VALIDITY_DAYS = 15;
+        const cacheValidityMs = CACHE_VALIDITY_DAYS * 24 * 60 * 60 * 1000;
+        const now = new Date();
+        
+        const usernameStatus = [];
+        const usernamesToFetch = [];
+        const cachedInfluencers = [];
+        
+        for (const username of usernames) {
+            const existingInfluencer = await influencer.findOne({ user_name: username });
+            
+            if (existingInfluencer) {
+                // Check if lastDemographicsFetch exists and is valid
+                const lastFetched = existingInfluencer.lastDemographicsFetch;
+                
+                if (!lastFetched) {
+                    // No fetch timestamp - treat as expired and re-fetch
+                    console.log(`  ↻ No fetch timestamp for @${username} - will re-fetch`);
+                    usernamesToFetch.push(username);
+                    usernameStatus.push({
+                        username,
+                        status: 'no_timestamp'
+                    });
+                } else {
+                    const timeSinceLastFetch = now - new Date(lastFetched);
+                    const daysSinceLastFetch = Math.floor(timeSinceLastFetch / (24 * 60 * 60 * 1000));
+                    
+                    if (isNaN(daysSinceLastFetch)) {
+                        // Invalid date - re-fetch
+                        console.log(`  ↻ Invalid timestamp for @${username} - will re-fetch`);
+                        usernamesToFetch.push(username);
+                        usernameStatus.push({
+                            username,
+                            status: 'invalid_timestamp'
+                        });
+                    } else if (timeSinceLastFetch < cacheValidityMs) {
+                        console.log(`  ✓ Using cached data for @${username} (fetched ${daysSinceLastFetch} days ago)`);
+                        cachedInfluencers.push(existingInfluencer);
+                        usernameStatus.push({
+                            username,
+                            status: 'cached',
+                            daysSinceLastFetch
+                        });
+                    } else {
+                        console.log(`  ↻ Cache expired for @${username} (${daysSinceLastFetch} days old) - will re-fetch`);
+                        usernamesToFetch.push(username);
+                        usernameStatus.push({
+                            username,
+                            status: 'expired',
+                            daysSinceLastFetch
+                        });
+                    }
                 }
+            } else {
+                console.log(`  + New username @${username} - will fetch`);
+                usernamesToFetch.push(username);
+                usernameStatus.push({
+                    username,
+                    status: 'new'
+                });
+            }
+        }
+        
+        console.log(`\nCache Summary:`);
+        console.log(`  - Cached (using existing): ${cachedInfluencers.length}`);
+        console.log(`  - To fetch (new/expired): ${usernamesToFetch.length}`);
 
-            }).catch(error => {
-                console.error('Error starting Brightdata request:', error.message);
+        // Step 3: Fetch demographics only for usernames that need it
+        let demographicsResults = [];
+        
+        if (usernamesToFetch.length > 0) {
+            console.log('\n[STEP 3] Fetching demographics from BrightScraper API...');
+            const BRIGHTSCRAPER_URL = process.env.BRIGHTSCRAPER_URL || 'http://localhost:5000';
+            
+            const demographicsPromises = usernamesToFetch.map(async (username) => {
+                try {
+                    console.log(`  → Fetching demographics for @${username}`);
+                    const response = await axios.post(
+                        `${BRIGHTSCRAPER_URL}/analyze`,
+                        { username, max_posts: 6 },
+                        { timeout: 120000 } // 120 second timeout per request
+                    );
+                    
+                    if (response.data && response.data.success) {
+                        console.log(`  ✓ Demographics received for @${username}`);
+                        return {
+                            username,
+                            demographics: response.data.data,
+                            success: true,
+                            fromCache: false
+                        };
+                    } else {
+                        console.log(`  ✗ Failed to get demographics for @${username}`);
+                        return { username, demographics: null, success: false, fromCache: false };
+                    }
+                } catch (error) {
+                    console.error(`  ✗ Error fetching demographics for @${username}:`, error.message);
+                    return { username, demographics: null, success: false, error: error.message, fromCache: false };
+                }
             });
-        } catch (error) {
-            console.error('Error in background Brightdata processing:', error.message);
-            // Do not let this error affect the response
+
+            // Wait for all demographics to be fetched
+            demographicsResults = await Promise.all(demographicsPromises);
+        } else {
+            console.log('\n[STEP 3] Skipping API calls - all data available in cache');
+        }
+        
+        // Step 4: Save/Update database and prepare final results
+        console.log('\n[STEP 4] Processing results and updating database...');
+        const finalResults = [];
+        
+        // First, add all cached influencers to results
+        for (const cachedInf of cachedInfluencers) {
+            const infObject = cachedInf.toObject();
+            
+            finalResults.push({
+                username: cachedInf.user_name,
+                profile_name: cachedInf.profile_name,
+                followers: cachedInf.instagramData?.followers || 0,
+                following: cachedInf.instagramData?.following || 0,
+                posts_count: cachedInf.instagramData?.posts_count || 0,
+                biography: cachedInf.biography || '',
+                is_verified: cachedInf.is_verified || false,
+                is_business: cachedInf.is_business || false,
+                avg_engagement: cachedInf.instagramData?.avg_engagement || 0,
+                demographics: {
+                    gender_distribution: {
+                        male: cachedInf.instagramData?.genderDistribution?.find(g => g.gender === 'MALE')?.distribution || 0,
+                        female: cachedInf.instagramData?.genderDistribution?.find(g => g.gender === 'FEMALE')?.distribution || 0,
+                        unknown: cachedInf.instagramData?.genderDistribution?.find(g => g.gender === 'UNKNOWN')?.distribution || 0
+                    },
+                    age_distribution: cachedInf.instagramData?.ageDistribution?.reduce((acc, item) => {
+                        acc[item.age] = item.value;
+                        return acc;
+                    }, {}) || {},
+                    country_distribution: cachedInf.instagramData?.audienceByCountry?.reduce((acc, item) => {
+                        acc[item.name] = item.value;
+                        return acc;
+                    }, {}) || {},
+                    city_distribution: cachedInf.instagramData?.audienceByCity?.reduce((acc, item) => {
+                        acc[item.name] = item.value;
+                        return acc;
+                    }, {}) || {},
+                    language_distribution: cachedInf.instagramData?.languageDistribution?.reduce((acc, item) => {
+                        acc[item.language] = item.value;
+                        return acc;
+                    }, {}) || {},
+                    audience_quality_score: cachedInf.instagramData?.audienceQualityScore || 0,
+                    fake_followers_percent: cachedInf.instagramData?.fakeFollowersPercent || 0,
+                    total_comments_analyzed: cachedInf.instagramData?.totalCommentsAnalyzed || 0,
+                    real_users_analyzed: cachedInf.instagramData?.realUsersAnalyzed || 0
+                },
+                saved_to_db: true,
+                from_cache: true,
+                last_fetched: cachedInf.lastDemographicsFetch || cachedInf.updatedAt
+            });
+            
+            console.log(`  ✓ Added cached data for @${cachedInf.user_name}`);
+        }
+        
+        // Now process newly fetched demographics
+        for (const demoResult of demographicsResults) {
+            if (demoResult.success && demoResult.demographics) {
+                const demo = demoResult.demographics;
+                
+                try {
+                    // Check if influencer already exists in database
+                    let existingInfluencer = await influencer.findOne({ user_name: demo.username });
+                    
+                    if (existingInfluencer) {
+                        console.log(`  ↻ Updating existing influencer: @${demo.username}`);
+                        // Update existing influencer with new demographics data
+                        existingInfluencer.profile_name = demo.profile_name;
+                        existingInfluencer.biography = demo.biography;
+                        existingInfluencer.is_verified = demo.is_verified;
+                        existingInfluencer.is_business = demo.is_business;
+                        existingInfluencer.city = searchCriteria.city || existingInfluencer.city;
+                        existingInfluencer.state = searchCriteria.state || existingInfluencer.state;
+                        existingInfluencer.categoryInstagram = searchCriteria.category || existingInfluencer.categoryInstagram;
+                        existingInfluencer.lastDemographicsFetch = new Date(); // Track when demographics were fetched
+                        existingInfluencer.instagramData = {
+                            ...existingInfluencer.instagramData,
+                            followers: demo.followers,
+                            following: demo.following,
+                            posts_count: demo.posts_count,
+                            avg_engagement: demo.avg_engagement,
+                            genderDistribution: [
+                                { gender: 'MALE', distribution: demo.gender_distribution.male || 0 },
+                                { gender: 'FEMALE', distribution: demo.gender_distribution.female || 0 },
+                                { gender: 'UNKNOWN', distribution: demo.gender_distribution.unknown || 0 }
+                            ],
+                            ageDistribution: Object.entries(demo.age_distribution || {}).map(([age, value]) => ({ age, value })),
+                            audienceByCountry: Object.entries(demo.country_distribution || {}).map(([name, value]) => ({ name, value })),
+                            audienceByCity: Object.entries(demo.city_distribution || {}).map(([name, value]) => ({ name, value })),
+                            languageDistribution: Object.entries(demo.language_distribution || {}).map(([language, value]) => ({ language, value })),
+                            audienceQualityScore: demo.audience_quality_score,
+                            fakeFollowersPercent: demo.fake_followers_percent,
+                            totalCommentsAnalyzed: demo.total_comments_analyzed,
+                            realUsersAnalyzed: demo.real_users_analyzed
+                        };
+                        const savedInfluencer = await existingInfluencer.save();
+                        console.log(`  ✓ Updated @${demo.username} - lastFetch: ${savedInfluencer.lastDemographicsFetch}`);
+                    } else {
+                        console.log(`  + Creating new influencer: @${demo.username}`);
+                        // Create new influencer document
+                        existingInfluencer = await influencer.create({
+                            user_name: demo.username,
+                            profile_name: demo.profile_name,
+                            name: demo.profile_name,
+                            biography: demo.biography,
+                            is_verified: demo.is_verified,
+                            is_business: demo.is_business,
+                            city: searchCriteria.city || '',
+                            state: searchCriteria.state || '',
+                            categoryInstagram: searchCriteria.category || '',
+                            lastDemographicsFetch: new Date(), // Track when demographics were fetched
+                            instagramData: {
+                                followers: demo.followers,
+                                following: demo.following,
+                                posts_count: demo.posts_count,
+                                avg_engagement: demo.avg_engagement,
+                                genderDistribution: [
+                                    { gender: 'MALE', distribution: demo.gender_distribution.male || 0 },
+                                    { gender: 'FEMALE', distribution: demo.gender_distribution.female || 0 },
+                                    { gender: 'UNKNOWN', distribution: demo.gender_distribution.unknown || 0 }
+                                ],
+                                ageDistribution: Object.entries(demo.age_distribution || {}).map(([age, value]) => ({ age, value })),
+                                audienceByCountry: Object.entries(demo.country_distribution || {}).map(([name, value]) => ({ name, value })),
+                                audienceByCity: Object.entries(demo.city_distribution || {}).map(([name, value]) => ({ name, value })),
+                                languageDistribution: Object.entries(demo.language_distribution || {}).map(([language, value]) => ({ language, value })),
+                                audienceQualityScore: demo.audience_quality_score,
+                                fakeFollowersPercent: demo.fake_followers_percent,
+                                totalCommentsAnalyzed: demo.total_comments_analyzed,
+                                realUsersAnalyzed: demo.real_users_analyzed
+                            }
+                        });
+                        console.log(`  ✓ Created @${demo.username} - lastFetch: ${existingInfluencer.lastDemographicsFetch}`);
+                    }
+                    
+                    // Add to final results
+                    finalResults.push({
+                        username: demo.username,
+                        profile_name: demo.profile_name,
+                        followers: demo.followers,
+                        following: demo.following,
+                        posts_count: demo.posts_count,
+                        biography: demo.biography,
+                        is_verified: demo.is_verified,
+                        is_business: demo.is_business,
+                        avg_engagement: demo.avg_engagement,
+                        demographics: {
+                            gender_distribution: demo.gender_distribution,
+                            age_distribution: demo.age_distribution,
+                            country_distribution: demo.country_distribution,
+                            city_distribution: demo.city_distribution,
+                            language_distribution: demo.language_distribution,
+                            audience_quality_score: demo.audience_quality_score,
+                            fake_followers_percent: demo.fake_followers_percent,
+                            total_comments_analyzed: demo.total_comments_analyzed,
+                            real_users_analyzed: demo.real_users_analyzed
+                        },
+                        saved_to_db: true,
+                        from_cache: false,
+                        freshly_fetched: true
+                    });
+                    
+                } catch (dbError) {
+                    console.error(`  ✗ Error saving @${demo.username} to database:`, dbError.message);
+                    // Still add to results even if DB save fails
+                    finalResults.push({
+                        username: demo.username,
+                        profile_name: demo.profile_name,
+                        followers: demo.followers,
+                        demographics: {
+                            gender_distribution: demo.gender_distribution,
+                            age_distribution: demo.age_distribution,
+                            country_distribution: demo.country_distribution,
+                            city_distribution: demo.city_distribution,
+                            language_distribution: demo.language_distribution,
+                            audience_quality_score: demo.audience_quality_score,
+                            fake_followers_percent: demo.fake_followers_percent
+                        },
+                        saved_to_db: false,
+                        db_error: dbError.message
+                    });
+                }
+            } else {
+                // Demographics fetch failed
+                finalResults.push({
+                    username: demoResult.username,
+                    demographics: null,
+                    saved_to_db: false,
+                    error: demoResult.error || 'Failed to fetch demographics'
+                });
+            }
         }
 
-        // Return the basic results immediately
+        console.log('\n[COMPLETE] Returning results with full demographics');
+        console.log(`Successfully processed ${finalResults.length} influencers`);
+        console.log('='.repeat(60));
+        
         return res.status(200).json({
             success: true,
-            result,
-            data: basicResults,
+            searchCriteria,
+            total_found: finalResults.length,
+            data: finalResults,
         });
 
     } catch (error) {
-        console.error('Error in /api/ask endpoint:', error.message);
+        console.error('\n[ERROR] in /api/ask endpoint:', error.message);
         return res.status(500).json({
             success: false,
             error: error.message,

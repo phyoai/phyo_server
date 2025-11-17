@@ -1,0 +1,9 @@
+Flask==3.0.0
+flask-cors==4.0.0
+python-dotenv==1.0.0
+requests==2.31.0
+emoji==2.8.0
+langdetect==1.0.9
+gender-guesser==0.4.0
+numpy==1.24.3
+pandas==2.0.3

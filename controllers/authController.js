@@ -18,7 +18,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
-const generateToken = (userId, role = 'user') => jwt.sign({ id: userId, role }, JWT_SECRET, { expiresIn: '24h' });
+const generateToken = (userId, role = 'user', tokenVersion = 0) => jwt.sign({ id: userId, role, tokenVersion }, JWT_SECRET, { expiresIn: '24h' });
 
 // SIGNUP
 exports.signup = async (req, res) => {
@@ -89,7 +89,15 @@ exports.verifyEmailOTP = async (req, res) => {
         foundUser.emailOTPExpires = undefined;
         await foundUser.save();
 
-        res.json({ success: true, message: 'Email verified successfully' });
+        // Generate a fresh token after OTP verification for full authentication
+        const token = generateToken(foundUser._id, foundUser.role, foundUser.tokenVersion);
+
+        res.json({
+            success: true,
+            message: 'Email verified successfully',
+            token,
+            user: { id: foundUser._id, email: foundUser.email, type: foundUser.type, name: foundUser.name }
+        });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -148,7 +156,7 @@ exports.login = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
 
-        const token = generateToken(foundUser._id, foundUser.role);
+        const token = generateToken(foundUser._id, foundUser.role, foundUser.tokenVersion);
 
         res.json({
             success: true,
@@ -336,7 +344,7 @@ exports.adminLogin = async (req, res) => {
         admin.lastLogin = new Date();
         await admin.save();
 
-        const token = generateToken(admin._id, 'admin');
+        const token = generateToken(admin._id, 'admin', admin.tokenVersion || 0);
 
         res.json({
             success: true,
@@ -371,7 +379,7 @@ exports.googleAuth = async (req, res) => {
             });
         }
 
-        const jwtToken = generateToken(foundUser._id, foundUser.role);
+        const jwtToken = generateToken(foundUser._id, foundUser.role, foundUser.tokenVersion);
 
         res.json({
             success: true,

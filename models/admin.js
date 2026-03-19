@@ -30,6 +30,9 @@ const adminSchema = mongoose.Schema({
     isActive: { type: Boolean, default: true },
     lastLogin: Date,
 
+    // Token invalidation
+    tokenVersion: { type: Number, default: 0 },
+
     // Pending approvals
     pendingBrandRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
     pendingInfluencerRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],

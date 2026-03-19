@@ -64,9 +64,11 @@ Return ONLY a JSON object with this structure:
     "gender_distribution": {{"male": 70, "female": 20, "unknown": 10}},
     "age_distribution": {{"18-24": 60, "25-34": 30, "35-44": 10}},
     "country_distribution": {{"India": 85, "USA": 10, "UK": 5}},
-    "city_distribution": {{"Delhi": 40, "Mumbai": 30, "Bangalore": 30}}
+    "city_distribution": {{"Delhi": 3.5, "Mumbai": 2.1, "Bangalore": 1.8}}
   }}
-}}"""
+}}
+
+Note: City percentages show actual audience representation (don't normalize to 100%)."""
 
         try:
             response = self.client.chat.completions.create(
@@ -175,10 +177,24 @@ Return ONLY a JSON object with this structure:
         
         total = len(all_predictions)
         
+        # Calculate representation percentages (not normalized to 100%)
+        # This matches Instagram's actual display format
+        gender_dist = {k: round(v/total*100, 1) for k, v in genders.items()}
+        age_dist = {k: round(v/total*100, 1) for k, v in ages.items()}
+        country_dist = {k: round(v/total*100, 1) for k, v in countries.most_common(5)}
+        
+        # City distribution: Show actual representation (may not sum to 100%)
+        # Only show cities with meaningful representation (>0.5%)
+        city_dist = {}
+        for city, count in cities.most_common(5):
+            percentage = round(count/total*100, 1)
+            if percentage >= 0.5:  # Only include cities with at least 0.5% representation
+                city_dist[city] = percentage
+        
         return {
-            'gender_distribution': {k: round(v/total*100, 1) for k, v in genders.items()},
-            'age_distribution': {k: round(v/total*100, 1) for k, v in ages.items()},
-            'country_distribution': {k: round(v/total*100, 1) for k, v in countries.most_common(5)},
-            'city_distribution': {k: round(v/total*100, 1) for k, v in cities.most_common(5)},
+            'gender_distribution': gender_dist,
+            'age_distribution': age_dist,
+            'country_distribution': country_dist,
+            'city_distribution': city_dist,
             'total_analyzed': total
         }

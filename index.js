@@ -5,21 +5,69 @@ const { OpenAI } = require("openai")
 const influencer = require("./models/influencer")
 const { connectToMongo } = require("./connections/db")
 const axios = require("axios")
+const dns = require("dns")
+const http = require("http")
+const socketIo = require("socket.io")
 // const data = require("./data")
 
 const app = express()
-const PORT = 8000
+const server = http.createServer(app)
+const io = socketIo(server, {
+    cors: {
+        origin: ["https://phyo.ai", "http://phyo.ai:4000", "http://localhost:3000", "http://localhost:8000"],
+        credentials: true
+    }
+})
 
-const authRoute = require("./routes/user")
+const PORT = 4000
+
+// Routes
+const authRoute = require("./routes/auth")
+const usersRoute = require("./routes/users")
+const campaignsRoute = require("./routes/campaigns")
+const conversationsRoute = require("./routes/conversations")
+const messagesRoute = require("./routes/messages")
+const filesRoute = require("./routes/files")
+const influencerDataRoute = require("./routes/influencerData")
+const projectsRoute = require("./routes/projects")
+const portfoliosRoute = require("./routes/portfolios")
+const paymentsRoute = require("./routes/payments")
+const adminRoute = require("./routes/admin")
+const brandRoute = require("./routes/brand")
+const influencerRoute = require("./routes/influencer")
+const brandRequestsRoute = require("./routes/brandRequests")
+const influencerRequestsRoute = require("./routes/influencerRequests")
+const notificationsRoute = require("./routes/notifications")
+const trendingRoute = require("./routes/trending")
+const locationsRoute = require("./routes/locations")
+const campaignDetailRoute = require("./routes/campaignDetail")
+const campaignApplicationRoute = require("./routes/campaignApplication")
+const discoveryRoute = require("./routes/discovery")
+const accountRoute = require("./routes/account")
+const messagesAndNotificationsRoute = require("./routes/messagesAndNotifications")
+const supportRoute = require("./routes/support")
+const userProfileRoute = require("./routes/userProfile")
+const favoritesRoute = require("./routes/favorites")
+const reviewsRoute = require("./routes/reviews")
+const analyticsRoute = require("./routes/analytics")
+const collaborationRoute = require("./routes/collaboration")
+const campaignStatusRoute = require("./routes/campaignStatus")
+const campaignManagementRoute = require("./routes/campaignManagement")
+const advancedCampaignRoute = require("./routes/advancedCampaign")
+const subscriptionsRoute = require("./routes/subscriptions")
+const notificationSettingsRoute = require("./routes/notificationSettings")
+const profileRoute = require("./routes/profile")
+const smsRoute = require("./routes/sms")
 
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 app.use(cors({
-    origin: ["https://phyo.ai", "http://localhost:3000", "http://localhost:8000"],
+    origin: ["https://phyo.ai", "http://phyo.ai:4000", "http://localhost:3000", "http://localhost:8000"],
     credentials: true
 }))
 connectToMongo(process.env.MONGO_URI)
-    .then(console.log("Mongo Connected"))
+    .then(() => console.log("Mongo Connected"))
+    .catch(err => console.error("Mongo connection failed:", err))
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
@@ -671,8 +719,85 @@ app.patch("/editInfluencer/:username", async (req, res) => {
     }
 })
 
+// Mount all routes
+app.use("/api/auth", authRoute)
+app.use("/api/users", usersRoute)
+app.use("/api/campaigns", campaignsRoute)
+app.use("/api/conversations", conversationsRoute)
+app.use("/api/messages", messagesRoute)
+app.use("/api/files", filesRoute)
+app.use("/api/influencer-data", influencerDataRoute)
+app.use("/api/projects", projectsRoute)
+app.use("/api/portfolios", portfoliosRoute)
+app.use("/api/payments", paymentsRoute)
+app.use("/api/admin", adminRoute)
+app.use("/api/brand", brandRoute)
+app.use("/api/influencer", influencerRoute)
+app.use("/api/brand-requests", brandRequestsRoute)
+app.use("/api/influencer-requests", influencerRequestsRoute)
+app.use("/api/notifications", notificationsRoute)
+app.use("/api/trending", trendingRoute)
+app.use("/api", locationsRoute)
+app.use("/api/campaigns", campaignDetailRoute)
+app.use("/api/campaigns", campaignApplicationRoute)
+app.use("/api/discover", discoveryRoute)
+app.use("/api/account", accountRoute)
+app.use("/api", messagesAndNotificationsRoute)
+app.use("/api/help", supportRoute)
+app.use("/api/profile", userProfileRoute)
+app.use("/api/favorites", favoritesRoute)
+app.use("/api/reviews", reviewsRoute)
+app.use("/api/analytics", analyticsRoute)
+app.use("/api/collaborations", collaborationRoute)
+app.use("/api/campaign-status", campaignStatusRoute)
+app.use("/api/campaign-management", campaignManagementRoute)
+app.use("/api/advanced-campaigns", advancedCampaignRoute)
+app.use("/api/subscriptions", subscriptionsRoute)
+app.use("/api/notification-settings", notificationSettingsRoute)
+app.use("/api/profile", profileRoute)
+app.use("/api/sms", smsRoute)
+
+// Keep existing routes for backward compatibility
 app.use("/api/user", authRoute)
 
-app.listen(PORT, () => {
-    console.log("Server is running on ", PORT);
+// WebSocket setup
+io.on('connection', (socket) => {
+    console.log('New WebSocket connection:', socket.id);
+
+    socket.on('join-conversation', (conversationId) => {
+        socket.join(`conversation-${conversationId}`);
+        console.log(`Socket ${socket.id} joined conversation ${conversationId}`);
+    });
+
+    socket.on('send-message', (data) => {
+        io.to(`conversation-${data.conversationId}`).emit('message-received', data);
+    });
+
+    socket.on('user-typing', (data) => {
+        socket.to(`conversation-${data.conversationId}`).emit('user-typing', data);
+    });
+
+    socket.on('stop-typing', (data) => {
+        socket.to(`conversation-${data.conversationId}`).emit('stop-typing', data);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('WebSocket disconnected:', socket.id);
+    });
+});
+
+// WebSocket test endpoint
+app.get('/api/websocket/test', (req, res) => {
+    res.json({
+        success: true,
+        message: 'WebSocket server is running',
+        socketServerInfo: {
+            engine: 'socket.io',
+            clients: io.engine.clientsCount
+        }
+    });
+});
+
+server.listen(PORT, () => {
+    console.log("Server is running on port ", PORT);
 })

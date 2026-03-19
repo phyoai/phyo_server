@@ -12,6 +12,9 @@ load_dotenv()
 RAPIDAPI_KEY = os.getenv('RAPIDAPI_KEY', '8ba7cc2083msh897e56445af41acp1b633ejsn30179c4356ec')
 RAPIDAPI_HOST = 'instagram-social-api.p.rapidapi.com'
 
+# ⚙️ CONFIGURATION - Change this to adjust max comments per post
+MAX_COMMENTS_PER_POST = 100  # Default: 100 comments per post (change anytime!)
+
 
 def extract_post_code(post_url):
     """
@@ -44,14 +47,18 @@ def scrape_comments_rapidapi(post_url, max_comments=None, sort_by='recent'):
     
     Args:
         post_url: Instagram post URL or code
-        max_comments: Maximum comments to retrieve (None = all, recommended: 70 per post)
+        max_comments: Maximum comments to retrieve (None = use MAX_COMMENTS_PER_POST constant)
         sort_by: 'recent' or 'popular'
     
     Returns:
         List of comments in the format expected by audience_analytics.py
         Format: [{'username': str, 'text': str, 'timestamp': str, 'post_url': str}, ...]
     """
-    print(f'🚀 Using RapidAPI to scrape: {post_url}')
+    # Use the global constant if max_comments is not specified
+    if max_comments is None:
+        max_comments = MAX_COMMENTS_PER_POST
+    
+    print(f'🚀 Using RapidAPI to scrape: {post_url} (max: {max_comments} comments)')
     
     # Extract post code
     post_code = extract_post_code(post_url)
@@ -110,6 +117,7 @@ def scrape_comments_rapidapi(post_url, max_comments=None, sort_by='recent'):
                 comment = {
                     'username': user_data.get('username', 'unknown'),
                     'full_name': user_data.get('full_name', ''),  # NEW: Full name for better gender detection!
+                    'profile_pic_url': user_data.get('profile_pic_url', ''),  # NEW: Profile picture URL
                     'text': comment_text,
                     'timestamp': str(item.get('created_at', '')),
                     'post_url': post_url,
@@ -149,18 +157,22 @@ def scrape_comments_rapidapi(post_url, max_comments=None, sort_by='recent'):
     return all_comments
 
 
-def scrape_multiple_posts_rapidapi(post_urls, max_comments_per_post=12, sort_by='recent'):
+def scrape_multiple_posts_rapidapi(post_urls, max_comments_per_post=None, sort_by='recent'):
     """
     Scrape comments from multiple posts using RapidAPI
     
     Args:
         post_urls: List of Instagram post URLs
-        max_comments_per_post: Max comments per post (default: 70)
+        max_comments_per_post: Max comments per post (None = use MAX_COMMENTS_PER_POST constant)
         sort_by: 'recent' or 'popular'
     
     Returns:
         List of all comments from all posts
     """
+    # Use the global constant if max_comments_per_post is not specified
+    if max_comments_per_post is None:
+        max_comments_per_post = MAX_COMMENTS_PER_POST
+    
     all_comments = []
     
     for i, post_url in enumerate(post_urls):

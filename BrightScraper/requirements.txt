@@ -5,5 +5,8 @@ requests==2.31.0
 emoji==2.8.0
 langdetect==1.0.9
 gender-guesser==0.4.0
-numpy==1.24.3
-pandas==2.0.3
+numpy>=1.26.4
+pandas>=2.2.2
+geopy==2.4.1
+# Note: Removed TensorFlow/DeepFace (Python 3.14 incompatible)
+# Face detection can be added later if needed with Python 3.11

@@ -1,6 +1,6 @@
 """
 Caching system for API responses
-Saves JSON responses to avoid repeated API calls during testing
+DISABLED by default to save storage - can be enabled via environment variable
 
 Version 2.0: Updated for RapidAPI comment format
 """
@@ -12,8 +12,14 @@ from datetime import datetime
 CACHE_DIR = 'api_cache'
 CACHE_VERSION = '2.0'  # Increment when format changes
 
+# Disable caching by default to save storage
+ENABLE_CACHING = os.getenv('ENABLE_API_CACHING', 'false').lower() == 'true'
+
 def ensure_cache_dir():
-    """Create cache directory if it doesn't exist"""
+    """Create cache directory if it doesn't exist and caching is enabled"""
+    if not ENABLE_CACHING:
+        return
+    
     if not os.path.exists(CACHE_DIR):
         os.makedirs(CACHE_DIR)
         print(f'Created cache directory: {CACHE_DIR}')
@@ -32,13 +38,16 @@ def get_cache_key(data_type, identifier):
 
 def save_to_cache(data_type, identifier, data):
     """
-    Save data to cache
+    Save data to cache (DISABLED by default to save storage)
     
     Args:
         data_type: 'profile', 'comments'
         identifier: username or post_url
         data: The JSON data to save
     """
+    if not ENABLE_CACHING:
+        return None
+    
     ensure_cache_dir()
     
     cache_key = get_cache_key(data_type, identifier)
@@ -61,15 +70,18 @@ def save_to_cache(data_type, identifier, data):
 
 def load_from_cache(data_type, identifier):
     """
-    Load data from cache
+    Load data from cache (DISABLED by default to save storage)
     
     Args:
         data_type: 'profile', 'comments'
         identifier: username or post_url
     
     Returns:
-        Cached data or None if not found or version mismatch
+        Cached data or None if not found, version mismatch, or caching disabled
     """
+    if not ENABLE_CACHING:
+        return None
+    
     ensure_cache_dir()
     
     cache_key = get_cache_key(data_type, identifier)

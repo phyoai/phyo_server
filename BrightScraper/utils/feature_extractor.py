@@ -269,7 +269,7 @@ class FeatureExtractor:
         Extract all features from a single comment
         
         Args:
-            comment_data: Dict with keys: username, text, timestamp, full_name (optional from RapidAPI)
+            comment_data: Dict with keys: username, text, timestamp, full_name, profile_pic_url (from RapidAPI)
         
         Returns:
             Dict with extracted features
@@ -278,8 +278,9 @@ class FeatureExtractor:
         text = comment_data.get('text', '')
         timestamp = comment_data.get('timestamp')
         full_name = comment_data.get('full_name', '')  # NEW: From RapidAPI!
+        profile_pic_url = comment_data.get('profile_pic_url', '')  # NEW: For face detection!
         
-        # Extract first name - prefer full_name from RapidAPI, fallback to username parsing
+        # Extract first name - prefer full_name from Apify, fallback to username parsing
         if full_name and full_name.strip():
             # Use first part of full name (e.g., "Abhi Shek" -> "Abhi")
             first_name = full_name.strip().split()[0].lower()
@@ -304,6 +305,7 @@ class FeatureExtractor:
         return {
             'username': username,
             'full_name': full_name,  # NEW: Keep full name for reference
+            'profile_pic_url': profile_pic_url,  # NEW: Keep profile pic URL for face detection!
             'first_name': first_name,  # Improved: Uses real name when available!
             'text': text,
             'emojis': emojis,

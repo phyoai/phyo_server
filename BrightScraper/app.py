@@ -1,3 +1,8 @@
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
@@ -11,12 +16,17 @@ from audience_analytics import AudienceAnalytics
 # Load environment variables
 load_dotenv()
 
-# Create data directory if it doesn't exist
+# DISABLED: File storage to save disk space
+# Since we're using this as an API, we don't need to persist data
 DATA_DIR = 'scraped_data'
-if not os.path.exists(DATA_DIR):
+ENABLE_FILE_STORAGE = os.getenv('ENABLE_FILE_STORAGE', 'false').lower() == 'true'
+
+# Only create directory if file storage is enabled
+if ENABLE_FILE_STORAGE and not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
 
 app = Flask(__name__)
+app.config['JSON_AS_ASCII'] = False  # Allow UTF-8 in JSON responses
 CORS(app)
 
 # BrightData Configuration
@@ -115,12 +125,20 @@ def get_snapshot_data(snapshot_id, max_retries=10, retry_delay=5):
 
 def save_to_json(username, data):
     """
-    Save scraped data to a JSON file
+    Save scraped data to a JSON file (DISABLED by default to save storage)
     
     Args:
         username: Instagram username
         data: Profile data to save
+    
+    Returns:
+        filepath if saved, None if storage is disabled
     """
+    # Skip file storage if disabled (default)
+    if not ENABLE_FILE_STORAGE:
+        print(f'⚠️  File storage disabled for {username} - data returned via API only')
+        return None
+    
     try:
         # Create filename with timestamp
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -163,14 +181,17 @@ def home():
 @app.route('/health')
 def health():
     """Health check endpoint"""
-    # Count saved files
-    saved_files_count = len([f for f in os.listdir(DATA_DIR) if f.endswith('.json')]) if os.path.exists(DATA_DIR) else 0
+    # Count saved files only if storage is enabled
+    saved_files_count = 0
+    if ENABLE_FILE_STORAGE and os.path.exists(DATA_DIR):
+        saved_files_count = len([f for f in os.listdir(DATA_DIR) if f.endswith('.json')])
     
     return jsonify({
         'success': True,
         'status': 'healthy',
         'brightdata_configured': bool(BRIGHTDATA_API_KEY),
-        'data_directory': DATA_DIR,
+        'file_storage_enabled': ENABLE_FILE_STORAGE,
+        'data_directory': DATA_DIR if ENABLE_FILE_STORAGE else None,
         'saved_profiles': saved_files_count
     })
 
@@ -516,6 +537,82 @@ def scrape_multiple_users():
         }), 500
 
 
+@app.route('/refresh_profile_pic', methods=['POST'])
+def refresh_profile_pic():
+    """
+    Refresh profile picture URL for a username
+    This is useful because Instagram CDN URLs expire after 24-48 hours
+    
+    Request body:
+    {
+        "username": "instagram_username"
+    }
+    
+    Returns:
+    {
+        "success": true,
+        "username": "username",
+        "profile_pic_url": "https://...",
+        "profile_name": "Display Name"
+    }
+    """
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        
+        if not username:
+            return jsonify({
+                'success': False,
+                'error': 'Username is required'
+            }), 400
+        
+        print(f'🔄 Refreshing profile pic for @{username}')
+        
+        # Use the analytics engine to scrape just the profile
+        profile = analytics_engine.scrape_profile_and_posts(username)
+        
+        if not profile:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to fetch profile'
+            }), 404
+        
+        # Extract profile pic URL
+        profile_pic_url = (
+            profile.get('profile_pic_url') or 
+            profile.get('profile_image') or 
+            profile.get('profile_image_link') or 
+            profile.get('profile_picture') or
+            ''
+        )
+        
+        profile_name = profile.get('full_name') or profile.get('name') or username
+        
+        if not profile_pic_url:
+            return jsonify({
+                'success': False,
+                'error': 'No profile picture URL found'
+            }), 404
+        
+        print(f'✅ Got fresh profile pic URL for @{username}')
+        
+        return jsonify({
+            'success': True,
+            'username': username,
+            'profile_pic_url': profile_pic_url,
+            'profile_name': profile_name
+        }), 200
+        
+    except Exception as e:
+        error_message = str(e)
+        print(f'❌ Error refreshing profile pic: {error_message}')
+        
+        return jsonify({
+            'success': False,
+            'error': error_message
+        }), 500
+
+
 @app.route('/analyze', methods=['POST'])
 def analyze_audience():
     """
@@ -544,6 +641,7 @@ def analyze_audience():
         if not username:
             return jsonify({
                 'success': False,
+                'error': 'Username is required',
                 'message': 'Username is required'
             }), 400
         
@@ -564,13 +662,24 @@ def analyze_audience():
         }), 200
         
     except Exception as e:
-        print(f'Error in analyze endpoint: {str(e)}')
+        error_message = str(e)
+        print(f'Error in analyze endpoint: {error_message}')
         import traceback
         traceback.print_exc()
-        return jsonify({
-            'success': False,
-            'message': str(e)
-        }), 500
+        
+        # Return more specific error messages
+        if 'appears to not exist or is private' in error_message:
+            return jsonify({
+                'success': False,
+                'error': error_message,
+                'message': f'Account @{username} does not exist or is private'
+            }), 404
+        else:
+            return jsonify({
+                'success': False,
+                'error': error_message,
+                'message': f'Failed to analyze @{username}: {error_message}'
+            }), 500
 
 
 if __name__ == '__main__':

@@ -1,15 +1,15 @@
 """
-Clear old BrightData comment caches and test RapidAPI integration
+Clear old comment caches and test RapidAPI integration
 """
 from cache_manager import clear_old_comment_caches
 from rapidapi_comments import scrape_comments_rapidapi
 
 print('\n' + '='*60)
-print('CACHE MIGRATION: BrightData → RapidAPI')
+print('CACHE MIGRATION: Clearing old Apify/BrightData caches')
 print('='*60 + '\n')
 
 # Clear old comment caches
-print('Step 1: Clearing old BrightData comment caches...')
+print('Step 1: Clearing old comment caches...')
 cleared = clear_old_comment_caches()
 
 print(f'\n✓ Migration complete! Cleared {cleared} old cache files.')

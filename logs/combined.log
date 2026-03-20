@@ -1,0 +1,480 @@
+2026-03-20 12:50:11 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:50:11 [INFO]: ::1 - - [20/Mar/2026:07:20:11 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 89.787 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 4.740 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 4.575 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 9.208 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 7.345 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 13.578 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 633.613 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 702.920 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 7.480 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 807.872 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 16.670 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 6.448 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 143.838 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 177.934 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 857.434 ms {"service":"phyo-api"}
+2026-03-20 12:50:12 [INFO]: ::1 - - [20/Mar/2026:07:20:12 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 155.796 ms {"service":"phyo-api"}
+2026-03-20 12:50:13 [INFO]: ::1 - - [20/Mar/2026:07:20:13 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 274.167 ms {"service":"phyo-api"}
+2026-03-20 12:50:13 [INFO]: ::1 - - [20/Mar/2026:07:20:13 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 239.429 ms {"service":"phyo-api"}
+2026-03-20 12:50:13 [INFO]: ::1 - - [20/Mar/2026:07:20:13 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 117.858 ms {"service":"phyo-api"}
+2026-03-20 12:50:13 [INFO]: ::1 - - [20/Mar/2026:07:20:13 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 83.183 ms {"service":"phyo-api"}
+2026-03-20 12:50:13 [INFO]: ::1 - - [20/Mar/2026:07:20:13 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 281.516 ms {"service":"phyo-api"}
+2026-03-20 12:50:13 [INFO]: ::1 - - [20/Mar/2026:07:20:13 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 360.962 ms {"service":"phyo-api"}
+2026-03-20 12:50:13 [INFO]: ::1 - - [20/Mar/2026:07:20:13 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 74.110 ms {"service":"phyo-api"}
+2026-03-20 12:50:13 [INFO]: ::1 - - [20/Mar/2026:07:20:13 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 59.051 ms {"service":"phyo-api"}
+2026-03-20 12:50:13 [INFO]: ::1 - - [20/Mar/2026:07:20:13 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 27.393 ms {"service":"phyo-api"}
+2026-03-20 12:50:13 [INFO]: ::1 - - [20/Mar/2026:07:20:13 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 20.472 ms {"service":"phyo-api"}
+2026-03-20 12:50:14 [INFO]: ::1 - - [20/Mar/2026:07:20:14 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 28.856 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 13.711 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 2.941 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 2.555 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 46.279 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 3.271 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 2.951 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 3.196 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 104.988 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 2.599 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 76.671 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 93.271 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 153.793 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 40.874 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 38.519 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 43.897 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 20.055 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 18.904 ms {"service":"phyo-api"}
+2026-03-20 12:52:15 [INFO]: ::1 - - [20/Mar/2026:07:22:15 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 18.976 ms {"service":"phyo-api"}
+2026-03-20 12:52:16 [INFO]: ::1 - - [20/Mar/2026:07:22:16 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 20.532 ms {"service":"phyo-api"}
+2026-03-20 12:52:16 [INFO]: ::1 - - [20/Mar/2026:07:22:16 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 28.630 ms {"service":"phyo-api"}
+2026-03-20 12:52:16 [INFO]: ::1 - - [20/Mar/2026:07:22:16 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 19.426 ms {"service":"phyo-api"}
+2026-03-20 12:52:16 [INFO]: ::1 - - [20/Mar/2026:07:22:16 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 20.266 ms {"service":"phyo-api"}
+2026-03-20 12:52:17 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:52:17 [INFO]: ::1 - - [20/Mar/2026:07:22:17 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 3.401 ms {"service":"phyo-api"}
+2026-03-20 12:52:17 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:52:17 [INFO]: ::1 - - [20/Mar/2026:07:22:17 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 4.033 ms {"service":"phyo-api"}
+2026-03-20 12:52:17 [INFO]: ::1 - - [20/Mar/2026:07:22:17 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 20.702 ms {"service":"phyo-api"}
+2026-03-20 12:52:17 [ERROR]: Error in GET /api/auth/influencers Not Found: /api/auth/influencers?limit=10 {"service":"phyo-api","statusCode":500,"url":"/api/auth/influencers?limit=10","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{"limit":"10"}}
+Error: Not Found: /api/auth/influencers?limit=10
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 12:52:17 [INFO]: ::1 - - [20/Mar/2026:07:22:17 +0000] "GET /api/auth/influencers?limit=10 HTTP/1.1" 500 1181 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 3.349 ms {"service":"phyo-api"}
+2026-03-20 12:52:22 [INFO]: ::1 - - [20/Mar/2026:07:22:22 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 8.952 ms {"service":"phyo-api"}
+2026-03-20 12:52:22 [INFO]: ::1 - - [20/Mar/2026:07:22:22 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 13.672 ms {"service":"phyo-api"}
+2026-03-20 12:52:22 [INFO]: ::1 - - [20/Mar/2026:07:22:22 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 200 58 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 21.648 ms {"service":"phyo-api"}
+2026-03-20 12:52:22 [INFO]: ::1 - - [20/Mar/2026:07:22:22 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 34.719 ms {"service":"phyo-api"}
+2026-03-20 12:52:22 [INFO]: ::1 - - [20/Mar/2026:07:22:22 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 54.788 ms {"service":"phyo-api"}
+2026-03-20 12:52:22 [INFO]: ::1 - - [20/Mar/2026:07:22:22 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 38.836 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 49.306 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 22.158 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 93.260 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 28.178 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 41.571 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 39.654 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 23.556 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 34.407 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 35.798 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 16.847 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 28.166 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 28.430 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 19.055 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 11.752 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 21.191 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 11.278 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 23.971 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 16.713 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 22.129 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 16.278 ms {"service":"phyo-api"}
+2026-03-20 12:52:23 [INFO]: ::1 - - [20/Mar/2026:07:22:23 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 15.146 ms {"service":"phyo-api"}
+2026-03-20 12:53:17 [INFO]: ::1 - - [20/Mar/2026:07:23:17 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 13.504 ms {"service":"phyo-api"}
+2026-03-20 12:53:17 [INFO]: ::1 - - [20/Mar/2026:07:23:17 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 53.759 ms {"service":"phyo-api"}
+2026-03-20 12:53:17 [INFO]: ::1 - - [20/Mar/2026:07:23:17 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 50.307 ms {"service":"phyo-api"}
+2026-03-20 12:53:17 [INFO]: ::1 - - [20/Mar/2026:07:23:17 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 63.418 ms {"service":"phyo-api"}
+2026-03-20 12:53:17 [INFO]: ::1 - - [20/Mar/2026:07:23:17 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 104.325 ms {"service":"phyo-api"}
+2026-03-20 12:53:17 [INFO]: ::1 - - [20/Mar/2026:07:23:17 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 98.142 ms {"service":"phyo-api"}
+2026-03-20 12:53:17 [INFO]: ::1 - - [20/Mar/2026:07:23:17 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 50.485 ms {"service":"phyo-api"}
+2026-03-20 12:53:17 [INFO]: ::1 - - [20/Mar/2026:07:23:17 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 75.327 ms {"service":"phyo-api"}
+2026-03-20 12:53:17 [INFO]: ::1 - - [20/Mar/2026:07:23:17 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 40.120 ms {"service":"phyo-api"}
+2026-03-20 12:53:17 [INFO]: ::1 - - [20/Mar/2026:07:23:17 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 61.844 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 58.334 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 41.081 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 49.923 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 34.470 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 60.881 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 95.722 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 30.468 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 51.038 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 32.817 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 43.904 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 23.834 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 12.467 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 21.080 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 55.827 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 65.646 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 31.374 ms {"service":"phyo-api"}
+2026-03-20 12:53:18 [INFO]: ::1 - - [20/Mar/2026:07:23:18 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 18.431 ms {"service":"phyo-api"}
+2026-03-20 12:53:22 [INFO]: ::1 - - [20/Mar/2026:07:23:22 +0000] "GET /api/influencer/69bbbcabbe880623d78d6681 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 7.148 ms {"service":"phyo-api"}
+2026-03-20 12:53:22 [INFO]: ::1 - - [20/Mar/2026:07:23:22 +0000] "GET /api/influencer/69bbbcabbe880623d78d6681 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 6.403 ms {"service":"phyo-api"}
+2026-03-20 12:53:26 [INFO]: ::1 - - [20/Mar/2026:07:23:26 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 20.675 ms {"service":"phyo-api"}
+2026-03-20 12:53:26 [INFO]: ::1 - - [20/Mar/2026:07:23:26 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 22.096 ms {"service":"phyo-api"}
+2026-03-20 12:53:26 [INFO]: ::1 - - [20/Mar/2026:07:23:26 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 56.097 ms {"service":"phyo-api"}
+2026-03-20 12:53:26 [INFO]: ::1 - - [20/Mar/2026:07:23:26 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 108.776 ms {"service":"phyo-api"}
+2026-03-20 12:53:26 [INFO]: ::1 - - [20/Mar/2026:07:23:26 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 134.333 ms {"service":"phyo-api"}
+2026-03-20 12:53:26 [INFO]: ::1 - - [20/Mar/2026:07:23:26 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 121.200 ms {"service":"phyo-api"}
+2026-03-20 12:53:26 [INFO]: ::1 - - [20/Mar/2026:07:23:26 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 106.543 ms {"service":"phyo-api"}
+2026-03-20 12:53:26 [INFO]: ::1 - - [20/Mar/2026:07:23:26 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 66.522 ms {"service":"phyo-api"}
+2026-03-20 12:53:26 [INFO]: ::1 - - [20/Mar/2026:07:23:26 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 82.993 ms {"service":"phyo-api"}
+2026-03-20 12:53:26 [INFO]: ::1 - - [20/Mar/2026:07:23:26 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 55.469 ms {"service":"phyo-api"}
+2026-03-20 12:53:27 [INFO]: ::1 - - [20/Mar/2026:07:23:27 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 25.383 ms {"service":"phyo-api"}
+2026-03-20 12:53:27 [INFO]: ::1 - - [20/Mar/2026:07:23:27 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 36.734 ms {"service":"phyo-api"}
+2026-03-20 12:53:27 [INFO]: ::1 - - [20/Mar/2026:07:23:27 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 137.022 ms {"service":"phyo-api"}
+2026-03-20 12:53:27 [INFO]: ::1 - - [20/Mar/2026:07:23:27 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 7.820 ms {"service":"phyo-api"}
+2026-03-20 12:53:27 [INFO]: ::1 - - [20/Mar/2026:07:23:27 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 17.544 ms {"service":"phyo-api"}
+2026-03-20 12:53:27 [INFO]: ::1 - - [20/Mar/2026:07:23:27 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 11.437 ms {"service":"phyo-api"}
+2026-03-20 12:53:27 [INFO]: ::1 - - [20/Mar/2026:07:23:27 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 18.275 ms {"service":"phyo-api"}
+2026-03-20 12:53:27 [INFO]: ::1 - - [20/Mar/2026:07:23:27 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 15.798 ms {"service":"phyo-api"}
+2026-03-20 12:53:53 [INFO]: ::1 - - [20/Mar/2026:07:23:53 +0000] "GET /api/brand/69bbcf94f7ae0b21a8049f2b HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 7.509 ms {"service":"phyo-api"}
+2026-03-20 12:53:53 [INFO]: ::1 - - [20/Mar/2026:07:23:53 +0000] "GET /api/brand/69bbcf94f7ae0b21a8049f2b/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 8.924 ms {"service":"phyo-api"}
+2026-03-20 12:53:53 [INFO]: ::1 - - [20/Mar/2026:07:23:53 +0000] "GET /api/brand/69bbcf94f7ae0b21a8049f2b HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 4.739 ms {"service":"phyo-api"}
+2026-03-20 12:53:53 [INFO]: ::1 - - [20/Mar/2026:07:23:53 +0000] "GET /api/brand/69bbcf94f7ae0b21a8049f2b/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 6.737 ms {"service":"phyo-api"}
+2026-03-20 13:00:33 [INFO]: ::1 - - [20/Mar/2026:07:30:33 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 18.894 ms {"service":"phyo-api"}
+2026-03-20 13:00:33 [INFO]: ::1 - - [20/Mar/2026:07:30:33 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 22.662 ms {"service":"phyo-api"}
+2026-03-20 13:00:33 [INFO]: ::1 - - [20/Mar/2026:07:30:33 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 43.380 ms {"service":"phyo-api"}
+2026-03-20 13:00:33 [INFO]: ::1 - - [20/Mar/2026:07:30:33 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 53.656 ms {"service":"phyo-api"}
+2026-03-20 13:00:33 [INFO]: ::1 - - [20/Mar/2026:07:30:33 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 23.936 ms {"service":"phyo-api"}
+2026-03-20 13:00:33 [INFO]: ::1 - - [20/Mar/2026:07:30:33 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 25.637 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 51.347 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 48.920 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 52.283 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 21.127 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 32.347 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 16.591 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 25.668 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 15.348 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 14.791 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 22.134 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 16.354 ms {"service":"phyo-api"}
+2026-03-20 13:00:34 [INFO]: ::1 - - [20/Mar/2026:07:30:34 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 11.857 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 22.127 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 25.564 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 60.319 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 65.746 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 70.612 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 50.060 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 39.557 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 57.444 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 36.204 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 55.153 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 33.438 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 30.060 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 21.979 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 31.526 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 100.574 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 16.419 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 31.579 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 35.101 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 17.350 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 17.395 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 12.736 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 11.798 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 18.346 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 8.370 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 16.006 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 12.179 ms {"service":"phyo-api"}
+2026-03-20 13:00:38 [INFO]: ::1 - - [20/Mar/2026:07:30:38 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 16.065 ms {"service":"phyo-api"}
+2026-03-20 13:00:45 [ERROR]: Error in GET /api/conversation Not Found: /api/conversation {"service":"phyo-api","statusCode":500,"url":"/api/conversation","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{}}
+Error: Not Found: /api/conversation
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 13:00:45 [INFO]: ::1 - - [20/Mar/2026:07:30:45 +0000] "GET /api/conversation HTTP/1.1" 500 1155 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 2.292 ms {"service":"phyo-api"}
+2026-03-20 13:00:45 [ERROR]: Error in GET /api/conversation Not Found: /api/conversation {"service":"phyo-api","statusCode":500,"url":"/api/conversation","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{}}
+Error: Not Found: /api/conversation
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 13:00:45 [INFO]: ::1 - - [20/Mar/2026:07:30:45 +0000] "GET /api/conversation HTTP/1.1" 500 1155 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 2.652 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 17.211 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 18.693 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 37.294 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 47.059 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 27.800 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 23.940 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 45.263 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 47.993 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 52.349 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 19.021 ms {"service":"phyo-api"}
+2026-03-20 13:00:51 [INFO]: ::1 - - [20/Mar/2026:07:30:51 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 24.513 ms {"service":"phyo-api"}
+2026-03-20 13:00:52 [INFO]: ::1 - - [20/Mar/2026:07:30:52 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 8.733 ms {"service":"phyo-api"}
+2026-03-20 13:00:52 [INFO]: ::1 - - [20/Mar/2026:07:30:52 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 19.091 ms {"service":"phyo-api"}
+2026-03-20 13:00:52 [INFO]: ::1 - - [20/Mar/2026:07:30:52 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 14.472 ms {"service":"phyo-api"}
+2026-03-20 13:00:52 [INFO]: ::1 - - [20/Mar/2026:07:30:52 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 8.202 ms {"service":"phyo-api"}
+2026-03-20 13:00:52 [INFO]: ::1 - - [20/Mar/2026:07:30:52 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 15.063 ms {"service":"phyo-api"}
+2026-03-20 13:00:52 [INFO]: ::1 - - [20/Mar/2026:07:30:52 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 11.708 ms {"service":"phyo-api"}
+2026-03-20 13:00:52 [INFO]: ::1 - - [20/Mar/2026:07:30:52 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 11.551 ms {"service":"phyo-api"}
+2026-03-20 13:00:54 [ERROR]: Error in GET /api/conversation Not Found: /api/conversation {"service":"phyo-api","statusCode":500,"url":"/api/conversation","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{}}
+Error: Not Found: /api/conversation
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 13:00:54 [INFO]: ::1 - - [20/Mar/2026:07:30:54 +0000] "GET /api/conversation HTTP/1.1" 500 1155 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 1.626 ms {"service":"phyo-api"}
+2026-03-20 13:00:54 [ERROR]: Error in GET /api/conversation Not Found: /api/conversation {"service":"phyo-api","statusCode":500,"url":"/api/conversation","method":"GET","ip":"::1","userId":"anonymous","body":{},"query":{}}
+Error: Not Found: /api/conversation
+    at notFoundHandler (C:\full stack phyo\phyo_server\middleware\errorHandler.js:47:17)
+    at Layer.handle [as handle_request] (C:\full stack phyo\phyo_server\node_modules\express\lib\router\layer.js:95:5)
+    at trim_prefix (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:328:13)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:286:9
+    at Function.process_params (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:346:12)
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:280:10)
+    at C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:646:15
+    at next (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:265:14)
+    at Function.handle (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:175:3)
+    at router (C:\full stack phyo\phyo_server\node_modules\express\lib\router\index.js:47:12)
+2026-03-20 13:00:54 [INFO]: ::1 - - [20/Mar/2026:07:30:54 +0000] "GET /api/conversation HTTP/1.1" 500 1155 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 2.732 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 20.335 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 21.236 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 42.821 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 46.040 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 48.730 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/trending/influencers?limit=10 HTTP/1.1" 200 3680 "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 27.619 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 24.021 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/trending/campaigns?limit=3 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 30.234 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/trending/brands?limit=8 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 32.910 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 36.694 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 22.733 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 9.861 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 18.712 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 5.705 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 14.546 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/influencers?limit=10 HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 8.530 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 15.255 ms {"service":"phyo-api"}
+2026-03-20 13:00:56 [INFO]: ::1 - - [20/Mar/2026:07:30:56 +0000] "GET /api/campaigns HTTP/1.1" 304 - "http://localhost:3000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" - 16.970 ms {"service":"phyo-api"}

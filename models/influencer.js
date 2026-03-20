@@ -7,6 +7,7 @@ const influencerSchema = mongoose.Schema({
     profile_pic_url: String,
     is_verified: { type: Boolean, default: false },
     is_business: { type: Boolean, default: false },
+    isApproved: { type: Boolean, default: false },
     categoryInstagram: String,
     categoryYouTube: String,
     user_name: String,

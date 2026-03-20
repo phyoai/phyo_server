@@ -8,6 +8,9 @@ router.post('/:campaignId/deliverables', campaignDetailController.addDeliverable
 
 // Applications
 router.get('/:campaignId/applications', campaignDetailController.getCampaignApplications);
+
+// Influencers working on campaign
+router.get('/:campaignId/influencers', campaignDetailController.getCampaignInfluencers);
 router.post('/:campaignId/applications/:applicationId/accept', campaignDetailController.acceptApplication);
 router.post('/:campaignId/applications/:applicationId/reject', campaignDetailController.rejectApplication);
 
@@ -21,5 +24,9 @@ router.get('/:campaignId/negotiations/:influencerId/timeline', campaignDetailCon
 // Campaign Boost
 router.post('/:campaignId/boost', campaignDetailController.boostCampaign);
 router.get('/:campaignId/boost-recommendations', campaignDetailController.getBoostRecommendations);
+
+// Activity Timeline
+router.get('/:campaignId/activity-timeline', campaignDetailController.getActivityTimeline);
+router.get('/:campaignId/negotiations/:influencerId/activity-timeline', campaignDetailController.getNegotiationTimeline);
 
 module.exports = router;

@@ -9,7 +9,10 @@ const {
     withdrawApplication,
     getMyApplications,
     searchCampaigns,
-    getTrendingCampaignsForMe
+    getTrendingCampaignsForMe,
+    approveApplication,
+    rejectApplication,
+    getCampaignApplications
 } = require('../controllers/campaignApplicationController');
 
 // Get all campaigns
@@ -35,5 +38,14 @@ router.get('/my/applications', authMiddleware, getMyApplications);
 
 // Get trending campaigns for me (requires auth)
 router.get('/trending/for-me', authMiddleware, getTrendingCampaignsForMe);
+
+// Get all applications for a campaign (brand only)
+router.get('/:campaignId/applications', authMiddleware, getCampaignApplications);
+
+// Approve application (brand only)
+router.patch('/:campaignId/applications/:influencerId/approve', authMiddleware, approveApplication);
+
+// Reject application (brand only)
+router.patch('/:campaignId/applications/:influencerId/reject', authMiddleware, rejectApplication);
 
 module.exports = router;

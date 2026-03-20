@@ -13,6 +13,7 @@ router.get('/brands/location/search', locationController.searchBrandsByLocation)
 
 // Nearby Campaigns
 router.get('/campaigns/nearby', locationController.getNearbyActiveCampaigns);
+router.get('/campaigns/location/search', locationController.searchCampaignsByLocation);
 
 // Location Management
 router.post('/users/location', auth, locationController.updateUserLocation);

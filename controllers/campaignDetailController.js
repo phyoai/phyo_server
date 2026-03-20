@@ -61,34 +61,84 @@ exports.getCampaignApplications = async (req, res) => {
         const skip = (page - 1) * limit;
 
         const campaign = await Campaign.findById(campaignId)
-            .populate('applications.influencerId', 'name username avatar bio instagramFollowers youtubeFollowers stats pricing memberSince availabilityStatus')
-            .skip(skip)
-            .limit(parseInt(limit));
+            .populate({
+                path: 'applicants',
+                select: 'name username avatar bio instagramFollowers youtubeFollowers stats pricing memberSince availabilityStatus role',
+                options: { skip: skip, limit: parseInt(limit) }
+            });
 
         if (!campaign) return res.status(404).json({ success: false, message: 'Campaign not found' });
 
-        const applications = campaign.applications.map(app => ({
-            id: app._id,
-            influencerId: app.influencerId?._id,
-            name: app.influencerId?.name,
-            username: app.influencerId?.username,
-            bio: app.influencerId?.bio,
-            avatar: app.influencerId?.avatar,
-            stats: app.influencerId?.stats,
-            pricing: app.influencerId?.pricing,
-            memberSince: app.influencerId?.memberSince,
-            availabilityStatus: app.influencerId?.availabilityStatus,
-            status: app.status,
-            appliedAt: app.appliedAt
+        const applications = (campaign.applicants || []).map(influencer => ({
+            id: influencer._id,
+            _id: influencer._id,
+            name: influencer.name,
+            username: influencer.username,
+            bio: influencer.bio,
+            description: influencer.bio, // Alias for flexibility
+            avatar: influencer.avatar,
+            profileImage: influencer.avatar, // Alias for flexibility
+            role: influencer.role || 'Influencer',
+            stats: influencer.stats,
+            pricing: influencer.pricing,
+            memberSince: influencer.memberSince,
+            availabilityStatus: influencer.availabilityStatus,
+            status: influencer.availabilityStatus || 'Pending'
         }));
 
         return res.status(200).json({
             success: true,
             data: applications,
-            pagination: { page: parseInt(page), limit: parseInt(limit), total: campaign.applications.length }
+            pagination: { page: parseInt(page), limit: parseInt(limit), total: campaign.applicants?.length || 0 }
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error fetching applications', error: error.message });
+    }
+};
+
+/**
+ * GET /api/campaigns/{campaignId}/influencers
+ */
+exports.getCampaignInfluencers = async (req, res) => {
+    try {
+        const { campaignId } = req.params;
+        const { page = 1, limit = 10 } = req.query;
+        const skip = (page - 1) * limit;
+
+        const campaign = await Campaign.findById(campaignId)
+            .select('selectedInfluencers selectedInfluencersCount')
+            .populate({
+                path: 'selectedInfluencers',
+                select: 'name username avatar bio instagramFollowers youtubeFollowers stats pricing memberSince availabilityStatus role',
+                options: { skip: skip, limit: parseInt(limit) }
+            });
+
+        if (!campaign) return res.status(404).json({ success: false, message: 'Campaign not found' });
+
+        const influencers = (campaign.selectedInfluencers || []).map(influencer => ({
+            id: influencer._id,
+            name: influencer.name,
+            username: influencer.username,
+            avatar: influencer.avatar,
+            profileImage: influencer.avatar, // Alias for flexibility
+            bio: influencer.bio,
+            description: influencer.bio, // Alias for flexibility
+            role: influencer.role || 'Influencer',
+            stats: influencer.stats,
+            pricing: influencer.pricing,
+            memberSince: influencer.memberSince,
+            availabilityStatus: influencer.availabilityStatus,
+            status: influencer.availabilityStatus || 'Active',
+            statusColor: influencer.availabilityStatus === 'available' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200'
+        }));
+
+        return res.status(200).json({
+            success: true,
+            data: influencers,
+            pagination: { page: parseInt(page), limit: parseInt(limit), total: campaign.selectedInfluencersCount || 0 }
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error fetching influencers', error: error.message });
     }
 };
 
@@ -102,21 +152,29 @@ exports.acceptApplication = async (req, res) => {
         const campaign = await Campaign.findById(campaignId);
         if (!campaign) return res.status(404).json({ success: false, message: 'Campaign not found' });
 
-        const application = campaign.applications.id(applicationId);
-        if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
+        // Check if applicant exists in applicants array
+        const applicantIndex = campaign.applicants?.findIndex(id => id.toString() === applicationId);
+        if (applicantIndex === -1 || applicantIndex === undefined) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
 
-        application.status = 'ACCEPTED';
-        application.acceptedAt = new Date();
-
+        // Move applicant to selectedInfluencers
         if (!campaign.selectedInfluencers) campaign.selectedInfluencers = [];
-        if (!campaign.selectedInfluencers.includes(application.influencerId)) {
-            campaign.selectedInfluencers.push(application.influencerId);
+        if (!campaign.selectedInfluencers.includes(applicationId)) {
+            campaign.selectedInfluencers.push(applicationId);
             campaign.selectedInfluencersCount = campaign.selectedInfluencers.length;
         }
 
+        // Remove from applicants array
+        campaign.applicants.splice(applicantIndex, 1);
+
         await campaign.save();
 
-        return res.status(200).json({ success: true, message: 'Application accepted', data: application });
+        return res.status(200).json({
+            success: true,
+            message: 'Application accepted',
+            data: { influencerId: applicationId, status: 'ACCEPTED' }
+        });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error accepting application', error: error.message });
     }
@@ -133,16 +191,22 @@ exports.rejectApplication = async (req, res) => {
         const campaign = await Campaign.findById(campaignId);
         if (!campaign) return res.status(404).json({ success: false, message: 'Campaign not found' });
 
-        const application = campaign.applications.id(applicationId);
-        if (!application) return res.status(404).json({ success: false, message: 'Application not found' });
+        // Check if applicant exists in applicants array
+        const applicantIndex = campaign.applicants?.findIndex(id => id.toString() === applicationId);
+        if (applicantIndex === -1 || applicantIndex === undefined) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
 
-        application.status = 'REJECTED';
-        application.rejectionReason = reason || '';
-        application.rejectedAt = new Date();
+        // Remove from applicants array
+        campaign.applicants.splice(applicantIndex, 1);
 
         await campaign.save();
 
-        return res.status(200).json({ success: true, message: 'Application rejected', data: application });
+        return res.status(200).json({
+            success: true,
+            message: 'Application rejected',
+            data: { influencerId: applicationId, status: 'REJECTED', reason: reason || '' }
+        });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error rejecting application', error: error.message });
     }
@@ -351,5 +415,82 @@ exports.getBoostRecommendations = async (req, res) => {
         return res.status(200).json({ success: true, data: recommendations });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error fetching recommendations', error: error.message });
+    }
+};
+
+/**
+ * GET /api/campaigns/{campaignId}/activity-timeline
+ */
+exports.getActivityTimeline = async (req, res) => {
+    try {
+        const { campaignId } = req.params;
+
+        const campaign = await Campaign.findById(campaignId);
+        if (!campaign) return res.status(404).json({ success: false, message: 'Campaign not found' });
+
+        // Build timeline from campaign events
+        const timeline = [
+            {
+                id: 1,
+                title: 'Campaign Created',
+                time: campaign.createdAt,
+                status: 'completed'
+            }
+        ];
+
+        // Add deliverable submitted events
+        if (campaign.deliverables && campaign.deliverables.length > 0) {
+            campaign.deliverables.forEach((deliverable, index) => {
+                timeline.push({
+                    id: timeline.length + 1,
+                    title: 'Deliverable Submitted',
+                    time: deliverable.submittedAt || campaign.updatedAt,
+                    status: 'completed'
+                });
+            });
+        }
+
+        // Add counter offer events
+        if (campaign.counterOffers && campaign.counterOffers.length > 0) {
+            campaign.counterOffers.forEach((offer) => {
+                timeline.push({
+                    id: timeline.length + 1,
+                    title: 'Counter offer sent',
+                    time: offer.sentAt || campaign.updatedAt,
+                    status: 'completed'
+                });
+
+                if (offer.acceptedAt) {
+                    timeline.push({
+                        id: timeline.length + 1,
+                        title: 'Offer Accepted',
+                        time: offer.acceptedAt,
+                        status: 'completed'
+                    });
+                }
+            });
+        }
+
+        // Add influencer invited event
+        if (campaign.selectedInfluencers && campaign.selectedInfluencers.length > 0) {
+            timeline.push({
+                id: timeline.length + 1,
+                title: 'Influencer invited',
+                time: campaign.createdAt,
+                status: 'pending'
+            });
+        }
+
+        // Sort timeline by date descending (most recent first)
+        timeline.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+        // Reassign IDs after sorting to maintain order
+        timeline.forEach((event, index) => {
+            event.id = index + 1;
+        });
+
+        return res.status(200).json({ success: true, data: timeline });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error fetching activity timeline', error: error.message });
     }
 };

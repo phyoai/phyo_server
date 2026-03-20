@@ -8,6 +8,8 @@ const axios = require("axios")
 const dns = require("dns")
 const http = require("http")
 const socketIo = require("socket.io")
+const { morganMiddleware } = require("./middleware/logger")
+const { errorHandler, notFoundHandler } = require("./middleware/errorHandler")
 // const data = require("./data")
 
 const app = express()
@@ -28,6 +30,7 @@ const campaignsRoute = require("./routes/campaigns")
 const conversationsRoute = require("./routes/conversations")
 const messagesRoute = require("./routes/messages")
 const filesRoute = require("./routes/files")
+const influencersRoute = require("./routes/influencers")
 const influencerDataRoute = require("./routes/influencerData")
 const projectsRoute = require("./routes/projects")
 const portfoliosRoute = require("./routes/portfolios")
@@ -45,7 +48,7 @@ const campaignApplicationRoute = require("./routes/campaignApplication")
 const discoveryRoute = require("./routes/discovery")
 const accountRoute = require("./routes/account")
 const messagesAndNotificationsRoute = require("./routes/messagesAndNotifications")
-const supportRoute = require("./routes/support")
+const helpSupportRoute = require("./routes/helpSupport")
 const userProfileRoute = require("./routes/userProfile")
 const favoritesRoute = require("./routes/favorites")
 const reviewsRoute = require("./routes/reviews")
@@ -58,6 +61,8 @@ const subscriptionsRoute = require("./routes/subscriptions")
 const notificationSettingsRoute = require("./routes/notificationSettings")
 const profileRoute = require("./routes/profile")
 const smsRoute = require("./routes/sms")
+const listsRoute = require("./routes/lists")
+const paymentMethodsRoute = require("./routes/paymentMethods")
 
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
@@ -65,9 +70,23 @@ app.use(cors({
     origin: ["https://phyo.ai", "http://phyo.ai:4000", "http://localhost:3000", "http://localhost:8000"],
     credentials: true
 }))
+
+// Request logging middleware
+app.use(morganMiddleware)
+
+// Initialize server after MongoDB connection
 connectToMongo(process.env.MONGO_URI)
-    .then(() => console.log("Mongo Connected"))
-    .catch(err => console.error("Mongo connection failed:", err))
+    .then(() => {
+        console.log("Mongo Connected");
+        // Start server only after MongoDB connection is established
+        server.listen(PORT, () => {
+            console.log("Server is running on port ", PORT);
+        });
+    })
+    .catch(err => {
+        console.error("Mongo connection failed:", err);
+        process.exit(1);
+    })
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
@@ -722,6 +741,7 @@ app.patch("/editInfluencer/:username", async (req, res) => {
 // Mount all routes
 app.use("/api/auth", authRoute)
 app.use("/api/users", usersRoute)
+app.use("/api/influencers", influencersRoute)
 app.use("/api/campaigns", campaignsRoute)
 app.use("/api/conversations", conversationsRoute)
 app.use("/api/messages", messagesRoute)
@@ -743,7 +763,7 @@ app.use("/api/campaigns", campaignApplicationRoute)
 app.use("/api/discover", discoveryRoute)
 app.use("/api/account", accountRoute)
 app.use("/api", messagesAndNotificationsRoute)
-app.use("/api/help", supportRoute)
+app.use("/api/help", helpSupportRoute)
 app.use("/api/profile", userProfileRoute)
 app.use("/api/favorites", favoritesRoute)
 app.use("/api/reviews", reviewsRoute)
@@ -756,9 +776,14 @@ app.use("/api/subscriptions", subscriptionsRoute)
 app.use("/api/notification-settings", notificationSettingsRoute)
 app.use("/api/profile", profileRoute)
 app.use("/api/sms", smsRoute)
+app.use("/api/lists", listsRoute)
+app.use("/api/payment-methods", paymentMethodsRoute)
 
-// Keep existing routes for backward compatibility
-app.use("/api/user", authRoute)
+// 404 Handler - catch undefined routes
+app.use(notFoundHandler)
+
+// Global error handler - must be last
+app.use(errorHandler)
 
 // WebSocket setup
 io.on('connection', (socket) => {
@@ -798,6 +823,4 @@ app.get('/api/websocket/test', (req, res) => {
     });
 });
 
-server.listen(PORT, () => {
-    console.log("Server is running on port ", PORT);
-})
+// Server is now started in the MongoDB connection callback above

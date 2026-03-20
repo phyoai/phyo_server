@@ -8,8 +8,6 @@ const {
     resetPassword,
     verifyEmailOTP,
     resendEmailOTP,
-    getAllInfluencers,
-    getInfluencerById,
     checkRegistrationStatus,
     adminLogin,
     googleAuth
@@ -23,8 +21,6 @@ router.post('/verify-reset-code', verifyResetCode);
 router.post('/reset-password', resetPassword);
 router.post('/verify-email-otp', verifyEmailOTP);
 router.post('/resend-email-otp', resendEmailOTP);
-router.get('/influencers', getAllInfluencers);
-router.get('/influencer/:id', getInfluencerById);
 router.get('/check-registration-status', checkRegistrationStatus);
 router.post('/admin/login', adminLogin);
 router.post('/google', googleAuth);

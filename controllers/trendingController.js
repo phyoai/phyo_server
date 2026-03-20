@@ -1,7 +1,7 @@
 const Influencer = require('../models/influencer');
 const Campaign = require('../models/campaign');
-const User = require('../models/auth');
 const mongoose = require('mongoose');
+const { user: User } = require('../models/auth');
 
 /**
  * GET /api/trending/influencers
@@ -21,12 +21,15 @@ exports.getTrendingInfluencers = async (req, res) => {
 
         const skip = (page - 1) * limit;
 
-        let filter = {
-            isApproved: true,
-            instagramFollowers: { $gte: parseInt(minFollowers) },
-            averageEngagement: { $gte: parseFloat(minEngagement) }
-        };
+        // Simplified filter for now
+        let filter = {};
 
+        if (minFollowers > 0) {
+            filter.instagramFollowers = { $gte: parseInt(minFollowers) };
+        }
+        if (minEngagement > 0) {
+            filter.averageEngagement = { $gte: parseFloat(minEngagement) };
+        }
         if (category) {
             filter.categoryInstagram = category;
         }
@@ -44,6 +47,8 @@ exports.getTrendingInfluencers = async (req, res) => {
                 sortOption = { averageEngagement: -1 };
         }
 
+
+        // Now try with filter
         const influencers = await Influencer.find(filter)
             .sort(sortOption)
             .skip(skip)
@@ -113,10 +118,15 @@ exports.getTrendingCampaigns = async (req, res) => {
 
         const skip = (page - 1) * limit;
 
-        let filter = {
-            status: { $in: ['ACTIVE', 'LIVE'] },
-            budget: { $gte: parseInt(minBudget) }
-        };
+        // Simplified filter for campaigns
+        let filter = {};
+
+        // Look for Active, ACTIVE, or LIVE status
+        filter.status = { $in: ['Active', 'ACTIVE', 'LIVE'] };
+
+        if (minBudget > 0) {
+            filter.budget = { $gte: parseInt(minBudget) };
+        }
 
         if (category) {
             filter.category = category;
@@ -139,32 +149,48 @@ exports.getTrendingCampaigns = async (req, res) => {
             .sort(sortOption)
             .skip(skip)
             .limit(parseInt(limit))
-            .populate('brandId', 'id name companyName avatar email')
-            .select('_id title description budget status createdAt endDate productImages category engagement applicationCount selectedInfluencersCount')
+            .select('_id title description budget status createdAt endDate productImages category engagement applicationCount selectedInfluencersCount brandId')
             .lean();
 
         const total = await Campaign.countDocuments(filter);
 
-        const enrichedCampaigns = campaigns.map((camp, index) => ({
-            _id: camp._id,
-            title: camp.title,
-            description: camp.description,
-            brand: {
-                id: camp.brandId?._id,
-                name: camp.brandId?.name,
-                companyName: camp.brandId?.companyName,
-                avatar: camp.brandId?.avatar
-            },
-            budget: camp.budget,
-            applications: camp.applicationCount || 0,
-            acceptedInfluencers: camp.selectedInfluencersCount || 0,
-            engagement: camp.engagement || 0,
-            category: camp.category || [],
-            trendingRank: index + 1,
-            status: camp.status === 'ACTIVE' ? 'active' : (camp.status === 'ENDING_SOON' ? 'ending_soon' : 'completed'),
-            daysLeft: camp.endDate ? Math.ceil((new Date(camp.endDate) - new Date()) / (1000 * 60 * 60 * 24)) : 0,
-            productImages: camp.productImages || [],
-            createdAt: camp.createdAt
+        // Fetch brand data for each campaign
+        const User = require('../models/auth').user;
+        const enrichedCampaigns = await Promise.all(campaigns.map(async (camp, index) => {
+            let brandData = { id: null, name: 'Unknown Brand', companyName: 'Unknown Brand', avatar: null };
+
+            try {
+                if (camp.brandId) {
+                    const brand = await User.findById(camp.brandId).select('_id name agencyName avatar profileImage').lean();
+                    if (brand) {
+                        brandData = {
+                            id: brand._id,
+                            name: brand.name,
+                            companyName: brand.agencyName || brand.name,
+                            avatar: brand.avatar || brand.profileImage
+                        };
+                    }
+                }
+            } catch (err) {
+                console.error('Error fetching brand:', err.message);
+            }
+
+            return {
+                _id: camp._id,
+                title: camp.title || camp.campaignName,
+                description: camp.description || camp.campaignBrief,
+                brand: brandData,
+                budget: camp.budget,
+                applications: camp.applicationCount || 0,
+                acceptedInfluencers: camp.selectedInfluencersCount || 0,
+                engagement: camp.engagement || 0,
+                category: camp.category || [],
+                trendingRank: index + 1,
+                status: camp.status === 'ACTIVE' || camp.status === 'Active' ? 'active' : (camp.status === 'ENDING_SOON' ? 'ending_soon' : 'completed'),
+                daysLeft: camp.endDate ? Math.ceil((new Date(camp.endDate) - new Date()) / (1000 * 60 * 60 * 24)) : 0,
+                productImages: camp.productImages || [],
+                createdAt: camp.createdAt
+            };
         }));
 
         return res.status(200).json({
@@ -215,36 +241,53 @@ exports.getTrendingBrands = async (req, res) => {
                 sortOption = { activeCampaigns: -1 };
         }
 
-        const brands = await User.find({ type: 'BRAND', isApproved: true })
-            .sort(sortOption)
+        // Query brands using raw MongoDB collection
+        const brandsQuery = { type: 'BRAND', isApproved: true };
+        const defaultSort = { createdAt: -1 };
+        const finalSort = Object.keys(sortOption).length > 0 ? sortOption : defaultSort;
+
+        // Use raw MongoDB collection query
+        const collection = mongoose.connection.collection('users');
+        const brands = await collection
+            .find(brandsQuery)
+            .sort(finalSort)
             .skip(skip)
             .limit(parseInt(limit))
-            .select('_id id name companyName avatar email')
-            .lean();
+            .toArray();
 
-        const total = await User.countDocuments({ type: 'BRAND', isApproved: true });
+        const total = await collection.countDocuments(brandsQuery);
 
-        const enrichedBrands = await Promise.all(brands.map(async (brand, index) => {
-            const campaigns = await Campaign.find({ brandId: brand._id }).lean();
+        const enrichedBrands = await Promise.allSettled(brands.map(async (brand, index) => {
+            try {
+                const campaigns = await Campaign.find({ brandId: brand._id }).lean();
 
-            return {
-                _id: brand._id,
-                id: brand._id,
-                name: brand.name,
-                companyName: brand.companyName,
-                avatar: brand.avatar,
-                trendingRank: index + 1,
-                activeCampaigns: campaigns.filter(c => c.status === 'ACTIVE').length,
-                totalBudget: campaigns.reduce((sum, c) => sum + (c.budget || 0), 0),
-                influencersWorkedWith: new Set(campaigns.flatMap(c => c.selectedInfluencers || [])).size,
-                recentCampaigns: campaigns.slice(0, 3),
-                category: [...new Set(campaigns.flatMap(c => c.category || []))]
-            };
+                return {
+                    _id: brand._id,
+                    id: brand._id,
+                    name: brand.name,
+                    companyName: brand.agencyName || brand.name,
+                    avatar: brand.avatar || brand.profileImage,
+                    trendingRank: index + 1,
+                    activeCampaigns: campaigns.filter(c => c.status === 'ACTIVE').length,
+                    totalBudget: campaigns.reduce((sum, c) => sum + (c.budget || 0), 0),
+                    influencersWorkedWith: new Set(campaigns.flatMap(c => c.selectedInfluencers || [])).size,
+                    recentCampaigns: campaigns.slice(0, 3),
+                    category: [...new Set(campaigns.flatMap(c => c.category || []))]
+                };
+            } catch (err) {
+                console.error('Error enriching brand:', brand.name, err.message);
+                throw err;
+            }
         }));
+
+        // Filter out rejected promises
+        const brandResults = enrichedBrands
+            .filter(result => result.status === 'fulfilled')
+            .map(result => result.value);
 
         return res.status(200).json({
             success: true,
-            data: enrichedBrands,
+            data: brandResults,
             pagination: {
                 page: parseInt(page),
                 limit: parseInt(limit),

@@ -133,11 +133,12 @@ exports.searchInfluencersByLocation = async (req, res) => {
         const { city, state, country, zipCode, limit = 20, page = 1, category } = req.query;
 
         const skip = (page - 1) * limit;
-        let filter = { isApproved: true };
+        // Simplified filter - don't require isApproved
+        let filter = {};
 
-        if (city) filter['location.city'] = { $regex: city, $options: 'i' };
-        if (state) filter['location.state'] = { $regex: state, $options: 'i' };
-        if (country) filter['location.country'] = { $regex: country, $options: 'i' };
+        if (city) filter.city = { $regex: city, $options: 'i' };
+        if (state) filter.state = { $regex: state, $options: 'i' };
+        if (country) filter.country = { $regex: country, $options: 'i' };
         if (category) filter.categoryInstagram = category;
 
         const influencers = await Influencer.find(filter)
@@ -368,8 +369,9 @@ exports.getNearbyActiveCampaigns = async (req, res) => {
         const lat = parseFloat(latitude);
         const lon = parseFloat(longitude);
 
+        // Simplified filter for nearby campaigns
         let filter = {
-            status: { $in: ['ACTIVE', 'LIVE'] },
+            status: { $in: ['ACTIVE', 'LIVE', 'Active'] }, // Include 'Active' status
             budget: { $gte: parseInt(minBudget), $lte: parseInt(maxBudget) }
         };
         if (category) filter.category = category;
@@ -389,8 +391,8 @@ exports.getNearbyActiveCampaigns = async (req, res) => {
 
             return {
                 _id: camp._id,
-                title: camp.title,
-                description: camp.description,
+                title: camp.title || camp.campaignName, // Fallback to campaignName
+                description: camp.description || camp.campaignBrief, // Fallback to campaignBrief
                 brand: {
                     id: camp.brandId?._id,
                     name: camp.brandId?.name,
@@ -410,7 +412,7 @@ exports.getNearbyActiveCampaigns = async (req, res) => {
                 applications: camp.applicationCount || 0,
                 acceptedInfluencers: camp.selectedInfluencersCount || 0,
                 productImages: camp.productImages || [],
-                status: camp.status === 'ACTIVE' ? 'active' : 'ending_soon'
+                status: camp.status === 'ACTIVE' || camp.status === 'Active' ? 'active' : 'ending_soon'
             };
         });
 
@@ -431,6 +433,81 @@ exports.getNearbyActiveCampaigns = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: 'Error fetching nearby campaigns',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * GET /api/campaigns/location/search
+ * Search campaigns by location (city/state)
+ */
+exports.searchCampaignsByLocation = async (req, res) => {
+    try {
+        const { city, state, country, category, minBudget = 0, maxBudget = Number.MAX_SAFE_INTEGER, limit = 12, page = 1 } = req.query;
+
+        const skip = (page - 1) * limit;
+        let filter = {
+            status: { $in: ['ACTIVE', 'LIVE', 'Active'] }
+        };
+
+        if (minBudget > 0 || maxBudget < Number.MAX_SAFE_INTEGER) {
+            filter.budget = { $gte: parseInt(minBudget), $lte: parseInt(maxBudget) };
+        }
+        if (category) filter.category = category;
+
+        let campaignFilter = { ...filter };
+
+        // Filter by campaign's own location if provided
+        if (city) campaignFilter.city = { $regex: city, $options: 'i' };
+        if (state) campaignFilter.state = { $regex: state, $options: 'i' };
+        if (country) campaignFilter.country = { $regex: country, $options: 'i' };
+
+        const campaigns = await Campaign.find(campaignFilter)
+            .populate('brandId', 'name companyName avatar')
+            .skip(skip)
+            .limit(parseInt(limit))
+            .lean();
+
+        const enrichedCampaigns = campaigns.map(camp => ({
+            _id: camp._id,
+            title: camp.title || camp.campaignName,
+            description: camp.description || camp.campaignBrief,
+            brand: {
+                id: camp.brandId?._id,
+                name: camp.brandId?.name
+            },
+            location: {
+                city: camp.city,
+                state: camp.state,
+                country: camp.country
+            },
+            budget: camp.budget,
+            category: camp.category || [],
+            daysLeft: camp.endDate ? Math.ceil((new Date(camp.endDate) - new Date()) / (1000 * 60 * 60 * 24)) : 0,
+            applications: camp.applicationCount || 0,
+            acceptedInfluencers: camp.selectedInfluencersCount || 0,
+            productImages: camp.productImages || [],
+            status: camp.status === 'ACTIVE' || camp.status === 'Active' ? 'active' : 'ending_soon'
+        }));
+
+        const total = await Campaign.countDocuments(campaignFilter);
+
+        return res.status(200).json({
+            success: true,
+            data: enrichedCampaigns,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                pages: Math.ceil(total / parseInt(limit))
+            }
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Error searching campaigns by location',
             error: error.message
         });
     }

@@ -398,3 +398,141 @@ exports.getTrendingCampaignsForMe = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error fetching personalized campaigns', error: error.message });
     }
 };
+
+/**
+ * PATCH /api/campaigns/:campaignId/applications/:influencerId/approve
+ * Brand approves influencer application
+ */
+exports.approveApplication = async (req, res) => {
+    try {
+        const { campaignId, influencerId } = req.params;
+        const brandId = req.user.id;
+
+        if (!mongoose.Types.ObjectId.isValid(campaignId)) {
+            return res.status(400).json({ success: false, message: 'Invalid campaign ID' });
+        }
+
+        // Verify campaign ownership
+        const campaign = await Campaign.findOne({
+            _id: campaignId,
+            userId: brandId
+        });
+
+        if (!campaign) {
+            return res.status(404).json({ success: false, message: 'Campaign not found or unauthorized' });
+        }
+
+        // Find and update application
+        const appIndex = campaign.applications?.findIndex(
+            app => app.influencerId.toString() === influencerId
+        );
+
+        if (appIndex === -1 || appIndex === undefined) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        campaign.applications[appIndex].status = 'APPROVED';
+        campaign.applications[appIndex].acceptedAt = new Date();
+        campaign.updatedAt = Date.now();
+
+        await campaign.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Application approved successfully',
+            data: campaign.applications[appIndex]
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error approving application', error: error.message });
+    }
+};
+
+/**
+ * PATCH /api/campaigns/:campaignId/applications/:influencerId/reject
+ * Brand rejects influencer application with reason
+ */
+exports.rejectApplication = async (req, res) => {
+    try {
+        const { campaignId, influencerId } = req.params;
+        const { reason } = req.body;
+        const brandId = req.user.id;
+
+        if (!mongoose.Types.ObjectId.isValid(campaignId)) {
+            return res.status(400).json({ success: false, message: 'Invalid campaign ID' });
+        }
+
+        // Verify campaign ownership
+        const campaign = await Campaign.findOne({
+            _id: campaignId,
+            userId: brandId
+        });
+
+        if (!campaign) {
+            return res.status(404).json({ success: false, message: 'Campaign not found or unauthorized' });
+        }
+
+        // Find and update application
+        const appIndex = campaign.applications?.findIndex(
+            app => app.influencerId.toString() === influencerId
+        );
+
+        if (appIndex === -1 || appIndex === undefined) {
+            return res.status(404).json({ success: false, message: 'Application not found' });
+        }
+
+        campaign.applications[appIndex].status = 'REJECTED';
+        campaign.applications[appIndex].rejectionReason = reason || 'No reason provided';
+        campaign.applications[appIndex].rejectedAt = new Date();
+        campaign.updatedAt = Date.now();
+
+        await campaign.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Application rejected successfully',
+            data: campaign.applications[appIndex]
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error rejecting application', error: error.message });
+    }
+};
+
+/**
+ * GET /api/campaigns/:campaignId/applications
+ * Get all applications for a campaign (brand only)
+ */
+exports.getCampaignApplications = async (req, res) => {
+    try {
+        const { campaignId } = req.params;
+        const brandId = req.user.id;
+        const { status } = req.query;
+
+        if (!mongoose.Types.ObjectId.isValid(campaignId)) {
+            return res.status(400).json({ success: false, message: 'Invalid campaign ID' });
+        }
+
+        const campaign = await Campaign.findOne({
+            _id: campaignId,
+            userId: brandId
+        });
+
+        if (!campaign) {
+            return res.status(404).json({ success: false, message: 'Campaign not found or unauthorized' });
+        }
+
+        let applications = campaign.applications || [];
+
+        // Filter by status if provided
+        if (status) {
+            applications = applications.filter(app => app.status === status);
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: applications,
+            total: applications.length
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error fetching applications', error: error.message });
+    }
+};

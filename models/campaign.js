@@ -2,7 +2,10 @@ const mongoose = require('mongoose');
 
 const campaignSchema = mongoose.Schema({
     // Brand info
-    brandId: mongoose.Schema.Types.ObjectId,
+    brandId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    },
 
     // Campaign images
     productImages: [String],
@@ -73,7 +76,10 @@ const campaignSchema = mongoose.Schema({
     applicants: [mongoose.Schema.Types.ObjectId],
 
     // Selected influencers
-    selectedInfluencers: [mongoose.Schema.Types.ObjectId],
+    selectedInfluencers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    }],
 
     // AI Suggested influencers
     suggestedInfluencers: [{

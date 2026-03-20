@@ -6,28 +6,16 @@ const authMiddleware = require('../middleware/authMiddleware');
 // All routes require authentication
 router.use(authMiddleware);
 
-// Get all notification settings
+// Get and update notification settings
 router.get('/', notificationSettingsController.getNotificationSettings);
+router.patch('/', notificationSettingsController.updateNotificationSettings);
 
-// Update email notifications
-router.put('/email', notificationSettingsController.updateEmailNotifications);
+// Update specific notification channels
+router.patch('/email', notificationSettingsController.updateEmailSettings);
+router.patch('/push', notificationSettingsController.updatePushSettings);
+router.patch('/sms', notificationSettingsController.updateSmsSettings);
 
-// Update push notifications
-router.put('/push', notificationSettingsController.updatePushNotifications);
-
-// Update SMS notifications
-router.put('/sms', notificationSettingsController.updateSmsNotifications);
-
-// Update notification frequency
-router.put('/frequency', notificationSettingsController.updateNotificationFrequency);
-
-// Disable all notifications
-router.post('/disable-all', notificationSettingsController.disableAllNotifications);
-
-// Enable all notifications
-router.post('/enable-all', notificationSettingsController.enableAllNotifications);
-
-// Get notification preferences
-router.get('/preferences', notificationSettingsController.getNotificationPreferences);
+// Unsubscribe from all
+router.patch('/unsubscribe-all', notificationSettingsController.unsubscribeAll);
 
 module.exports = router;

@@ -74,6 +74,53 @@ app.use(cors({
 // Request logging middleware
 app.use(morganMiddleware)
 
+// Mount all routes BEFORE starting the server
+app.use("/api/auth", authRoute)
+app.use("/api/users", usersRoute)
+app.use("/api/influencers", influencersRoute)
+app.use("/api/campaigns", campaignsRoute)
+app.use("/api/conversations", conversationsRoute)
+app.use("/api/messages", messagesRoute)
+app.use("/api/files", filesRoute)
+app.use("/api/influencer-data", influencerDataRoute)
+app.use("/api/projects", projectsRoute)
+app.use("/api/portfolios", portfoliosRoute)
+app.use("/api/payments", paymentsRoute)
+app.use("/api/admin", adminRoute)
+app.use("/api/brand", brandRoute)
+app.use("/api/influencer", influencerRoute)
+app.use("/api/brand-requests", brandRequestsRoute)
+app.use("/api/influencer-requests", influencerRequestsRoute)
+app.use("/api/notifications", notificationsRoute)
+app.use("/api/trending", trendingRoute)
+app.use("/api", locationsRoute)
+app.use("/api/campaigns", campaignDetailRoute)
+app.use("/api/campaigns", campaignApplicationRoute)
+app.use("/api/discover", discoveryRoute)
+app.use("/api/account", accountRoute)
+app.use("/api", messagesAndNotificationsRoute)
+app.use("/api/help", helpSupportRoute)
+app.use("/api/profile", userProfileRoute)
+app.use("/api/favorites", favoritesRoute)
+app.use("/api/reviews", reviewsRoute)
+app.use("/api/analytics", analyticsRoute)
+app.use("/api/collaborations", collaborationRoute)
+app.use("/api/campaign-status", campaignStatusRoute)
+app.use("/api/campaign-management", campaignManagementRoute)
+app.use("/api/advanced-campaigns", advancedCampaignRoute)
+app.use("/api/subscriptions", subscriptionsRoute)
+app.use("/api/notification-settings", notificationSettingsRoute)
+app.use("/api/profile", profileRoute)
+app.use("/api/sms", smsRoute)
+app.use("/api/lists", listsRoute)
+app.use("/api/payment-methods", paymentMethodsRoute)
+
+// 404 Handler - catch undefined routes
+app.use(notFoundHandler)
+
+// Global error handler - must be last
+app.use(errorHandler)
+
 // Initialize server after MongoDB connection
 connectToMongo(process.env.MONGO_URI)
     .then(() => {
@@ -737,54 +784,6 @@ app.patch("/editInfluencer/:username", async (req, res) => {
         });
     }
 })
-
-// Mount all routes
-app.use("/api/auth", authRoute)
-app.use("/api/users", usersRoute)
-app.use("/api/influencers", influencersRoute)
-app.use("/api/campaigns", campaignsRoute)
-app.use("/api/conversations", conversationsRoute)
-app.use("/api/messages", messagesRoute)
-app.use("/api/files", filesRoute)
-app.use("/api/influencer-data", influencerDataRoute)
-app.use("/api/projects", projectsRoute)
-app.use("/api/portfolios", portfoliosRoute)
-app.use("/api/payments", paymentsRoute)
-app.use("/api/admin", adminRoute)
-app.use("/api/brand", brandRoute)
-app.use("/api/influencer", influencerRoute)
-app.use("/api/brand-requests", brandRequestsRoute)
-app.use("/api/influencer-requests", influencerRequestsRoute)
-app.use("/api/notifications", notificationsRoute)
-app.use("/api/trending", trendingRoute)
-app.use("/api", locationsRoute)
-app.use("/api/campaigns", campaignDetailRoute)
-app.use("/api/campaigns", campaignApplicationRoute)
-app.use("/api/discover", discoveryRoute)
-app.use("/api/account", accountRoute)
-app.use("/api", messagesAndNotificationsRoute)
-app.use("/api/help", helpSupportRoute)
-app.use("/api/profile", userProfileRoute)
-app.use("/api/favorites", favoritesRoute)
-app.use("/api/reviews", reviewsRoute)
-app.use("/api/analytics", analyticsRoute)
-app.use("/api/collaborations", collaborationRoute)
-app.use("/api/campaign-status", campaignStatusRoute)
-app.use("/api/campaign-management", campaignManagementRoute)
-app.use("/api/advanced-campaigns", advancedCampaignRoute)
-app.use("/api/subscriptions", subscriptionsRoute)
-app.use("/api/notification-settings", notificationSettingsRoute)
-app.use("/api/profile", profileRoute)
-app.use("/api/sms", smsRoute)
-app.use("/api/lists", listsRoute)
-app.use("/api/payment-methods", paymentMethodsRoute)
-
-// 404 Handler - catch undefined routes
-app.use(notFoundHandler)
-
-// Global error handler - must be last
-app.use(errorHandler)
-
 // WebSocket setup
 io.on('connection', (socket) => {
     console.log('New WebSocket connection:', socket.id);

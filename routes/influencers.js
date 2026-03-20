@@ -3,7 +3,7 @@ const router = express.Router();
 const {
     getAllInfluencers,
     getInfluencerById,
-} = require('../controllers/authController');
+} = require('../controllers/influencerController');
 
 // Public routes - No authentication required
 router.get('/', getAllInfluencers);

@@ -1,2 +1,10 @@
 /node_modules
 /.env
+/dist
+/.DS_Store
+/logs/*.log
+/server-*.log
+/targeted-server-*.log
+/targeted-qa-report.json
+/scripts/swagger-api-test-*.json
+/scripts/swagger-api-tests.sh

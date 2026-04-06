@@ -1,0 +1,3084 @@
+{
+  "info": {
+    "name": "Phyo Server API",
+    "description": "Complete API collection for Phyo Server TypeScript Backend with One-on-One Chat System. Features include real-time messaging, file uploads, online status tracking, typing indicators, and message read receipts.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "phyo-server-api-v1"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "conversation_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "message_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "s3_image_key",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "project_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "portfolio_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "google_id_token",
+      "value": "your_google_id_token_here",
+      "type": "string"
+    },
+    {
+      "key": "authorization_code",
+      "value": "your_authorization_code_here",
+      "type": "string"
+    },
+    {
+      "key": "razorpay_order_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "User Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"type\": \"INFLUENCER\",\n  \"name\": \"John Doe\",\n  \"username\": \"johndoe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "signup"]
+            },
+            "description": "Register a new user account (sends OTP to email for verification)"
+          }
+        },
+        {
+          "name": "User Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "login"]
+            },
+            "description": "Login with email and password (requires email verification)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.globals.set('auth_token', response.token);",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "forgot-password"]
+            },
+            "description": "Send password reset verification code"
+          }
+        },
+        {
+          "name": "Verify Reset Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/verify-code",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "verify-code"]
+            },
+            "description": "Verify password reset code"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "reset-password"]
+            },
+            "description": "Reset user password"
+          }
+        },
+        {
+          "name": "Verify Email OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/verify-otp",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "verify-otp"]
+            },
+            "description": "Verify email OTP after registration"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.globals.set('auth_token', response.token);",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resend Email OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/resend-otp",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "resend-otp"]
+            },
+            "description": "Resend email verification OTP"
+          }
+        },
+        {
+          "name": "Get All Influencers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/user/influencers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "influencers"]
+            },
+            "description": "Get list of all influencers"
+          }
+        },
+        {
+          "name": "Get Influencer by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/user/influencer/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "influencer", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "USER_ID_HERE"
+                }
+              ]
+            },
+            "description": "Get specific influencer by ID"
+          }
+        },
+        {
+          "name": "Google OAuth - BRAND Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{google_id_token}}\",\n  \"type\": \"BRAND\",\n  \"companyName\": \"Test Company\",\n  \"industry\": \"Technology\",\n  \"website\": \"https://testcompany.com\",\n  \"description\": \"A test company for OAuth testing\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/google",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "google"]
+            },
+            "description": "Test Google OAuth signup for BRAND user type"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.globals.set('auth_token', response.token);",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Google OAuth - INFLUENCER Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{google_id_token}}\",\n  \"type\": \"INFLUENCER\",\n  \"name\": \"Test Influencer\",\n  \"username\": \"testinfluencer\",\n  \"bio\": \"A test influencer for OAuth testing\",\n  \"profilePicture\": \"https://example.com/profile.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/google",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "google"]
+            },
+            "description": "Test Google OAuth signup for INFLUENCER user type"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.globals.set('auth_token', response.token);",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Google OAuth - SERVICE_PROVIDER Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{google_id_token}}\",\n  \"type\": \"SERVICE_PROVIDER\",\n  \"companyName\": \"Test Services\",\n  \"services\": [\"Marketing\", \"Design\", \"Development\"],\n  \"description\": \"A test service provider for OAuth testing\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/google",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "google"]
+            },
+            "description": "Test Google OAuth signup for SERVICE_PROVIDER user type"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.globals.set('auth_token', response.token);",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Google OAuth - Missing Type Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{google_id_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/google",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "google"]
+            },
+            "description": "Test error handling when user type is missing"
+          }
+        },
+        {
+          "name": "Google OAuth - Invalid Type Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{google_id_token}}\",\n  \"type\": \"INVALID_TYPE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/google",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "google"]
+            },
+            "description": "Test error handling when user type is invalid"
+          }
+        },
+        {
+          "name": "Google OAuth - Missing Token Error",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"BRAND\",\n  \"companyName\": \"Test Company\",\n  \"industry\": \"Technology\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/google",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "google"]
+            },
+            "description": "Test error handling when Google ID token is missing"
+          }
+        },
+        {
+          "name": "Google OAuth Callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/user/google/callback?code={{authorization_code}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "google", "callback"],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "{{authorization_code}}"
+                }
+              ]
+            },
+            "description": "Test Google OAuth callback endpoint"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.globals.set('auth_token', response.token);",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Authentication and user registration endpoints"
+    },
+    {
+      "name": "User Management",
+      "item": [
+        {
+          "name": "Get User Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "Get current user's profile"
+          }
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"bio\": \"Updated bio\",\n  \"about\": \"I'm a passionate content creator with 5+ years of experience in digital marketing and brand storytelling. I love connecting with audiences through authentic content.\",\n  \"profilePicture\": \"https://example.com/avatar.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "Update current user's profile including name, bio, about section, and profile picture"
+          }
+        },
+        {
+          "name": "Search Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/search?q=john&type=INFLUENCER&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "john",
+                  "description": "Search query"
+                },
+                {
+                  "key": "type",
+                  "value": "INFLUENCER",
+                  "description": "User type filter"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Results per page"
+                }
+              ]
+            },
+            "description": "Search for users with filters"
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "USER_ID_HERE"
+                }
+              ]
+            },
+            "description": "Get user information by ID"
+          }
+        },
+        {
+          "name": "Delete User Account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/users/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "Delete current user's account"
+          }
+        }
+      ],
+      "description": "User profile and management endpoints"
+    },
+    {
+      "name": "Conversations",
+      "item": [
+        {
+          "name": "Create Conversation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"participantId\": \"{{user_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/conversation",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversation"]
+            },
+            "description": "Create a new conversation with another user"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('conversation_id', response.data._id);",
+                  "        console.log('Conversation ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User Conversations",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/conversation",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversation"]
+            },
+            "description": "Get all conversations for the current user"
+          }
+        },
+        {
+          "name": "Get Conversation by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/conversation/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversation", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{conversation_id}}"
+                }
+              ]
+            },
+            "description": "Get specific conversation by ID"
+          }
+        },
+        {
+          "name": "Delete Conversation",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/conversation/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "conversation", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{conversation_id}}"
+                }
+              ]
+            },
+            "description": "Delete a conversation"
+          }
+        }
+      ],
+      "description": "Conversation management endpoints"
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Send Text Message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": \"{{conversation_id}}\",\n  \"content\": \"Hello, this is a test message!\",\n  \"messageType\": \"text\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages"]
+            },
+            "description": "Send a text message in a conversation"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('message_id', response.data._id);",
+                  "        console.log('Message ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Send Media Message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"conversationId\": \"{{conversation_id}}\",\n  \"messageType\": \"image\",\n  \"mediaUrl\": \"https://your-s3-bucket.s3.amazonaws.com/chat-images/uuid.jpg\",\n  \"mediaKey\": \"{{s3_image_key}}\",\n  \"fileName\": \"image.jpg\",\n  \"fileSize\": 1024000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/messages",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages"]
+            },
+            "description": "Send a media message (image/file) in a conversation"
+          }
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/messages/:conversationId?page=1&limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", ":conversationId"],
+              "variable": [
+                {
+                  "key": "conversationId",
+                  "value": "{{conversation_id}}"
+                }
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Messages per page"
+                }
+              ]
+            },
+            "description": "Get messages from a conversation with pagination"
+          }
+        },
+        {
+          "name": "Mark Message as Read",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/messages/:id/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", ":id", "read"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{message_id}}"
+                }
+              ]
+            },
+            "description": "Mark a message as read"
+          }
+        },
+        {
+          "name": "Delete Message",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/messages/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "messages", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{message_id}}"
+                }
+              ]
+            },
+            "description": "Delete a message"
+          }
+        }
+      ],
+      "description": "Message handling endpoints"
+    },
+    {
+      "name": "File Upload",
+      "item": [
+        {
+          "name": "Upload Chat Image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "conversationId",
+                  "value": "{{conversation_id}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/upload/chat-image",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "chat-image"]
+            },
+            "description": "Upload an image for chat messages to S3"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.key) {",
+                  "        pm.collectionVariables.set('s3_image_key', response.data.key);",
+                  "        console.log('S3 Image Key saved:', response.data.key);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Chat Image",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/upload/chat-image/:key",
+              "host": ["{{base_url}}"],
+              "path": ["api", "upload", "chat-image", ":key"],
+              "variable": [
+                {
+                  "key": "key",
+                  "value": "{{s3_image_key}}"
+                }
+              ]
+            },
+            "description": "Delete an image from S3 using its key"
+          }
+        }
+      ],
+      "description": "File upload and management endpoints for chat images"
+    },
+    {
+      "name": "Campaigns",
+      "item": [
+        {
+          "name": "Create Campaign",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "productImages",
+                  "type": "file",
+                  "src": [],
+                  "description": "Product image files (required) - can upload multiple files"
+                },
+                {
+                  "key": "campaignName",
+                  "value": "Summer Fashion Campaign 2024",
+                  "type": "text",
+                  "description": "Name of the campaign"
+                },
+                {
+                  "key": "campaignType",
+                  "value": "Product Promotion",
+                  "type": "text",
+                  "description": "Type of campaign"
+                },
+                {
+                  "key": "campaignBrief",
+                  "value": "We're looking for fashion influencers to showcase our summer collection with authentic styling and engaging content. The campaign will focus on highlighting the versatility and comfort of our summer pieces through creative storytelling and lifestyle content.",
+                  "type": "text",
+                  "description": "Campaign description"
+                },
+                {
+                  "key": "deliverables",
+                  "value": "[\"1 Instagram Post\", \"3 Instagram Stories\", \"1 Reel\"]",
+                  "type": "text",
+                  "description": "Array of deliverables"
+                },
+                {
+                  "key": "compensation",
+                  "value": "{\"type\":\"Monetary\",\"amount\":500,\"currency\":\"USD\",\"description\":\"Payment within 30 days of content delivery\"}",
+                  "type": "text",
+                  "description": "Compensation details"
+                },
+                {
+                  "key": "budget",
+                  "value": "500",
+                  "type": "text",
+                  "description": "Campaign budget"
+                },
+                {
+                  "key": "timelines",
+                  "value": "{\"applicationDeadline\":\"2024-03-15T23:59:59.000Z\",\"campaignStartDate\":\"2024-03-20T00:00:00.000Z\",\"campaignEndDate\":\"2024-04-15T23:59:59.000Z\"}",
+                  "type": "text",
+                  "description": "Campaign timelines"
+                },
+                {
+                  "key": "targetInfluencer",
+                  "value": "{\"numberOfInfluencers\":5,\"targetNiche\":[\"Fashion\",\"Lifestyle\"],\"followerCount\":{\"min\":10000,\"max\":100000},\"countries\":[\"United States\",\"Canada\"],\"gender\":[\"Female\"],\"ageRange\":{\"min\":18,\"max\":35}}",
+                  "type": "text",
+                  "description": "Target influencer criteria"
+                },
+                {
+                  "key": "numberOfLivePosts",
+                  "value": "2",
+                  "type": "text",
+                  "description": "Number of live posts (optional)"
+                },
+                {
+                  "key": "reels",
+                  "value": "[\"https://example.com/reel1.mp4\", \"https://example.com/reel2.mp4\"]",
+                  "type": "text",
+                  "description": "Array of reel URLs (optional)"
+                },
+                {
+                  "key": "status",
+                  "value": "Draft",
+                  "type": "text",
+                  "description": "Campaign status (optional, defaults to 'Draft')"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/campaigns",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns"]
+            },
+            "description": "Create a new campaign with product image upload support. Upload product image files and provide all campaign details. Required fields: productImages, campaignName, campaignType, campaignBrief, deliverables, compensation, budget, timelines, targetInfluencer. Optional fields: numberOfLivePosts, reels, status (defaults to 'Draft')."
+          }
+        },
+        {
+          "name": "Get All Campaigns",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/campaigns?status=Active&niche=Fashion&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Active",
+                  "description": "Filter by campaign status",
+                  "disabled": true
+                },
+                {
+                  "key": "campaignType",
+                  "value": "Product Promotion",
+                  "description": "Filter by campaign type",
+                  "disabled": true
+                },
+                {
+                  "key": "brandId",
+                  "value": "BRAND_USER_ID",
+                  "description": "Filter by brand ID",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "fashion",
+                  "description": "Search in campaign name, brief, or type",
+                  "disabled": true
+                },
+                {
+                  "key": "niche",
+                  "value": "Fashion",
+                  "description": "Filter by target niche",
+                  "disabled": true
+                },
+                {
+                  "key": "minBudget",
+                  "value": "100",
+                  "description": "Minimum budget filter",
+                  "disabled": true
+                },
+                {
+                  "key": "maxBudget",
+                  "value": "1000",
+                  "description": "Maximum budget filter",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Get all campaigns with optional filtering and pagination"
+          }
+        },
+        {
+          "name": "Get Campaign by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/campaigns/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CAMPAIGN_ID_HERE"
+                }
+              ]
+            },
+            "description": "Get detailed information about a specific campaign"
+          }
+        },
+        {
+          "name": "Get My Campaigns (Brand)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/campaigns/brand/my-campaigns?status=Active&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns", "brand", "my-campaigns"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Active",
+                  "description": "Filter by campaign status",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Get campaigns created by the authenticated brand user"
+          }
+        },
+        {
+          "name": "Update Campaign",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "productImages",
+                  "type": "file",
+                  "src": [],
+                  "description": "New product image files (optional) - can upload multiple files"
+                },
+                {
+                  "key": "campaignName",
+                  "value": "Updated Campaign Name",
+                  "type": "text",
+                  "description": "Updated campaign name (optional)"
+                },
+                {
+                  "key": "status",
+                  "value": "Active",
+                  "type": "text",
+                  "description": "Updated campaign status (optional)"
+                },
+                {
+                  "key": "compensation",
+                  "value": "{\"type\":\"Monetary\",\"amount\":600,\"currency\":\"USD\",\"description\":\"Updated compensation details\"}",
+                  "type": "text",
+                  "description": "Updated compensation details (optional)"
+                },
+                {
+                  "key": "budget",
+                  "value": "600",
+                  "type": "text",
+                  "description": "Updated budget (optional)"
+                },
+                {
+                  "key": "deliverables",
+                  "value": "[\"2 Instagram Posts\", \"5 Instagram Stories\", \"1 Reel\"]",
+                  "type": "text",
+                  "description": "Updated deliverables (optional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/campaigns/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CAMPAIGN_ID_HERE"
+                }
+              ]
+            },
+            "description": "Update campaign details with optional product image upload (only for campaign owner and non-completed campaigns)"
+          }
+        },
+        {
+          "name": "Delete Campaign",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/campaigns/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CAMPAIGN_ID_HERE"
+                }
+              ]
+            },
+            "description": "Delete a campaign (restrictions apply for active campaigns with applicants)"
+          }
+        },
+        {
+          "name": "Apply to Campaign",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/campaigns/:id/apply",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns", ":id", "apply"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CAMPAIGN_ID_HERE"
+                }
+              ]
+            },
+            "description": "Apply to a campaign as an influencer"
+          }
+        },
+        {
+          "name": "Select Influencer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"influencerId\": \"INFLUENCER_USER_ID_HERE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/campaigns/:id/select",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns", ":id", "select"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "CAMPAIGN_ID_HERE"
+                }
+              ]
+            },
+            "description": "Select an influencer who has applied to the campaign (for brand owners)"
+          }
+        },
+        {
+          "name": "Create Campaign - Barter/Gifting",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "productImages",
+                  "type": "file",
+                  "src": [],
+                  "description": "Product image files (required) - can upload multiple files"
+                },
+                {
+                  "key": "campaignName",
+                  "value": "Winter Collection Launch",
+                  "type": "text",
+                  "description": "Name of the campaign"
+                },
+                {
+                  "key": "campaignType",
+                  "value": "Product Launch",
+                  "type": "text",
+                  "description": "Type of campaign"
+                },
+                {
+                  "key": "campaignBrief",
+                  "value": "Launch our new winter collection with authentic content showcasing cozy sweaters and jackets. We want influencers to create engaging content that highlights the warmth, style, and versatility of our winter pieces.",
+                  "type": "text",
+                  "description": "Campaign description"
+                },
+                {
+                  "key": "deliverables",
+                  "value": "[\"1 Instagram Post with styling\", \"3 Instagram Stories\", \"1 Reel\"]",
+                  "type": "text",
+                  "description": "Array of deliverables"
+                },
+                {
+                  "key": "compensation",
+                  "value": "{\"type\":\"Barter/Gifting\",\"giftValue\":300,\"products\":[\"Winter Sweater\",\"Wool Jacket\"],\"description\":\"Free products worth $300 plus future collaboration potential\"}",
+                  "type": "text",
+                  "description": "Compensation details for barter/gifting"
+                },
+                {
+                  "key": "budget",
+                  "value": "300",
+                  "type": "text",
+                  "description": "Campaign budget"
+                },
+                {
+                  "key": "timelines",
+                  "value": "{\"applicationDeadline\":\"2024-03-10T23:59:59.000Z\",\"campaignStartDate\":\"2024-03-15T00:00:00.000Z\",\"campaignEndDate\":\"2024-04-01T23:59:59.000Z\"}",
+                  "type": "text",
+                  "description": "Campaign timelines"
+                },
+                {
+                  "key": "targetInfluencer",
+                  "value": "{\"numberOfInfluencers\":3,\"targetNiche\":[\"Fashion\",\"Lifestyle\",\"Winter Fashion\"],\"followerCount\":{\"min\":5000,\"max\":50000},\"countries\":[\"United States\",\"Canada\",\"United Kingdom\"],\"gender\":[\"Female\",\"Male\"],\"ageRange\":{\"min\":20,\"max\":40}}",
+                  "type": "text",
+                  "description": "Target influencer criteria"
+                },
+                {
+                  "key": "numberOfLivePosts",
+                  "value": "1",
+                  "type": "text",
+                  "description": "Number of live posts (optional)"
+                },
+                {
+                  "key": "reels",
+                  "value": "[\"https://example.com/winter-reel.mp4\"]",
+                  "type": "text",
+                  "description": "Array of reel URLs (optional)"
+                },
+                {
+                  "key": "status",
+                  "value": "Active",
+                  "type": "text",
+                  "description": "Campaign status (optional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/campaigns",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns"]
+            },
+            "description": "Example of creating a campaign with Barter/Gifting compensation type and product image upload support. Shows how to structure compensation for product gifting campaigns."
+          }
+        },
+        {
+          "name": "Create Campaign - Affiliate/Commission",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "productImages",
+                  "type": "file",
+                  "src": [],
+                  "description": "Product image files (required) - can upload multiple files"
+                },
+                {
+                  "key": "campaignName",
+                  "value": "Tech Product Affiliate Campaign",
+                  "type": "text",
+                  "description": "Name of the campaign"
+                },
+                {
+                  "key": "campaignType",
+                  "value": "Affiliate Marketing",
+                  "type": "text",
+                  "description": "Type of campaign"
+                },
+                {
+                  "key": "campaignBrief",
+                  "value": "Promote our latest tech gadget with authentic reviews and demonstrations. We're looking for tech influencers who can create compelling content that showcases the product's features and benefits to their audience.",
+                  "type": "text",
+                  "description": "Campaign description"
+                },
+                {
+                  "key": "deliverables",
+                  "value": "[\"1 Review Post\", \"1 Unboxing Reel\", \"Product Demo Stories\"]",
+                  "type": "text",
+                  "description": "Array of deliverables"
+                },
+                {
+                  "key": "compensation",
+                  "value": "{\"type\":\"Affiliate/Commission\",\"commissionRate\":15,\"description\":\"15% commission on all sales generated through your unique link\"}",
+                  "type": "text",
+                  "description": "Compensation details for affiliate/commission"
+                },
+                {
+                  "key": "budget",
+                  "value": "1500",
+                  "type": "text",
+                  "description": "Campaign budget"
+                },
+                {
+                  "key": "timelines",
+                  "value": "{\"applicationDeadline\":\"2024-04-01T23:59:59.000Z\",\"campaignStartDate\":\"2024-04-05T00:00:00.000Z\",\"campaignEndDate\":\"2024-05-05T23:59:59.000Z\"}",
+                  "type": "text",
+                  "description": "Campaign timelines"
+                },
+                {
+                  "key": "targetInfluencer",
+                  "value": "{\"numberOfInfluencers\":10,\"targetNiche\":[\"Tech\",\"Gadgets\",\"Reviews\"],\"followerCount\":{\"min\":20000,\"max\":500000},\"countries\":[\"United States\"],\"gender\":[\"Male\",\"Female\"],\"ageRange\":{\"min\":25,\"max\":45}}",
+                  "type": "text",
+                  "description": "Target influencer criteria"
+                },
+                {
+                  "key": "numberOfLivePosts",
+                  "value": "0",
+                  "type": "text",
+                  "description": "Number of live posts (optional)"
+                },
+                {
+                  "key": "reels",
+                  "value": "[\"https://example.com/tech-demo.mp4\"]",
+                  "type": "text",
+                  "description": "Array of reel URLs (optional)"
+                },
+                {
+                  "key": "status",
+                  "value": "Draft",
+                  "type": "text",
+                  "description": "Campaign status (optional)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/campaigns",
+              "host": ["{{base_url}}"],
+              "path": ["api", "campaigns"]
+            },
+            "description": "Example of creating a campaign with Affiliate/Commission compensation type and product image upload support. Shows how to structure compensation for affiliate marketing campaigns with commission rates."
+          }
+        }
+      ],
+      "description": "Campaign management endpoints for creating, managing, and tracking influencer marketing campaigns"
+    },
+    {
+      "name": "AI & Influencer Matching",
+      "item": [
+        {
+          "name": "AI Influencer Search",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prompt\": \"I need influencers in New York with 10k to 100k followers in the fashion category, primarily female audience aged 18-35\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ask",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ask"]
+            },
+            "description": "AI-powered influencer search using natural language"
+          }
+        },
+        {
+          "name": "Get Influencer Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/ask/details?userName=influencer_username",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ask", "details"],
+              "query": [
+                {
+                  "key": "userName",
+                  "value": "influencer_username",
+                  "description": "Instagram username of the influencer"
+                }
+              ]
+            },
+            "description": "Get detailed influencer information including analytics"
+          }
+        },
+        {
+          "name": "Debug Database Content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/ask/debug",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ask", "debug"]
+            },
+            "description": "Debug endpoint to check database content, categories, cities, and sample data"
+          }
+        },
+        {
+          "name": "Fetch Instagram Reel Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reelUrl\": \"https://www.instagram.com/reel/EXAMPLE_REEL_ID/\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ask/reel",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ask", "reel"]
+            },
+            "description": "Fetch Instagram reel data from Bright Data using the reel URL"
+          }
+        }
+      ],
+      "description": "AI-powered influencer matching and analytics"
+    },
+    {
+      "name": "Influencer Management",
+      "item": [
+        {
+          "name": "Create Influencer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Influencer\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/influencer",
+              "host": ["{{base_url}}"],
+              "path": ["influencer"]
+            },
+            "description": "Create a new influencer profile"
+          }
+        },
+        {
+          "name": "Edit Influencer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"averageViews\": 50000,\n  \"averageComments\": 250,\n  \"averageEngagement\": 3.5,\n  \"averageLikes\": 1500,\n  \"image\": \"https://example.com/profile.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/editInfluencer/:username",
+              "host": ["{{base_url}}"],
+              "path": ["editInfluencer", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "influencer_username"
+                }
+              ]
+            },
+            "description": "Update influencer analytics and profile data"
+          }
+        }
+      ],
+      "description": "Influencer profile management"
+    },
+    {
+      "name": "General",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Check if the server is running"
+          }
+        }
+      ],
+      "description": "General server endpoints"
+    },
+    {
+      "name": "Service Provider - Projects",
+      "item": [
+        {
+          "name": "Create Project",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"E-commerce Website Development\",\n  \"description\": \"Full-stack e-commerce solution with payment integration, admin panel, and responsive design\",\n  \"progressPercentage\": 25,\n  \"date\": \"2024-02-15T00:00:00.000Z\",\n  \"status\": \"In Progress\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/projects",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects"]
+            },
+            "description": "Create a new project (SERVICE_PROVIDER role required)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('project_id', response.data._id);",
+                  "        console.log('Project ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Projects",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/projects?status=In Progress&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "In Progress",
+                  "description": "Filter by project status",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Projects per page"
+                }
+              ]
+            },
+            "description": "Get all projects for the authenticated service provider with pagination and filtering"
+          }
+        },
+        {
+          "name": "Get Project by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/projects/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{project_id}}"
+                }
+              ]
+            },
+            "description": "Get specific project details by ID"
+          }
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"progressPercentage\": 75,\n  \"status\": \"In Progress\",\n  \"description\": \"Updated project description with latest progress\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/projects/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{project_id}}"
+                }
+              ]
+            },
+            "description": "Update project details including progress and status"
+          }
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/projects/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{project_id}}"
+                }
+              ]
+            },
+            "description": "Delete a project"
+          }
+        },
+        {
+          "name": "Get Project Statistics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/projects/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "projects", "stats"]
+            },
+            "description": "Get project statistics including total projects, average progress, and status breakdown"
+          }
+        }
+      ],
+      "description": "Project management endpoints for service providers"
+    },
+    {
+      "name": "Service Provider - Portfolios",
+      "item": [
+        {
+          "name": "Create Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Web Development Portfolio\",\n  \"description\": \"Showcase of my web development projects including e-commerce, SaaS platforms, and mobile apps\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/portfolios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios"]
+            },
+            "description": "Create a new portfolio (SERVICE_PROVIDER role required)"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('portfolio_id', response.data._id);",
+                  "        console.log('Portfolio ID saved:', response.data._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get All Portfolios",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/portfolios?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Portfolios per page"
+                }
+              ]
+            },
+            "description": "Get all portfolios for the authenticated service provider with pagination"
+          }
+        },
+        {
+          "name": "Get Portfolio by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{portfolio_id}}"
+                }
+              ]
+            },
+            "description": "Get specific portfolio details including all clients by ID"
+          }
+        },
+        {
+          "name": "Update Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Portfolio Title\",\n  \"description\": \"Updated portfolio description with new achievements\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{portfolio_id}}"
+                }
+              ]
+            },
+            "description": "Update portfolio title and description"
+          }
+        },
+        {
+          "name": "Delete Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{portfolio_id}}"
+                }
+              ]
+            },
+            "description": "Delete a portfolio and all its clients"
+          }
+        },
+        {
+          "name": "Add Client to Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectTitle\": \"E-commerce Platform Development\",\n  \"servicesProvided\": [\"Full-stack Development\", \"UI/UX Design\", \"Payment Integration\", \"SEO Optimization\"],\n  \"projectDuration\": \"4 months\",\n  \"projectStatus\": \"Completed\",\n  \"projectDescription\": \"Developed a complete e-commerce platform with modern design, secure payment processing, inventory management, and admin dashboard. Implemented responsive design for mobile and desktop users.\",\n  \"startDate\": \"2023-08-01T00:00:00.000Z\",\n  \"endDate\": \"2023-11-30T00:00:00.000Z\",\n  \"clientName\": \"TechCorp Solutions\",\n  \"budget\": 25000,\n  \"images\": [\"https://example.com/project1.jpg\", \"https://example.com/project2.jpg\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:portfolioId/clients",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":portfolioId", "clients"],
+              "variable": [
+                {
+                  "key": "portfolioId",
+                  "value": "{{portfolio_id}}"
+                }
+              ]
+            },
+            "description": "Add a new client project to the portfolio"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.clients && response.data.clients.length > 0) {",
+                  "        const lastClient = response.data.clients[response.data.clients.length - 1];",
+                  "        if (lastClient._id) {",
+                  "            pm.collectionVariables.set('client_id', lastClient._id);",
+                  "            console.log('Client ID saved:', lastClient._id);",
+                  "        }",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Client in Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"projectStatus\": \"Completed\",\n  \"endDate\": \"2024-01-15T00:00:00.000Z\",\n  \"budget\": 30000,\n  \"projectDescription\": \"Updated project description with final deliverables and achievements\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:portfolioId/clients/:clientId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":portfolioId", "clients", ":clientId"],
+              "variable": [
+                {
+                  "key": "portfolioId",
+                  "value": "{{portfolio_id}}"
+                },
+                {
+                  "key": "clientId",
+                  "value": "{{client_id}}"
+                }
+              ]
+            },
+            "description": "Update client project details in the portfolio"
+          }
+        },
+        {
+          "name": "Remove Client from Portfolio",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/:portfolioId/clients/:clientId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", ":portfolioId", "clients", ":clientId"],
+              "variable": [
+                {
+                  "key": "portfolioId",
+                  "value": "{{portfolio_id}}"
+                },
+                {
+                  "key": "clientId",
+                  "value": "{{client_id}}"
+                }
+              ]
+            },
+            "description": "Remove a client project from the portfolio"
+          }
+        },
+        {
+          "name": "Get Portfolio Statistics",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/portfolios/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "portfolios", "stats"]
+            },
+            "description": "Get portfolio statistics including total portfolios, clients, budget, and project status breakdown"
+          }
+        }
+      ],
+      "description": "Portfolio and client management endpoints for service providers"
+    },
+    {
+      "name": "Influencer Data Management",
+      "item": [
+        {
+          "name": "Create Influencer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Smith\",\n  \"categoryInstagram\": \"Fashion\",\n  \"categoryYouTube\": \"Lifestyle\",\n  \"user_name\": \"janesmith_fashion\",\n  \"city\": \"Los Angeles\",\n  \"state\": \"California\",\n  \"language\": \"English\",\n  \"gender\": \"Female\",\n  \"instagramData\": {\n    \"followers\": 75000,\n    \"link\": \"https://instagram.com/janesmith_fashion\",\n    \"genderDistribution\": [\n      { \"gender\": \"Female\", \"distribution\": 80 },\n      { \"gender\": \"Male\", \"distribution\": 20 }\n    ],\n    \"ageDistribution\": [\n      { \"age\": \"18-24\", \"value\": 45 },\n      { \"age\": \"25-34\", \"value\": 35 },\n      { \"age\": \"35-44\", \"value\": 20 }\n    ],\n    \"audienceByCountry\": [\n      { \"category\": \"country\", \"name\": \"United States\", \"value\": 60 },\n      { \"category\": \"country\", \"name\": \"Canada\", \"value\": 25 },\n      { \"category\": \"country\", \"name\": \"United Kingdom\", \"value\": 15 }\n    ],\n    \"collaborationCharges\": {\n      \"reel\": 2500,\n      \"story\": 800,\n      \"post\": 2000,\n      \"oneMonthDigitalRights\": 5000\n    }\n  },\n  \"youtubeData\": {\n    \"followers\": 25000,\n    \"link\": \"https://youtube.com/@janesmith\",\n    \"genderDistribution\": [\n      { \"gender\": \"Female\", \"distribution\": 75 },\n      { \"gender\": \"Male\", \"distribution\": 25 }\n    ],\n    \"ageDistribution\": [\n      { \"age\": \"18-24\", \"value\": 40 },\n      { \"age\": \"25-34\", \"value\": 40 },\n      { \"age\": \"35-44\", \"value\": 20 }\n    ],\n    \"audienceByCountry\": [\n      { \"category\": \"country\", \"name\": \"United States\", \"value\": 70 },\n      { \"category\": \"country\", \"name\": \"Canada\", \"value\": 20 },\n      { \"category\": \"country\", \"name\": \"United Kingdom\", \"value\": 10 }\n    ],\n    \"collaborationCharges\": {\n      \"reel\": 1500,\n      \"story\": 500,\n      \"post\": 1200,\n      \"oneMonthDigitalRights\": 3000\n    }\n  },\n  \"averageLikes\": 3500,\n  \"averageViews\": 15000,\n  \"averageComments\": 150,\n  \"averageEngagement\": 4.8,\n  \"image\": \"https://example.com/profile-jane.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/influencers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers"]
+            },
+            "description": "Create a new influencer profile with complete social media data"
+          }
+        },
+        {
+          "name": "Get All Influencers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/influencers?page=1&limit=10&sortBy=createdAt&sortOrder=desc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of items per page"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "createdAt",
+                  "description": "Field to sort by (name, createdAt, etc.)"
+                },
+                {
+                  "key": "sortOrder",
+                  "value": "desc",
+                  "description": "Sort order (asc or desc)"
+                }
+              ]
+            },
+            "description": "Get all influencers with pagination and sorting"
+          }
+        },
+        {
+          "name": "Search Influencers - General",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/influencers?search=jane&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "jane",
+                  "description": "Search across name and username"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Search influencers by name or username"
+          }
+        },
+        {
+          "name": "Search Influencers - By Name",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/influencers?name=jane&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "jane",
+                  "description": "Search by name"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Search influencers by name"
+          }
+        },
+        {
+          "name": "Search Influencers - By Username",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/influencers?user_name=jane&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers"],
+              "query": [
+                {
+                  "key": "user_name",
+                  "value": "jane",
+                  "description": "Search by username"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Search influencers by username"
+          }
+        },
+        {
+          "name": "Search Influencers - Advanced Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/influencers?city=Los Angeles&state=California&category=Fashion&gender=Female&page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers"],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "Los Angeles",
+                  "description": "Filter by city"
+                },
+                {
+                  "key": "state",
+                  "value": "California",
+                  "description": "Filter by state"
+                },
+                {
+                  "key": "category",
+                  "value": "Fashion",
+                  "description": "Filter by category (Instagram or YouTube)"
+                },
+                {
+                  "key": "gender",
+                  "value": "Female",
+                  "description": "Filter by gender"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Search influencers with multiple filters"
+          }
+        },
+        {
+          "name": "Get Influencer by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/influencers/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "INFLUENCER_ID_HERE"
+                }
+              ]
+            },
+            "description": "Get specific influencer by MongoDB ID"
+          }
+        },
+        {
+          "name": "Get Influencer by Username",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/influencers/username/:username",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers", "username", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "janesmith_fashion"
+                }
+              ]
+            },
+            "description": "Get specific influencer by username"
+          }
+        },
+        {
+          "name": "Update Influencer by ID",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Smith Updated\",\n  \"city\": \"New York\",\n  \"state\": \"New York\",\n  \"averageLikes\": 4000,\n  \"averageViews\": 18000,\n  \"averageEngagement\": 5.2,\n  \"instagramData.followers\": 80000,\n  \"youtubeData.followers\": 30000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/influencers/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "INFLUENCER_ID_HERE"
+                }
+              ]
+            },
+            "description": "Update influencer data by MongoDB ID"
+          }
+        },
+        {
+          "name": "Update Influencer by Username",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"averageLikes\": 4500,\n  \"averageViews\": 20000,\n  \"averageEngagement\": 5.5,\n  \"instagramData\": {\n    \"followers\": 85000,\n    \"collaborationCharges\": {\n      \"reel\": 3000,\n      \"story\": 1000,\n      \"post\": 2500,\n      \"oneMonthDigitalRights\": 6000\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/influencers/username/:username",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers", "username", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "janesmith_fashion"
+                }
+              ]
+            },
+            "description": "Update influencer data by username"
+          }
+        },
+        {
+          "name": "Delete Influencer by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/influencers/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "INFLUENCER_ID_HERE"
+                }
+              ]
+            },
+            "description": "Delete influencer by MongoDB ID"
+          }
+        },
+        {
+          "name": "Delete Influencer by Username",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/influencers/username/:username",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers", "username", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "janesmith_fashion"
+                }
+              ]
+            },
+            "description": "Delete influencer by username"
+          }
+        },
+        {
+          "name": "Get Influencer Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/influencers/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencers", "stats"]
+            },
+            "description": "Get influencer statistics including gender distribution, top categories, and location data"
+          }
+        }
+      ],
+      "description": "Complete CRUD operations for influencer data management with search and filtering capabilities"
+    },
+    {
+      "name": "Payment & Subscription Management",
+      "item": [
+        {
+          "name": "Get All Subscription Plans",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payment/plans",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payment", "plans"]
+            },
+            "description": "Get all available subscription plans (Bronze, Silver, Gold, Premium) with their features and pricing"
+          }
+        },
+        {
+          "name": "Get User's Current Plan",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payment/user-plan",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payment", "user-plan"]
+            },
+            "description": "Get current user's subscription plan information including credits, status, and features"
+          }
+        },
+        {
+          "name": "Get User's Credit Information",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payment/credits",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payment", "credits"]
+            },
+            "description": "Get detailed credit information including remaining credits, usage, and reset dates"
+          }
+        },
+        {
+          "name": "Create Payment Order - Silver Plan",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"silver-monthly\",\n  \"interval\": \"MONTHLY\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payment/create-order",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payment", "create-order"]
+            },
+            "description": "Create Razorpay payment order for Silver Plan ($19/month, 50 credits). Returns order details and Razorpay key for frontend integration."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.orderId) {",
+                  "        pm.collectionVariables.set('razorpay_order_id', response.data.orderId);",
+                  "        console.log('Razorpay Order ID saved:', response.data.orderId);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Payment Order - Gold Plan",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"gold-monthly\",\n  \"interval\": \"MONTHLY\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payment/create-order",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payment", "create-order"]
+            },
+            "description": "Create Razorpay payment order for Gold Plan ($79/month, 250 credits) with role-based access and advanced features."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.orderId) {",
+                  "        pm.collectionVariables.set('razorpay_order_id', response.data.orderId);",
+                  "        console.log('Razorpay Order ID saved:', response.data.orderId);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Payment Order - Premium Plan",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"premium-monthly\",\n  \"interval\": \"MONTHLY\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payment/create-order",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payment", "create-order"]
+            },
+            "description": "Create Razorpay payment order for Premium Plan ($199/month, unlimited credits) with all features unlocked."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.orderId) {",
+                  "        pm.collectionVariables.set('razorpay_order_id', response.data.orderId);",
+                  "        console.log('Razorpay Order ID saved:', response.data.orderId);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razorpayOrderId\": \"{{razorpay_order_id}}\",\n  \"razorpayPaymentId\": \"pay_test_payment_id_here\",\n  \"razorpaySignature\": \"test_signature_here\",\n  \"planId\": \"silver-monthly\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payment/verify-payment",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payment", "verify-payment"]
+            },
+            "description": "Verify payment after successful Razorpay checkout. Use actual payment details from Razorpay dashboard for testing."
+          }
+        },
+        {
+          "name": "Get Payment History",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payment/history?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payment", "history"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Items per page"
+                }
+              ]
+            },
+            "description": "Get user's payment history with pagination"
+          }
+        },
+        {
+          "name": "Cancel Subscription",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payment/cancel-subscription",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payment", "cancel-subscription"]
+            },
+            "description": "Cancel user's active subscription. Subscription will remain active until end date."
+          }
+        },
+        {
+          "name": "Test Webhook Payloads",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "npm run test:webhook",
+              "host": ["npm"],
+              "path": ["run", "test:webhook"]
+            },
+            "description": "Run npm script to see sample Razorpay webhook payloads. This helps understand the webhook structure for testing."
+          }
+        }
+      ],
+      "description": "Complete payment and subscription management with Razorpay integration. Includes plan management, payment processing, credit tracking, and subscription lifecycle."
+    },
+    {
+      "name": "WebSocket Testing",
+      "item": [
+        {
+          "name": "Test Socket Connection",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/socket.io/?EIO=4&transport=polling&t=test",
+              "host": ["{{base_url}}"],
+              "path": ["socket.io", ""],
+              "query": [
+                {
+                  "key": "EIO",
+                  "value": "4"
+                },
+                {
+                  "key": "transport",
+                  "value": "polling"
+                },
+                {
+                  "key": "t",
+                  "value": "test"
+                }
+              ]
+            },
+            "description": "Test socket.io connection endpoint"
+          }
+        }
+      ],
+      "description": "WebSocket connection testing endpoints"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-set auth token from environment or previous login",
+          "if (!pm.collectionVariables.get('auth_token') && pm.environment.get('auth_token')) {",
+          "    pm.collectionVariables.set('auth_token', pm.environment.get('auth_token'));",
+          "}",
+          "",
+                  "// Log current collection variables for debugging",
+        "console.log('Current Variables:', {",
+        "    'auth_token': pm.collectionVariables.get('auth_token') ? '[SET]' : '[NOT SET]',",
+        "    'conversation_id': pm.collectionVariables.get('conversation_id') || '[NOT SET]',",
+        "    'message_id': pm.collectionVariables.get('message_id') || '[NOT SET]',",
+        "    'user_id': pm.collectionVariables.get('user_id') || '[NOT SET]',",
+        "    's3_image_key': pm.collectionVariables.get('s3_image_key') || '[NOT SET]',",
+        "    'project_id': pm.collectionVariables.get('project_id') || '[NOT SET]',",
+        "    'portfolio_id': pm.collectionVariables.get('portfolio_id') || '[NOT SET]',",
+        "    'client_id': pm.collectionVariables.get('client_id') || '[NOT SET]',",
+        "    'google_id_token': pm.collectionVariables.get('google_id_token') ? '[SET]' : '[NOT SET]',",
+        "    'authorization_code': pm.collectionVariables.get('authorization_code') ? '[SET]' : '[NOT SET]',",
+        "    'razorpay_order_id': pm.collectionVariables.get('razorpay_order_id') || '[NOT SET]'",
+        "});"
+        ]
+      }
+    }
+  ]
+} 

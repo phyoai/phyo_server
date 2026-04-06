@@ -1,24 +1,23 @@
-# Use Node.js LTS Alpine image (smaller, faster)
-FROM node:18-alpine
+FROM node:20-alpine AS build
 
-# Set working directory
 WORKDIR /app
-
-# Copy package files
 COPY package.json package-lock.json ./
-
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy application code
+RUN npm ci
 COPY . .
+RUN npm run build
 
-# Expose port (matches your PORT=4000)
+FROM node:20-alpine
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/docs ./docs
+COPY --from=build /app/src ./src
+
 EXPOSE 4000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:4000/', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:4000/health', (r) => { if (r.statusCode !== 200) process.exit(1); }).on('error', () => process.exit(1))"
 
-# Start server
-CMD ["node", "index.js"]
+CMD ["node", "dist/index.js"]

@@ -1,0 +1,821 @@
+{
+  "info": {
+    "name": "Phyo Platform API Collection",
+    "_postman_id": "phyo-platform-api-v1",
+    "description": "Complete API collection for Phyo Platform including Brand and Influencer registration/management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\",\n  \"name\": \"John Doe\",\n  \"username\": \"johndoe\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('auth_token', jsonData.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Brand APIs",
+      "item": [
+        {
+          "name": "Submit Brand Registration (JSON)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_name\": \"Acme Corporation\",\n  \"website_url\": \"https://acme.com\",\n  \"industry\": \"Technology\",\n  \"company_type\": \"Brand\",\n  \"company_size\": \"51-200\",\n  \"company_description\": \"Leading technology company specializing in AI solutions\",\n  \"location\": \"San Francisco\",\n  \"country\": \"USA\",\n  \"social_media\": {\n    \"facebook\": \"https://facebook.com/acme\",\n    \"instagram\": \"https://instagram.com/acme\",\n    \"twitter\": \"https://twitter.com/acme\",\n    \"linkedin\": \"https://linkedin.com/company/acme\"\n  },\n  \"brand_story\": \"Founded in 2015, Acme has been revolutionizing the tech industry...\",\n  \"verification_documents\": {\n    \"tax_id\": \"TAX123456789\",\n    \"company_registration_number\": \"REG987654321\"\n  },\n  \"billing_info\": {\n    \"billing_address\": \"123 Main Street, San Francisco, CA 94105\",\n    \"contact_person\": \"Jane Smith\",\n    \"finance_email\": \"finance@acme.com\"\n  },\n  \"payment_method\": {\n    \"default_payment\": \"card\",\n    \"budget_limit\": 50000\n  },\n  \"subscription_plan\": \"PROFESSIONAL\",\n  \"preferences\": {\n    \"notifications\": true,\n    \"timezone\": \"America/Los_Angeles\",\n    \"language\": \"en\"\n  },\n  \"contact\": {\n    \"first_name\": \"John\",\n    \"last_name\": \"Doe\",\n    \"email\": \"john@acme.com\",\n    \"phone\": \"+14155551234\",\n    \"job_title\": \"Marketing Director\"\n  },\n  \"account\": {\n    \"signup_method\": \"email\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/brand-requests/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "brand-requests", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Submit Brand Registration (Form-Data with Files)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "company_name",
+                  "value": "Acme Corporation",
+                  "type": "text"
+                },
+                {
+                  "key": "website_url",
+                  "value": "https://acme.com",
+                  "type": "text"
+                },
+                {
+                  "key": "industry",
+                  "value": "Technology",
+                  "type": "text"
+                },
+                {
+                  "key": "company_type",
+                  "value": "Brand",
+                  "type": "text"
+                },
+                {
+                  "key": "company_size",
+                  "value": "51-200",
+                  "type": "text"
+                },
+                {
+                  "key": "company_description",
+                  "value": "Leading technology company",
+                  "type": "text"
+                },
+                {
+                  "key": "location",
+                  "value": "San Francisco",
+                  "type": "text"
+                },
+                {
+                  "key": "country",
+                  "value": "USA",
+                  "type": "text"
+                },
+                {
+                  "key": "social_media[facebook]",
+                  "value": "https://facebook.com/acme",
+                  "type": "text"
+                },
+                {
+                  "key": "social_media[instagram]",
+                  "value": "https://instagram.com/acme",
+                  "type": "text"
+                },
+                {
+                  "key": "verification_documents[tax_id]",
+                  "value": "TAX123456789",
+                  "type": "text"
+                },
+                {
+                  "key": "contact[first_name]",
+                  "value": "John",
+                  "type": "text"
+                },
+                {
+                  "key": "contact[last_name]",
+                  "value": "Doe",
+                  "type": "text"
+                },
+                {
+                  "key": "contact[email]",
+                  "value": "john@acme.com",
+                  "type": "text"
+                },
+                {
+                  "key": "account[signup_method]",
+                  "value": "email",
+                  "type": "text"
+                },
+                {
+                  "key": "company_logo",
+                  "type": "file",
+                  "src": [],
+                  "description": "Upload company logo (Image, max 10MB)"
+                },
+                {
+                  "key": "brand_images",
+                  "type": "file",
+                  "src": [],
+                  "description": "Upload brand images (Multiple files, max 10)"
+                },
+                {
+                  "key": "business_registration",
+                  "type": "file",
+                  "src": [],
+                  "description": "Upload business registration (PDF/DOC, max 10MB)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/brand-requests/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "brand-requests", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Get Brand Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/brand-requests/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "brand-requests", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Brand Profile (JSON)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company_description\": \"Updated company description\",\n  \"location\": \"New York\",\n  \"social_media\": {\n    \"twitter\": \"https://twitter.com/acme_updated\",\n    \"youtube\": \"https://youtube.com/acme\"\n  },\n  \"subscription_plan\": \"ENTERPRISE\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/brand-requests/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "brand-requests", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Brand Profile (Form-Data with Files)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "company_description",
+                  "value": "Updated description",
+                  "type": "text"
+                },
+                {
+                  "key": "location",
+                  "value": "New York",
+                  "type": "text"
+                },
+                {
+                  "key": "company_logo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/brand-requests/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "brand-requests", "profile"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Influencer APIs",
+      "item": [
+        {
+          "name": "Submit Influencer Registration (JSON)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Jane Smith\",\n  \"stage_name\": \"JaneTheCreator\",\n  \"date_of_birth\": \"1995-08-15\",\n  \"gender\": \"Female\",\n  \"location\": {\n    \"city\": \"Los Angeles\",\n    \"state\": \"California\",\n    \"country\": \"USA\"\n  },\n  \"languages_spoken\": [\"English\", \"Spanish\"],\n  \"bio\": \"Fashion and lifestyle influencer passionate about sustainable living\",\n  \"personal_website\": \"https://janesmith.com\",\n  \"niches\": [\"Fashion\", \"Beauty\", \"Lifestyle\"],\n  \"social_media\": {\n    \"instagram\": {\n      \"username\": \"janetheinfluencer\",\n      \"link\": \"https://instagram.com/janetheinfluencer\",\n      \"connected\": true\n    },\n    \"youtube\": {\n      \"channel_url\": \"https://youtube.com/@janetheinfluencer\",\n      \"connected\": true\n    }\n  },\n  \"portfolio\": {\n    \"sample_posts\": [\n      {\n        \"platform\": \"Instagram\",\n        \"url\": \"https://instagram.com/p/ABC123\",\n        \"description\": \"Sustainable fashion collaboration\"\n      }\n    ],\n    \"brand_collaborations\": [\n      {\n        \"brand_name\": \"EcoFashion\",\n        \"description\": \"3-month campaign\",\n        \"year\": 2024\n      }\n    ],\n    \"content_highlights\": \"Specialized in sustainable fashion\"\n  },\n  \"rate_card\": {\n    \"instagram_post\": 5000,\n    \"instagram_story\": 2000,\n    \"instagram_reel\": 7500\n  },\n  \"availability\": {\n    \"current_availability\": \"Available\",\n    \"monthly_campaign_capacity\": 5\n  },\n  \"notifications\": {\n    \"email_preferences\": true,\n    \"push_notifications\": true\n  },\n  \"contact\": {\n    \"email\": \"jane@example.com\",\n    \"phone\": \"+13105551234\"\n  },\n  \"account\": {\n    \"signup_method\": \"email\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/influencer-requests/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencer-requests", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Submit Influencer Registration (Form-Data with Files)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "full_name",
+                  "value": "Jane Smith",
+                  "type": "text"
+                },
+                {
+                  "key": "stage_name",
+                  "value": "JaneTheCreator",
+                  "type": "text"
+                },
+                {
+                  "key": "bio",
+                  "value": "Fashion and lifestyle influencer",
+                  "type": "text"
+                },
+                {
+                  "key": "location[city]",
+                  "value": "Los Angeles",
+                  "type": "text"
+                },
+                {
+                  "key": "location[state]",
+                  "value": "California",
+                  "type": "text"
+                },
+                {
+                  "key": "location[country]",
+                  "value": "USA",
+                  "type": "text"
+                },
+                {
+                  "key": "niches[]",
+                  "value": "Fashion",
+                  "type": "text"
+                },
+                {
+                  "key": "niches[]",
+                  "value": "Beauty",
+                  "type": "text"
+                },
+                {
+                  "key": "social_media[instagram][username]",
+                  "value": "janetheinfluencer",
+                  "type": "text"
+                },
+                {
+                  "key": "social_media[instagram][link]",
+                  "value": "https://instagram.com/janetheinfluencer",
+                  "type": "text"
+                },
+                {
+                  "key": "rate_card[instagram_post]",
+                  "value": "5000",
+                  "type": "text"
+                },
+                {
+                  "key": "rate_card[instagram_reel]",
+                  "value": "7500",
+                  "type": "text"
+                },
+                {
+                  "key": "contact[email]",
+                  "value": "jane@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "contact[phone]",
+                  "value": "+13105551234",
+                  "type": "text"
+                },
+                {
+                  "key": "account[signup_method]",
+                  "value": "email",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_picture",
+                  "type": "file",
+                  "src": [],
+                  "description": "Upload profile picture (Image, max 10MB)"
+                },
+                {
+                  "key": "cover_photo",
+                  "type": "file",
+                  "src": [],
+                  "description": "Upload cover photo (Image, max 10MB)"
+                },
+                {
+                  "key": "media_kit",
+                  "type": "file",
+                  "src": [],
+                  "description": "Upload media kit (PDF, max 10MB)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/influencer-requests/submit",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencer-requests", "submit"]
+            }
+          }
+        },
+        {
+          "name": "Get Influencer Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/influencer-requests/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencer-requests", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Influencer Profile (JSON)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Updated bio - Fashion and lifestyle content creator\",\n  \"location\": {\n    \"city\": \"New York\"\n  },\n  \"rate_card\": {\n    \"instagram_post\": 6000,\n    \"instagram_reel\": 8500\n  },\n  \"availability\": {\n    \"current_availability\": \"Fully booked until March 2026\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/influencer-requests/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencer-requests", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Influencer Profile (Form-Data with Files)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "bio",
+                  "value": "Updated bio",
+                  "type": "text"
+                },
+                {
+                  "key": "location[city]",
+                  "value": "New York",
+                  "type": "text"
+                },
+                {
+                  "key": "cover_photo",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/influencer-requests/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencer-requests", "profile"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Brand APIs",
+      "item": [
+        {
+          "name": "Get All Brand Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/brand-requests/admin/requests?status=ALL&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "brand-requests", "admin", "requests"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ALL",
+                  "description": "PENDING | APPROVED | DECLINED | ALL"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Brand Request",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/brand-requests/admin/requests/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "brand-requests", "admin", "requests", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "64f5a6b7c8d9e0f1a2b3c4d5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Brand Request",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admin_notes\": \"All documents verified. Approved!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/brand-requests/admin/requests/:id/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "brand-requests", "admin", "requests", ":id", "approve"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "64f5a6b7c8d9e0f1a2b3c4d5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject Brand Request",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admin_notes\": \"Business registration documents are invalid.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/brand-requests/admin/requests/:id/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "brand-requests", "admin", "requests", ":id", "reject"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "64f5a6b7c8d9e0f1a2b3c4d5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Brand Request Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/brand-requests/admin/requests/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "brand-requests", "admin", "requests", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin - Influencer APIs",
+      "item": [
+        {
+          "name": "Get All Influencer Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/influencer-requests/admin/requests?status=ALL&page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencer-requests", "admin", "requests"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ALL",
+                  "description": "PENDING | APPROVED | REJECTED | ALL"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "search",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Influencer Request",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/influencer-requests/admin/requests/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencer-requests", "admin", "requests", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "64f5a6b7c8d9e0f1a2b3c4d5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Influencer Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admin_notes\": \"Profile looks great! Approved for the platform.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/influencer-requests/admin/requests/:id/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencer-requests", "admin", "requests", ":id", "approve"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "64f5a6b7c8d9e0f1a2b3c4d5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject Influencer Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"admin_notes\": \"Instagram followers count does not meet minimum requirement.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/influencer-requests/admin/requests/:id/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencer-requests", "admin", "requests", ":id", "reject"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "64f5a6b7c8d9e0f1a2b3c4d5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Influencer Request Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/influencer-requests/admin/requests/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "influencer-requests", "admin", "requests", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

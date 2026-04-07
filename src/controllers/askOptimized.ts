@@ -126,8 +126,21 @@ export const handleAsk = async (
           `\n💾 Found cached demographics for ${cachedDemographics.length} username(s):`,
         );
 
-        if (cachedDemographics.length === 0) {
-          await Promise.all(normalizedUsernames.map((u) => getDemographics(u)));
+        const cachedUsernames = new Set(
+          cachedDemographics.map((item) => item.username?.toLowerCase()),
+        );
+
+        const missingUsernames = normalizedUsernames.filter(
+          (username) => !cachedUsernames.has(username),
+        );
+
+        if (missingUsernames.length > 0) {
+          console.log(
+            `\nFetching demographics for missing users:`,
+            missingUsernames,
+          );
+
+          await Promise.all(missingUsernames.map((u) => getDemographics(u)));
         }
 
         cachedDemographics = await DemographicsCache.find({
@@ -156,14 +169,13 @@ export const handleAsk = async (
 
           // run scrapNewInstagramProfileData for any usernames that did not return profile data from getInstagramProfileData
           const usernamesForScraping = normalizedUsernames.filter(
-            (u) => !profileData.some((p) => p?.username?.toLowerCase() === u)
+            (u) => !profileData.some((p) => p?.username?.toLowerCase() === u),
           );
 
           if (usernamesForScraping.length > 0) {
-
-           scrapedData =await scrapNewInstagramProfileData(usernamesForScraping);
+            scrapedData =
+              await scrapNewInstagramProfileData(usernamesForScraping);
           }
-
 
           // if (
           //   profileData.length !== normalizedUsernames.length ||
@@ -187,12 +199,12 @@ export const handleAsk = async (
                 demographics: cachedDemographics,
                 profileData: profileData,
                 scrapedData: {
-                  "job_id": scrapedData[0]?.job_id || null,
-                  "job_type": scrapedData[0]?.job_type || null,
-                  "status": scrapedData[0]?.status || null,
-                  "queued_at": scrapedData[0]?.queued_at || null,
-                  "usernames": scrapedData[0]?.usernames || [],
-                  "result": scrapedData[0]?.result || {},
+                  job_id: scrapedData?.job_id || null,
+                  job_type: scrapedData?.job_type || null,
+                  status: scrapedData?.status || null,
+                  queued_at: scrapedData?.queued_at || null,
+                  usernames: scrapedData?.usernames || [],
+                  result: scrapedData?.result || {},
                 },
               },
             ],

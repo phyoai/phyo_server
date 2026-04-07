@@ -12,6 +12,7 @@ if (!API_KEY) {
 
 
 const getDemographics = async (username: string) => {
+  try{
   const response = await fetch(`${API_BASE_URL}/demographics/analyze`, {
     method: "POST",
     headers: {
@@ -21,11 +22,15 @@ const getDemographics = async (username: string) => {
     body: JSON.stringify({ username, max_posts: 30 })
   });
 
-  if (!response.ok) {
-    throw new Error(`getDemographics failed: ${response.status}`);
-  }
+  // if (!response.ok) {
+  //   throw new Error(`getDemographics failed: ${response.status}`);
+  // }
 
-  return response.json(); // or response.text()
+  return response.json();
+ }
+ catch{
+  console.log(`nvalid user ${username} `);
+ } // or response.text()
 };
 
 export default getDemographics;

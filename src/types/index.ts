@@ -295,6 +295,7 @@ export interface TargetInfluencer {
 }
 
 export interface ICampaign {
+  campaignId:string;
   brandId: string;
   productImages: string[];
   campaignName: string;

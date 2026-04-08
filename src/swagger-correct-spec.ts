@@ -623,8 +623,9 @@ export const correctPaths = {
     },
     patch: {
       tags: ['Campaigns'],
-      summary: 'Update Campaign',
+      summary: 'Update Campaign (Partial)',
       security: [{ BearerAuth: [] }],
+      description: 'Partially update a campaign owned by the authenticated brand. Restricted fields like brandId, applicants, selectedInfluencers, suggestedInfluencers, aiSuggestionMetadata, and timestamps cannot be updated.',
       parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
       requestBody: {
         required: true,
@@ -632,19 +633,141 @@ export const correctPaths = {
           'application/json': {
             schema: {
               type: 'object',
+              minProperties: 1,
               properties: {
-                title: { type: 'string' },
-                description: { type: 'string' },
-                status: { type: 'string', enum: ['draft', 'active', 'closed'] },
-                requirements: { type: 'array', items: { type: 'string' } }
-              }
+                campaignName: { type: 'string', example: 'Summer Fashion Campaign v2' },
+                campaignType: { type: 'string', example: 'Product Promotion' },
+                campaignBrief: { type: 'string', example: 'Updated campaign brief' },
+                deliverables: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  example: ['1 Instagram Post', '1 Reel']
+                },
+                compensation: {
+                  type: 'object',
+                  properties: {
+                    type: {
+                      type: 'string',
+                      enum: ['Monetary', 'Barter/Gifting', 'Affiliate/Commission']
+                    },
+                    amount: { type: 'number', minimum: 0 },
+                    currency: { type: 'string', example: 'USD' },
+                    description: { type: 'string' },
+                    commissionRate: { type: 'number', minimum: 0, maximum: 100 },
+                    giftValue: { type: 'number', minimum: 0 },
+                    products: { type: 'array', items: { type: 'string' } }
+                  }
+                },
+                budget: { type: 'number', minimum: 0, example: 650 },
+                timelines: {
+                  type: 'object',
+                  properties: {
+                    applicationDeadline: { type: 'string', format: 'date-time' },
+                    campaignStartDate: { type: 'string', format: 'date-time' },
+                    campaignEndDate: { type: 'string', format: 'date-time' }
+                  }
+                },
+                targetInfluencer: {
+                  type: 'object',
+                  properties: {
+                    numberOfInfluencers: { type: 'integer', minimum: 1 },
+                    targetNiche: { type: 'array', items: { type: 'string' } },
+                    followerCount: {
+                      type: 'object',
+                      properties: {
+                        min: { type: 'number', minimum: 0 },
+                        max: { type: 'number', minimum: 0 }
+                      }
+                    },
+                    countries: { type: 'array', items: { type: 'string' } },
+                    gender: {
+                      type: 'array',
+                      items: { type: 'string', enum: ['Male', 'Female', 'Other'] }
+                    },
+                    ageRange: {
+                      type: 'object',
+                      properties: {
+                        min: { type: 'integer', minimum: 13, maximum: 100 },
+                        max: { type: 'integer', minimum: 13, maximum: 100 }
+                      }
+                    }
+                  }
+                },
+                numberOfLivePosts: { type: 'integer', minimum: 0, example: 1 },
+                reels: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  example: ['https://example.com/reel1.mp4']
+                },
+                status: {
+                  type: 'string',
+                  enum: ['Draft', 'Active', 'Paused', 'Completed', 'Cancelled']
+                },
+                productImages: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description: 'Provide image URLs when using JSON payload'
+                }
+              },
+              additionalProperties: false
+            }
+          },
+          'multipart/form-data': {
+            schema: {
+              type: 'object',
+              minProperties: 1,
+              properties: {
+                productImages: {
+                  type: 'array',
+                  items: { type: 'string', format: 'binary' },
+                  description: 'Upload up to 10 image files'
+                },
+                campaignName: { type: 'string' },
+                campaignType: { type: 'string' },
+                campaignBrief: { type: 'string' },
+                deliverables: {
+                  type: 'string',
+                  description: 'JSON string, e.g. ["1 Post","1 Reel"]'
+                },
+                compensation: {
+                  type: 'string',
+                  description: 'JSON string object'
+                },
+                budget: {
+                  type: 'string',
+                  description: 'Numeric value as text, e.g. "650"'
+                },
+                timelines: {
+                  type: 'string',
+                  description: 'JSON string object with ISO date-time values'
+                },
+                targetInfluencer: {
+                  type: 'string',
+                  description: 'JSON string object'
+                },
+                numberOfLivePosts: {
+                  type: 'string',
+                  description: 'Numeric value as text, e.g. "1"'
+                },
+                reels: {
+                  type: 'string',
+                  description: 'JSON string array'
+                },
+                status: {
+                  type: 'string',
+                  enum: ['Draft', 'Active', 'Paused', 'Completed', 'Cancelled']
+                }
+              },
+              additionalProperties: false
             }
           }
         }
       },
       responses: {
-        200: { description: 'Campaign updated' },
-        404: { description: 'Campaign not found' }
+        200: { description: 'Campaign updated successfully' },
+        400: { description: 'Validation error / invalid patch body' },
+        401: { description: 'Unauthorized' },
+        404: { description: 'Campaign not found or no permission' }
       }
     },
     delete: {
@@ -654,6 +777,7 @@ export const correctPaths = {
       parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
       responses: {
         200: { description: 'Campaign deleted' },
+        400: { description: 'Invalid campaign ID format' },
         404: { description: 'Campaign not found' }
       }
     }

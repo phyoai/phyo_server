@@ -101,6 +101,11 @@ const targetInfluencerSchema = new Schema({
 }, { _id: false });
 
 const campaignSchema = new Schema<CampaignDocument>({
+  campaignId:{
+    type: String,
+    required: true,
+    ref: 'User'
+  },
   brandId: {
     type: String,
     required: true,

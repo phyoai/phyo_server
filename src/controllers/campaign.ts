@@ -278,7 +278,10 @@ export const createCampaign = async (req: AuthenticatedRequest<{}, {}, CreateCam
       }
     }
 
+    const campaignId = crypto.randomUUID();
+
     const newCampaign = new Campaign({
+      campaignId:campaignId,
       brandId: userId,
       productImages: productImageUrls,
       campaignName,
@@ -495,14 +498,14 @@ export const getBrandCampaigns = async (req: AuthenticatedRequest, res: Response
 export const updateCampaign = async (req: AuthenticatedRequest<{ id: string }, {}, UpdateCampaignBody>, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const userId = req.user?.id;
+    const campaignId = req.user?.id;
 
-    if (!userId) {
+    if (!campaignId) {  
       res.status(401).json({ message: 'Unauthorized' });
       return;
     }
 
-    const campaign = await Campaign.findOne({ _id: id, brandId: userId });
+    const campaign = await Campaign.findOne({campaignId: id });
 
     if (!campaign) {
       res.status(404).json({ message: 'Campaign not found or you do not have permission to update it' });
@@ -516,7 +519,7 @@ export const updateCampaign = async (req: AuthenticatedRequest<{ id: string }, {
     }
 
     // Handle uploaded product images
-    let updateData: any = { ...req.body };
+    let updateData: Record<string, any> = { ...req.body };
     if (req.files && Array.isArray(req.files)) {
       const productImageUrls = (req.files as any[]).map(file => {
         // Use the S3 key to generate public URL
@@ -526,38 +529,146 @@ export const updateCampaign = async (req: AuthenticatedRequest<{ id: string }, {
       updateData.productImages = productImageUrls;
     }
 
-    // Parse JSON strings back to objects for update
-    const fieldsToParse = ['compensation', 'timelines', 'targetInfluencer', 'deliverables', 'reels'];
-    fieldsToParse.forEach(field => {
-      if (updateData[field] && typeof updateData[field] === 'string') {
+    // Parse JSON strings back to objects for update (form-data support)
+    const fieldsToParse = ['compensation', 'timelines', 'targetInfluencer', 'deliverables'];
+    for (const field of fieldsToParse) {
+      if (updateData[field] !== undefined && typeof updateData[field] === 'string') {
         try {
           updateData[field] = JSON.parse(updateData[field]);
         } catch (error) {
-          console.error(`Failed to parse ${field}:`, error);
-          delete updateData[field]; // Remove invalid field
+          res.status(400).json({
+            message: `Invalid JSON format for field: ${field}`
+          });
+          return;
         }
+      }
+    }
+
+    // Support productImages as JSON-string/comma-string when no files are uploaded
+    if (typeof updateData.productImages === 'string') {
+      try {
+        const parsed = JSON.parse(updateData.productImages);
+        updateData.productImages = Array.isArray(parsed) ? parsed.filter(Boolean) : [parsed].filter(Boolean);
+      } catch {
+        updateData.productImages = updateData.productImages
+          .split(',')
+          .map((item: string) => item.trim())
+          .filter(Boolean);
+      }
+    }
+
+    // Parse numeric fields from form-data
+    const numericFields = ['budget', 'numberOfLivePosts'];
+    for (const field of numericFields) {
+      if (updateData[field] !== undefined && typeof updateData[field] === 'string') {
+        const parsed = Number(updateData[field]);
+        if (Number.isNaN(parsed)) {
+          res.status(400).json({ message: `Invalid number format for field: ${field}` });
+          return;
+        }
+        updateData[field] = parsed;
+      }
+    }
+
+    // Restrict fields that can be updated through API
+    const allowedFields = new Set([
+      'campaignName',
+      'campaignType',
+      'campaignBrief',
+      'deliverables',
+      'compensation',
+      'budget',
+      'timelines',
+      'targetInfluencer',
+      'numberOfLivePosts',
+      'reels',
+      'status',
+      'productImages'
+    ]);
+
+    const restrictedFields = [
+      '_id',
+      'brandId',
+      'applicants',
+      'selectedInfluencers',
+      'suggestedInfluencers',
+      'aiSuggestionMetadata',
+      'createdAt',
+      'updatedAt',
+      '__v'
+    ];
+
+    for (const field of restrictedFields) {
+      if (updateData[field] !== undefined) {
+        res.status(400).json({
+          message: `Field "${field}" cannot be updated`
+        });
+        return;
+      }
+    }
+
+    const sanitizedUpdateData: Record<string, any> = {};
+    Object.entries(updateData).forEach(([key, value]) => {
+      if (allowedFields.has(key) && value !== undefined) {
+        sanitizedUpdateData[key] = value;
       }
     });
 
-    const updatedCampaign = await Campaign.findByIdAndUpdate(
-      id,
-      { $set: updateData },
-      { new: true, runValidators: true }
-    ).populate('brandId', 'companyName email');
+    if (Object.keys(sanitizedUpdateData).length === 0) {
+      res.status(400).json({
+        message: 'No valid fields provided for update'
+      });
+      return;
+    }
+
+    // Flatten objects to dot-notation so nested partial updates do not overwrite whole sections
+    const flattenForSet = (input: any, prefix = '', acc: Record<string, any> = {}): Record<string, any> => {
+      if (
+        input === null ||
+        Array.isArray(input) ||
+        typeof input !== 'object' ||
+        input instanceof Date
+      ) {
+        if (prefix) {
+          acc[prefix] = input;
+        }
+        return acc;
+      }
+
+      Object.entries(input).forEach(([key, value]) => {
+        const nextPrefix = prefix ? `${prefix}.${key}` : key;
+        flattenForSet(value, nextPrefix, acc);
+      });
+
+      return acc;
+    };
+
+    const flatUpdateData = flattenForSet(sanitizedUpdateData);
+    Object.entries(flatUpdateData).forEach(([path, value]) => {
+      campaign.set(path, value);
+    });
+
+    await campaign.save();
+    await campaign.populate('brandId', 'companyName email');
 
     // Exclude aiSuggestionMetadata from response
-    const campaignResponse = updatedCampaign?.toObject();
-    if (campaignResponse) {
-      const { aiSuggestionMetadata, ...campaignData } = campaignResponse as any;
-      res.json({
-        message: 'Campaign updated successfully',
-        data: campaignData
-      });
-    } else {
-      res.status(404).json({ message: 'Campaign not found' });
-    }
+    const campaignResponse = campaign.toObject();
+    const { aiSuggestionMetadata, ...campaignData } = campaignResponse as any;
+    res.json({
+      message: 'Campaign updated successfully',
+      data: campaignData
+    });
   } catch (error) {
     console.error('Update campaign error:', error);
+
+    if ((error as any)?.name === 'ValidationError') {
+      res.status(400).json({
+        message: 'Validation failed',
+        error: error instanceof Error ? error.message : 'Unknown validation error'
+      });
+      return;
+    }
+
     res.status(500).json({
       message: 'Server error',
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -576,7 +687,7 @@ export const deleteCampaign = async (req: AuthenticatedRequest<{ id: string }>, 
       return;
     }
 
-    const campaign = await Campaign.findOne({ _id: id, brandId: userId });
+    const campaign = await Campaign.findOne({ campaignId: id });
 
     if (!campaign) {
       res.status(404).json({ message: 'Campaign not found or you do not have permission to delete it' });
@@ -591,7 +702,7 @@ export const deleteCampaign = async (req: AuthenticatedRequest<{ id: string }>, 
       return;
     }
 
-    await Campaign.findByIdAndDelete(id);
+    await Campaign.findByIdAndDelete(campaign.id);
 
     res.json({
       message: 'Campaign deleted successfully'
@@ -616,7 +727,7 @@ export const applyCampaign = async (req: AuthenticatedRequest<{ id: string }>, r
       return;
     }
 
-    const campaign = await Campaign.findById(id);
+    const campaign = await Campaign.findOne({ campaignId: id });
 
     if (!campaign) {
       res.status(404).json({ message: 'Campaign not found' });
@@ -676,7 +787,7 @@ export const selectInfluencer = async (req: AuthenticatedRequest<{ id: string },
       return;
     }
 
-    const campaign = await Campaign.findOne({ _id: id, brandId: userId });
+    const campaign = await Campaign.findOne({ campaignId: id });
 
     if (!campaign) {
       res.status(404).json({ message: 'Campaign not found or you do not have permission to modify it' });
@@ -696,8 +807,8 @@ export const selectInfluencer = async (req: AuthenticatedRequest<{ id: string },
     }
 
     // Add influencer to selected list
-    await Campaign.findByIdAndUpdate(
-      id,
+    await Campaign.findOneAndUpdate(
+      { campaignId: id },
       { $addToSet: { selectedInfluencers: influencerId } },
       { new: true }
     );

@@ -12,7 +12,8 @@ const s3 = new AWS.S3({
 });
 
 // S3 bucket configuration
-const BUCKET_NAME = process.env.S3_BUCKET_NAME || 'phyo-chat-images';
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'phyo-chat-images';
+const AVATAR_BUCKET_NAME = process.env.S3_AVATAR_BUCKET_NAME || 'phyo-brands-assets';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB for general files
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB for images
 
@@ -102,6 +103,38 @@ export const uploadImageToS3 = multer({
   }
 });
 
+// Specific upload for user avatars (dedicated bucket)
+export const uploadAvatarImageToS3 = multer({
+  storage: multerS3({
+    s3: s3 as any,
+    bucket: AVATAR_BUCKET_NAME,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    key: function (req, file, cb) {
+      const fileExtension = path.extname(file.originalname);
+      const fileName = `avatars/${uuidv4()}${fileExtension}`;
+      cb(null, fileName);
+    },
+    metadata: function (req, file, cb) {
+      cb(null, {
+        fieldName: file.fieldname,
+        originalName: file.originalname,
+        uploadedAt: new Date().toISOString(),
+        fileType: file.mimetype
+      });
+    }
+  }),
+  limits: {
+    fileSize: MAX_IMAGE_SIZE
+  },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_IMAGE_TYPES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid image type. Only JPEG, PNG, GIF, and WebP images are allowed.'));
+    }
+  }
+});
+
 
 
 // Function to delete file from S3
@@ -161,6 +194,7 @@ export const isValidFileType = (mimeType: string): boolean => {
 export default { 
   uploadToS3, 
   uploadImageToS3,
+  uploadAvatarImageToS3,
   deleteFromS3, 
   getSignedUrl, 
   getPublicUrl,

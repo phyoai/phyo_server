@@ -89,7 +89,7 @@ const userSchema = new Schema<UserDocument>({
   },
   creditsRemaining: {
     type: Number,
-    default: 3, // Give 3 free searches to new users
+    default: 10, // Give 10 signup reward credits to new users
     min: 0
   },
   trialCreditsGiven: {

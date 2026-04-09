@@ -191,6 +191,52 @@ export const deductCredits = (creditsToDeduct: number = 1) => {
   };
 };
 
+export const addCredits = (creditsToAdd: number = 1) => {
+  return async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    const originalJson = res.json;
+
+    res.json = function (data: any) {
+      // Only add credits if the operation was successful
+      if (data.success !== false && req.user?.id) {
+        User.findById(req.user.id)
+          .then((user: any) => {
+            // Skip for influencers if you still want them unlimited / unaffected
+            if (user && user.type !== "INFLUENCER") {
+              User.findByIdAndUpdate(req.user!.id, {
+                $inc: { creditsRemaining: creditsToAdd },
+              }).catch((error: unknown) => {
+                console.error("Error adding credits to user:", error);
+              });
+
+              // Also update subscription record
+              subscription
+                .findOneAndUpdate(
+                  { userId: req.user!.id },
+                  {
+                    $inc: {
+                      creditsRemaining: creditsToAdd,
+                      // if you want to track purchased/added credits separately,
+                      // create another field like creditsAddedThisMonth
+                    },
+                  }
+                )
+                .catch((error: unknown) => {
+                  console.error("Error updating subscription credits:", error);
+                });
+            }
+          })
+          .catch((error: unknown) => {
+            console.error("Error checking user type:", error);
+          });
+      }
+
+      return originalJson.call(this, data);
+    };
+
+    next();
+  };
+};
+
 // Middleware to check minimum plan requirement
 export const requireMinimumPlan = (minimumPlan: SubscriptionPlan) => {
   const planHierarchy: Record<SubscriptionPlan, number> = {

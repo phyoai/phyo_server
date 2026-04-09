@@ -24,6 +24,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const isProduction = process.env.NODE_ENV === 'production';
+const FIRST_SIGNUP_CREDITS = 10;
 
 // Generate OTP
 const generateOTP = (): string => {
@@ -755,7 +756,7 @@ export const approveBrandRequest = async (req: AdminRequest, res: Response): Pro
         signup_method: brandRequest.account.signup_method,
         isEmailVerified: true, // Email is pre-verified by admin approval
         currentPlan: 'BRONZE',
-        creditsRemaining: 3,
+        creditsRemaining: FIRST_SIGNUP_CREDITS,
         trialCreditsGiven: true,
         subscriptionStatus: 'ACTIVE',
         lastPlanUpdate: new Date()
@@ -832,7 +833,7 @@ export const approveBrandRequest = async (req: AdminRequest, res: Response): Pro
                   <li>Complete your brand profile</li>
                   <li>Start creating campaigns</li>
                   <li>Connect with influencers</li>
-                  <li>You have <strong style="color: #10b981;">3 free trial credits</strong> to get started!</li>
+                  <li>You have <strong style="color: #10b981;">${FIRST_SIGNUP_CREDITS} free trial credits</strong> to get started!</li>
                 </ul>
               </div>
 

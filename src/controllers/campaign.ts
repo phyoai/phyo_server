@@ -836,7 +836,7 @@ export const getCampaignApplications = async (req: AuthenticatedRequest<{ id: st
       return;
     }
 
-    const campaign = await Campaign.findOne({ _id: id, brandId: userId })
+    const campaign = await Campaign.findOne({campaignId: id })
       .populate('applicants', 'name email username profilePicture bio')
       .lean();
 

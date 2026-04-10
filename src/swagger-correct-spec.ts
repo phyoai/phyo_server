@@ -38,18 +38,113 @@ export const correctSchemas = {
       createdAt: { type: 'string', format: 'date-time' }
     }
   },
+  GenderDistribution: {
+    type: 'object',
+    properties: {
+      gender: { type: 'string' },
+      distribution: { type: 'number' }
+    }
+  },
+  AgeDistribution: {
+    type: 'object',
+    properties: {
+      age: { type: 'string' },
+      value: { type: 'number' }
+    }
+  },
+  AudienceByCountry: {
+    type: 'object',
+    properties: {
+      category: { type: 'string' },
+      name: { type: 'string' },
+      value: { type: 'number' }
+    }
+  },
+  AudienceByCity: {
+    type: 'object',
+    properties: {
+      name: { type: 'string' },
+      value: { type: 'number' }
+    }
+  },
+  LanguageDistribution: {
+    type: 'object',
+    properties: {
+      language: { type: 'string' },
+      value: { type: 'number' }
+    }
+  },
+  CollaborationCharges: {
+    type: 'object',
+    properties: {
+      reel: { type: 'number' },
+      story: { type: 'number' },
+      post: { type: 'number' },
+      oneMonthDigitalRights: { type: 'number' }
+    }
+  },
+  SocialMediaData: {
+    type: 'object',
+    properties: {
+      followers: { type: 'number' },
+      following: { type: 'number' },
+      posts_count: { type: 'number' },
+      avg_engagement: { type: 'number' },
+      link: { type: 'string' },
+      genderDistribution: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/GenderDistribution' }
+      },
+      ageDistribution: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/AgeDistribution' }
+      },
+      audienceByCountry: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/AudienceByCountry' }
+      },
+      audienceByCity: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/AudienceByCity' }
+      },
+      languageDistribution: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/LanguageDistribution' }
+      },
+      audienceQualityScore: { type: 'number' },
+      fakeFollowersPercent: { type: 'number' },
+      totalCommentsAnalyzed: { type: 'number' },
+      realUsersAnalyzed: { type: 'number' },
+      collaborationCharges: { $ref: '#/components/schemas/CollaborationCharges' }
+    }
+  },
   Influencer: {
     type: 'object',
     properties: {
       _id: { type: 'string' },
-      username: { type: 'string' },
-      followers: { type: 'number' },
-      engagement: { type: 'number' },
-      category: { type: 'string' },
-      verified: { type: 'boolean' },
-      bio: { type: 'string' },
-      location: { type: 'string' },
-      platforms: { type: 'array', items: { type: 'string' } }
+      name: { type: 'string' },
+      categoryInstagram: { type: 'string' },
+      categoryYouTube: { type: 'string' },
+      user_name: { type: 'string' },
+      profile_name: { type: 'string' },
+      profile_pic_url: { type: 'string' },
+      biography: { type: 'string' },
+      is_verified: { type: 'boolean' },
+      is_business: { type: 'boolean' },
+      city: { type: 'string' },
+      state: { type: 'string' },
+      language: { type: 'string' },
+      gender: { type: 'string', enum: ['Male', 'Female', 'Other'] },
+      lastDemographicsFetch: { type: 'string', format: 'date-time' },
+      instagramData: { $ref: '#/components/schemas/SocialMediaData' },
+      youtubeData: { $ref: '#/components/schemas/SocialMediaData' },
+      averageLikes: { type: 'number' },
+      averageViews: { type: 'number' },
+      averageComments: { type: 'number' },
+      averageEngagement: { type: 'number' },
+      image: { type: 'string' },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' }
     }
   },
   ErrorResponse: {
@@ -850,14 +945,14 @@ export const correctPaths = {
     }
   },
 
-  '/api/campaigns/{id}/applications/{appId}/accept': {
+  '/api/campaigns/{id}/applications/{applicationId}/accept': {
     post: {
       tags: ['Campaigns'],
       summary: 'Accept Application',
       security: [{ BearerAuth: [] }],
       parameters: [
         { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
-        { name: 'appId', in: 'path', required: true, schema: { type: 'string' } }
+        { name: 'applicationId', in: 'path', required: true, schema: { type: 'string' } }
       ],
       responses: {
         200: { description: 'Application accepted' }
@@ -865,14 +960,14 @@ export const correctPaths = {
     }
   },
 
-  '/api/campaigns/{id}/applications/{appId}/reject': {
+  '/api/campaigns/{id}/applications/{applicationId}/reject': {
     post: {
       tags: ['Campaigns'],
       summary: 'Reject Application',
       security: [{ BearerAuth: [] }],
       parameters: [
         { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
-        { name: 'appId', in: 'path', required: true, schema: { type: 'string' } }
+        { name: 'applicationId', in: 'path', required: true, schema: { type: 'string' } }
       ],
       responses: {
         200: { description: 'Application rejected' }
@@ -1115,21 +1210,13 @@ export const correctPaths = {
     post: {
       tags: ['Influencers'],
       summary: 'Create Influencer Profile',
+      description: 'Create an influencer with any subset of influencerSchema fields. All profile fields are optional.',
       requestBody: {
         required: true,
         content: {
           'application/json': {
             schema: {
-              type: 'object',
-              properties: {
-                username: { type: 'string' },
-                bio: { type: 'string' },
-                followers: { type: 'number' },
-                engagement: { type: 'number' },
-                category: { type: 'string' },
-                platforms: { type: 'array', items: { type: 'string' } }
-              },
-              required: ['username', 'category']
+              $ref: '#/components/schemas/Influencer'
             }
           }
         }
@@ -1154,18 +1241,26 @@ export const correctPaths = {
     patch: {
       tags: ['Influencers'],
       summary: 'Update Influencer',
-      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+      description: 'Update an influencer by MongoDB _id using any subset of influencerSchema fields.',
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          description: 'Influencer MongoDB ObjectId (_id)',
+          schema: {
+            type: 'string',
+            pattern: '^[a-fA-F0-9]{24}$',
+            example: '507f1f77bcf86cd799439011'
+          }
+        }
+      ],
       requestBody: {
         required: true,
         content: {
           'application/json': {
             schema: {
-              type: 'object',
-              properties: {
-                bio: { type: 'string' },
-                followers: { type: 'number' },
-                engagement: { type: 'number' }
-              }
+              $ref: '#/components/schemas/Influencer'
             }
           }
         }
@@ -1177,9 +1272,24 @@ export const correctPaths = {
     delete: {
       tags: ['Influencers'],
       summary: 'Delete Influencer',
-      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+      description: 'Delete an influencer by MongoDB _id.',
+      parameters: [
+        {
+          name: 'id',
+          in: 'path',
+          required: true,
+          description: 'Influencer MongoDB ObjectId (_id)',
+          schema: {
+            type: 'string',
+            pattern: '^[a-fA-F0-9]{24}$',
+            example: '507f1f77bcf86cd799439011'
+          }
+        }
+      ],
       responses: {
-        200: { description: 'Deleted' }
+        200: { description: 'Deleted' },
+        400: { description: 'Invalid ObjectId' },
+        404: { description: 'Influencer not found' }
       }
     }
   },
@@ -1189,34 +1299,80 @@ export const correctPaths = {
       tags: ['Influencers'],
       summary: 'Get by Username',
       security: [{ BearerAuth: [] }],
-      parameters: [{ name: 'username', in: 'path', required: true, schema: { type: 'string' } }],
+      description: 'Fetch an influencer by `user_name`.',
+      parameters: [
+        {
+          name: 'username',
+          in: 'path',
+          required: true,
+          description: 'Influencer username (`user_name`)',
+          schema: {
+            type: 'string',
+            minLength: 1,
+            example: 'aaravtravels'
+          }
+        }
+      ],
       responses: {
         200: { description: 'Influencer details' },
+        400: { description: 'Invalid username' },
         404: { description: 'Not found' }
       }
     },
     patch: {
       tags: ['Influencers'],
       summary: 'Update by Username',
-      parameters: [{ name: 'username', in: 'path', required: true, schema: { type: 'string' } }],
+      description: 'Update an influencer by `user_name` using any subset of influencerSchema fields.',
+      parameters: [
+        {
+          name: 'username',
+          in: 'path',
+          required: true,
+          description: 'Influencer username (`user_name`)',
+          schema: {
+            type: 'string',
+            minLength: 1,
+            example: 'aaravtravels'
+          }
+        }
+      ],
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: { type: 'object' }
+            schema: {
+              $ref: '#/components/schemas/Influencer'
+            }
           }
         }
       },
       responses: {
-        200: { description: 'Updated' }
+        200: { description: 'Updated' },
+        400: { description: 'Invalid username or duplicate username' },
+        404: { description: 'Influencer not found' }
       }
     },
     delete: {
       tags: ['Influencers'],
       summary: 'Delete by Username',
-      parameters: [{ name: 'username', in: 'path', required: true, schema: { type: 'string' } }],
+      description: 'Delete an influencer by `user_name`.',
+      parameters: [
+        {
+          name: 'username',
+          in: 'path',
+          required: true,
+          description: 'Influencer username (`user_name`)',
+          schema: {
+            type: 'string',
+            minLength: 1,
+            example: 'aaravtravels'
+          }
+        }
+      ],
       responses: {
-        200: { description: 'Deleted' }
+        200: { description: 'Deleted' },
+        400: { description: 'Invalid username' },
+        404: { description: 'Influencer not found' }
       }
     }
   },

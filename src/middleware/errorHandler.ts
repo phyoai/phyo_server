@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import * as Sentry from '@sentry/node';
 import { AppError, sendError } from '../utils/http';
 import { logger } from '../utils/logger';
 
@@ -7,6 +8,10 @@ export const notFoundHandler = (req: Request, res: Response): void => {
 };
 
 export const errorHandler = (error: unknown, req: Request, res: Response, _next: NextFunction): void => {
+  if (error instanceof Error) {
+    Sentry.captureException(error);
+  }
+
   const appError = error instanceof AppError ? error : null;
   const statusCode = appError?.statusCode || 500;
   const message = appError?.message || 'Internal server error';

@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import Influencer from '../models/influencer';
+// import DemographicsCache from '../models/demographicsCache';
 import { IInfluencer } from '../types';
 import axios from 'axios';
 import { env } from '../config/env';
@@ -7,7 +9,7 @@ import { env } from '../config/env';
 // Create a new influencer
 export const createInfluencer = async (req: Request, res: Response) => {
   try {
-    const influencerData: IInfluencer = req.body;
+    const influencerData: Partial<IInfluencer> = req.body;
     
     // Check if influencer with the same user_name already exists
     if (influencerData.user_name) {
@@ -169,8 +171,16 @@ export const getInfluencerById = async (req: Request, res: Response) => {
 export const getInfluencerByUsername = async (req: Request, res: Response) => {
   try {
     const { username } = req.params;
+    const normalizedUsername = username?.trim();
 
-    const influencer = await Influencer.findOne({ user_name: username });
+    if (!normalizedUsername) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username is required'
+      });
+    }
+
+    const influencer = await Influencer.findOne({ user_name: normalizedUsername });
 
     if (!influencer) {
       return res.status(404).json({
@@ -198,7 +208,14 @@ export const getInfluencerByUsername = async (req: Request, res: Response) => {
 export const updateInfluencer = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const updateData: Partial<IInfluencer> = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid influencer id. Expected MongoDB ObjectId (_id)'
+      });
+    }
 
     // Check if username is being updated and if it conflicts with existing
     if (updateData.user_name) {
@@ -247,12 +264,32 @@ export const updateInfluencer = async (req: Request, res: Response) => {
 export const updateInfluencerByUsername = async (req: Request, res: Response) => {
   try {
     const { username } = req.params;
-    const updateData = req.body;
+    const normalizedUsername = username?.trim();
+    const updateData: Partial<IInfluencer> = req.body;
+
+    if (!normalizedUsername) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username is required'
+      });
+    }
+
+    const nextUsername = updateData.user_name?.trim();
+    if (updateData.user_name !== undefined && !nextUsername) {
+      return res.status(400).json({
+        success: false,
+        message: 'user_name cannot be empty'
+      });
+    }
+
+    if (nextUsername) {
+      updateData.user_name = nextUsername;
+    }
 
     // Check if username is being updated and if it conflicts with existing
-    if (updateData.user_name && updateData.user_name !== username) {
+    if (nextUsername && nextUsername !== normalizedUsername) {
       const existingInfluencer = await Influencer.findOne({ 
-        user_name: updateData.user_name
+        user_name: nextUsername
       });
       
       if (existingInfluencer) {
@@ -264,7 +301,7 @@ export const updateInfluencerByUsername = async (req: Request, res: Response) =>
     }
 
     const updatedInfluencer = await Influencer.findOneAndUpdate(
-      { user_name: username },
+      { user_name: normalizedUsername },
       updateData,
       { new: true, runValidators: true }
     );
@@ -295,6 +332,12 @@ export const updateInfluencerByUsername = async (req: Request, res: Response) =>
 export const deleteInfluencer = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid influencer id. Expected MongoDB ObjectId (_id)'
+      });
+    }
 
     const deletedInfluencer = await Influencer.findByIdAndDelete(id);
 
@@ -324,8 +367,16 @@ export const deleteInfluencer = async (req: Request, res: Response) => {
 export const deleteInfluencerByUsername = async (req: Request, res: Response) => {
   try {
     const { username } = req.params;
+    const normalizedUsername = username?.trim();
 
-    const deletedInfluencer = await Influencer.findOneAndDelete({ user_name: username });
+    if (!normalizedUsername) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username is required'
+      });
+    }
+
+    const deletedInfluencer = await Influencer.findOneAndDelete({ user_name: normalizedUsername });
 
     if (!deletedInfluencer) {
       return res.status(404).json({

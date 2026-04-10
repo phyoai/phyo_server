@@ -752,8 +752,8 @@ export const applyCampaign = async (req: AuthenticatedRequest<{ id: string }>, r
     }
 
     // Add user to applicants
-    await Campaign.findByIdAndUpdate(
-      id,
+    await Campaign.findOneAndUpdate(
+      { campaignId: id },
       { $addToSet: { applicants: userId } },
       { new: true }
     );
@@ -870,7 +870,7 @@ export const acceptApplication = async (req: AuthenticatedRequest<{ id: string; 
       return;
     }
 
-    const campaign = await Campaign.findOne({ _id: id, brandId: userId });
+    const campaign = await Campaign.findOne({ campaignId: id, brandId: userId });
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });
@@ -882,7 +882,7 @@ export const acceptApplication = async (req: AuthenticatedRequest<{ id: string; 
       return;
     }
 
-    await Campaign.findByIdAndUpdate(id, {
+    await Campaign.findOneAndUpdate({campaignId:id}, {
       $addToSet: { selectedInfluencers: appId }
     });
 
@@ -910,7 +910,7 @@ export const rejectApplication = async (req: AuthenticatedRequest<{ id: string; 
       return;
     }
 
-    const campaign = await Campaign.findOne({ _id: id, brandId: userId });
+    const campaign = await Campaign.findOne({ campaignId: id, brandId: userId });
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });
@@ -918,7 +918,7 @@ export const rejectApplication = async (req: AuthenticatedRequest<{ id: string; 
     }
 
     // Remove from applicants and selectedInfluencers if present
-    await Campaign.findByIdAndUpdate(id, {
+    await Campaign.findOneAndUpdate({campaignId:id}, {
       $pull: { applicants: appId, selectedInfluencers: appId }
     });
 
@@ -946,7 +946,7 @@ export const getCampaignDeliverables = async (req: AuthenticatedRequest<{ id: st
       return;
     }
 
-    const campaign = await Campaign.findById(id).select('deliverables campaignName status').lean();
+    const campaign = await Campaign.findOne({ campaignId: id, brandId: userId });
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });
@@ -985,7 +985,7 @@ export const addCampaignDeliverable = async (req: AuthenticatedRequest<{ id: str
     }
 
     const campaign = await Campaign.findOneAndUpdate(
-      { _id: id, brandId: userId },
+      { campaignId: id },
       { $addToSet: { deliverables: deliverable } },
       { new: true }
     );
@@ -1027,7 +1027,7 @@ export const counterOffer = async (req: AuthenticatedRequest<{ id: string }>, re
       return;
     }
 
-    const campaign = await Campaign.findById(id);
+    const campaign = await Campaign.findOne({campaignId:id});
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });
@@ -1060,7 +1060,7 @@ export const getNegotiation = async (req: AuthenticatedRequest<{ id: string; inf
       return;
     }
 
-    const campaign = await Campaign.findById(id).lean();
+    const campaign = await Campaign.findOne({campaignId:id}).lean();
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });
@@ -1104,7 +1104,7 @@ export const acceptNegotiation = async (req: AuthenticatedRequest<{ id: string; 
     }
 
     const campaign = await Campaign.findOneAndUpdate(
-      { _id: id, brandId: userId },
+      { campaignId: id, brandId: userId },
       { $addToSet: { selectedInfluencers: influencerId } },
       { new: true }
     );
@@ -1139,7 +1139,7 @@ export const rejectNegotiation = async (req: AuthenticatedRequest<{ id: string; 
     }
 
     const campaign = await Campaign.findOneAndUpdate(
-      { _id: id, brandId: userId },
+      { campaignId: id, brandId: userId },
       { $pull: { selectedInfluencers: influencerId } },
       { new: true }
     );
@@ -1173,7 +1173,7 @@ export const boostCampaign = async (req: AuthenticatedRequest<{ id: string }>, r
       return;
     }
 
-    const campaign = await Campaign.findOne({ _id: id, brandId: userId });
+    const campaign = await Campaign.findOne({ campaignId: id, brandId: userId });
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });
@@ -1210,7 +1210,7 @@ export const getBoostRecommendations = async (req: AuthenticatedRequest<{ id: st
       return;
     }
 
-    const campaign = await Campaign.findOne({ _id: id, brandId: userId }).lean();
+    const campaign = await Campaign.findOne({ campaignId: id, brandId: userId }).lean();
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });

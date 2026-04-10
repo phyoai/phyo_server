@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: '.env' });
+import './instrument.js';
+import * as Sentry from '@sentry/node';
 // Ensure Buffer and crypto are available globally for crypto operations
 import { Buffer } from 'buffer';
 import crypto from 'crypto';
@@ -62,6 +64,8 @@ import locationRoute from './routes/location';
 import paymentAliasRoute from './routes/paymentAlias';
 import landingRoute from './routes/landing';
 import healthRoute from './routes/health';
+
+// Sentry.logger.info('User triggered test log', { action: 'test_log' })
 
 validateCriticalEnv();
 
@@ -177,6 +181,7 @@ app.use("/api", locationRoute);
 
 // Serve static files from the "public" directory
 app.use(express.static(path.join(__dirname, 'public')));
+Sentry.setupExpressErrorHandler(app);
 app.use(notFoundHandler);
 app.use(errorHandler);
 

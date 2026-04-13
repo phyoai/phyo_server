@@ -1716,7 +1716,7 @@ export const correctPaths = {
     }
   },
 
-  // ============ PAYMENTS (8 endpoints) ============
+  // ============ PAYMENTS (22 endpoints) ============
   '/api/payment/plans': {
     get: {
       tags: ['Payments'],
@@ -1872,6 +1872,308 @@ export const correctPaths = {
       security: [{ BearerAuth: [] }],
       responses: {
         200: { description: 'Subscription cancelled' }
+      }
+    }
+  },
+
+  '/api/payment/pause-subscription': {
+    post: {
+      tags: ['Payments'],
+      summary: 'Pause Subscription',
+      security: [{ BearerAuth: [] }],
+      responses: {
+        200: { description: 'Subscription paused' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/plans': {
+    get: {
+      tags: ['Payments'],
+      summary: 'Fetch All Razorpay Plans',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'count', in: 'query', required: false, schema: { type: 'integer' } },
+        { name: 'skip', in: 'query', required: false, schema: { type: 'integer' } }
+      ],
+      responses: {
+        200: { description: 'Razorpay plans fetched' }
+      }
+    },
+    post: {
+      tags: ['Payments'],
+      summary: 'Create Razorpay Plan',
+      security: [{ BearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                period: { type: 'string', example: 'monthly' },
+                interval: { type: 'integer', example: 1 },
+                item: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string' },
+                    amount: { type: 'integer', description: 'Amount in paise' },
+                    currency: { type: 'string', example: 'INR' },
+                    description: { type: 'string' }
+                  },
+                  required: ['name', 'amount', 'currency']
+                }
+              },
+              required: ['period', 'interval', 'item']
+            }
+          }
+        }
+      },
+      responses: {
+        200: { description: 'Razorpay plan created' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/plans/{planId}': {
+    get: {
+      tags: ['Payments'],
+      summary: 'Fetch Razorpay Plan By ID',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'planId', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      responses: {
+        200: { description: 'Razorpay plan details fetched' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/subscriptions': {
+    get: {
+      tags: ['Payments'],
+      summary: 'Fetch All Razorpay Subscriptions',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'count', in: 'query', required: false, schema: { type: 'integer' } },
+        { name: 'skip', in: 'query', required: false, schema: { type: 'integer' } }
+      ],
+      responses: {
+        200: { description: 'Razorpay subscriptions fetched' }
+      }
+    },
+    post: {
+      tags: ['Payments'],
+      summary: 'Create Razorpay Subscription',
+      security: [{ BearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                plan_id: { type: 'string' },
+                total_count: { type: 'integer' },
+                quantity: { type: 'integer' },
+                customer_notify: { type: 'boolean' },
+                start_at: { type: 'integer', description: 'Unix timestamp' }
+              },
+              required: ['plan_id', 'total_count']
+            }
+          }
+        }
+      },
+      responses: {
+        200: { description: 'Razorpay subscription created' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/subscription-links': {
+    post: {
+      tags: ['Payments'],
+      summary: 'Create Razorpay Subscription Link',
+      security: [{ BearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              additionalProperties: true
+            }
+          }
+        }
+      },
+      responses: {
+        200: { description: 'Razorpay subscription link created' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/subscriptions/{subscriptionId}': {
+    get: {
+      tags: ['Payments'],
+      summary: 'Fetch Razorpay Subscription By ID',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      responses: {
+        200: { description: 'Razorpay subscription details fetched' }
+      }
+    },
+    patch: {
+      tags: ['Payments'],
+      summary: 'Update Razorpay Subscription',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              additionalProperties: true
+            }
+          }
+        }
+      },
+      responses: {
+        200: { description: 'Razorpay subscription updated' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/subscriptions/{subscriptionId}/cancel': {
+    post: {
+      tags: ['Payments'],
+      summary: 'Cancel Razorpay Subscription',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'cancel_at_cycle_end', in: 'query', required: false, schema: { type: 'boolean' } }
+      ],
+      requestBody: {
+        required: false,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                cancel_at_cycle_end: { type: 'boolean' }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: { description: 'Razorpay subscription cancelled' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/subscriptions/{subscriptionId}/pending-update': {
+    get: {
+      tags: ['Payments'],
+      summary: 'Fetch Razorpay Pending Update Details',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      responses: {
+        200: { description: 'Razorpay pending update details fetched' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/subscriptions/{subscriptionId}/pending-update/cancel': {
+    post: {
+      tags: ['Payments'],
+      summary: 'Cancel Razorpay Pending Update',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      responses: {
+        200: { description: 'Razorpay pending update cancelled' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/subscriptions/{subscriptionId}/pause': {
+    post: {
+      tags: ['Payments'],
+      summary: 'Pause Razorpay Subscription',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      requestBody: {
+        required: false,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                pause_at: {
+                  oneOf: [{ type: 'string', enum: ['now', 'cycle_end'] }, { type: 'integer' }]
+                }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: { description: 'Razorpay subscription paused' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/subscriptions/{subscriptionId}/resume': {
+    post: {
+      tags: ['Payments'],
+      summary: 'Resume Razorpay Subscription',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      requestBody: {
+        required: false,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                resume_at: {
+                  oneOf: [{ type: 'string', enum: ['now'] }, { type: 'integer' }]
+                }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: { description: 'Razorpay subscription resumed' }
+      }
+    }
+  },
+
+  '/api/payment/razorpay/subscriptions/{subscriptionId}/invoices': {
+    get: {
+      tags: ['Payments'],
+      summary: 'Fetch All Invoices For Razorpay Subscription',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'count', in: 'query', required: false, schema: { type: 'integer' } },
+        { name: 'skip', in: 'query', required: false, schema: { type: 'integer' } }
+      ],
+      responses: {
+        200: { description: 'Razorpay subscription invoices fetched' }
       }
     }
   },

@@ -6,6 +6,22 @@ import { user as User } from '../models/auth';
 import { CreditService } from '../services/credit';
 import { AuthenticatedRequest, CreatePaymentOrderRequest, VerifyPaymentRequest, UserPlanInfo, SubscriptionPlan } from '../types';
 import { env } from '../config/env';
+import {
+  createPlan as createRazorpayPlanService,
+  fetchAllPlans as fetchAllRazorpayPlansService,
+  fetchPlanById as fetchRazorpayPlanByIdService,
+  createSubscription as createRazorpaySubscriptionService,
+  createSubscriptionLink as createRazorpaySubscriptionLinkService,
+  fetchAllSubscriptions as fetchAllRazorpaySubscriptionsService,
+  fetchSubscriptionById as fetchRazorpaySubscriptionByIdService,
+  cancelSubscription as cancelRazorpaySubscriptionService,
+  updateSubscription as updateRazorpaySubscriptionService,
+  fetchPendingUpdateDetails as fetchRazorpayPendingUpdateDetailsService,
+  cancelPendingUpdate as cancelRazorpayPendingUpdateService,
+  pauseSubscription as pauseRazorpaySubscriptionService,
+  resumeSubscription as resumeRazorpaySubscriptionService,
+  fetchAllInvoicesForSubscription as fetchRazorpayInvoicesForSubscriptionService
+} from '../services/razorPayServices';
 
 // Initialize Razorpay
 const razorpay = new Razorpay({
@@ -16,6 +32,37 @@ const razorpay = new Razorpay({
 // Helper function to get plan by ID
 const getPlanById = (planId: string) => {
   return PREDEFINED_PLANS.find(plan => plan.id === planId);
+};
+
+const parsePaginationQuery = (req: Request) => {
+  const options: { count?: number; skip?: number } = {};
+
+  if (typeof req.query.count === 'string') {
+    const parsedCount = Number.parseInt(req.query.count, 10);
+    if (!Number.isNaN(parsedCount)) {
+      options.count = parsedCount;
+    }
+  }
+
+  if (typeof req.query.skip === 'string') {
+    const parsedSkip = Number.parseInt(req.query.skip, 10);
+    if (!Number.isNaN(parsedSkip)) {
+      options.skip = parsedSkip;
+    }
+  }
+
+  return options;
+};
+
+const parseBoolean = (value: unknown, defaultValue: boolean = false): boolean => {
+  if (value === undefined || value === null) return defaultValue;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    return normalized === 'true' || normalized === '1' || normalized === 'yes';
+  }
+  return defaultValue;
 };
 
 // Helper function to reset monthly credits (now uses CreditService)
@@ -380,10 +427,22 @@ export const cancelSubscription = async (req: AuthenticatedRequest, res: Respons
       autoRenew: false
     });
 
-    // Update user status
-    await User.findByIdAndUpdate(userId, {
-      subscriptionStatus: 'CANCELLED'
-    });
+    // Update user status and downgrade plan
+    const isBrandUser = (user as any).type === 'BRAND';
+    await User.findByIdAndUpdate(
+      userId,
+      isBrandUser
+        ? {
+            subscriptionStatus: 'CANCELLED',
+            currentPlan: 'BRONZE',
+            subscription_plan: 'BRONZE'
+          }
+        : {
+            subscriptionStatus: 'CANCELLED',
+            currentPlan: 'BRONZE'
+          },
+      isBrandUser ? { strict: false } : undefined
+    );
 
     res.json({
       success: true,
@@ -394,6 +453,315 @@ export const cancelSubscription = async (req: AuthenticatedRequest, res: Respons
     res.status(500).json({
       success: false,
       error: 'Failed to cancel subscription'
+    });
+  }
+};
+
+//pause user subscription
+export const pauseSubscription = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user || !user.subscriptionId) {
+      return res.status(404).json({
+        success: false,
+        error: 'No active subscription found'
+      });
+    }
+
+    // Update subscription status
+    await subscription.findByIdAndUpdate(user.subscriptionId, {
+      status: 'PAUSED',
+      autoRenew: false
+    });
+
+    // Update user status
+    await User.findByIdAndUpdate(userId, {
+      subscriptionStatus: 'PAUSED'
+    });
+
+    res.json({
+      success: true,
+      message: 'Subscription paused successfully'
+    });
+  } catch (error) {
+    console.error('Error pausing subscription:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to pause subscription'
+    });
+  }
+};
+
+// Razorpay plan/subscription management APIs
+export const createRazorpayPlan = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const payload = req.body;
+    if (!payload || !payload.period || !payload.interval || !payload.item) {
+      return res.status(400).json({
+        success: false,
+        error: 'period, interval and item are required'
+      });
+    }
+
+    const result = await createRazorpayPlanService(payload);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error creating Razorpay plan:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create Razorpay plan'
+    });
+  }
+};
+
+export const fetchRazorpayPlans = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const result = await fetchAllRazorpayPlansService(parsePaginationQuery(req));
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error fetching Razorpay plans:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch Razorpay plans'
+    });
+  }
+};
+
+export const fetchRazorpayPlanById = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { planId } = req.params;
+    const result = await fetchRazorpayPlanByIdService(planId);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error fetching Razorpay plan by ID:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch Razorpay plan'
+    });
+  }
+};
+
+export const createRazorpaySubscription = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const payload = req.body;
+    if (!payload || !payload.plan_id || !payload.total_count) {
+      return res.status(400).json({
+        success: false,
+        error: 'plan_id and total_count are required'
+      });
+    }
+
+    const result = await createRazorpaySubscriptionService(payload);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error creating Razorpay subscription:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create Razorpay subscription'
+    });
+  }
+};
+
+export const createRazorpaySubscriptionLink = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const payload = req.body;
+    const result = await createRazorpaySubscriptionLinkService(payload);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error creating Razorpay subscription link:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to create Razorpay subscription link'
+    });
+  }
+};
+
+export const fetchRazorpaySubscriptions = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const result = await fetchAllRazorpaySubscriptionsService(parsePaginationQuery(req));
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error fetching Razorpay subscriptions:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch Razorpay subscriptions'
+    });
+  }
+};
+
+export const fetchRazorpaySubscriptionById = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { subscriptionId } = req.params;
+    const result = await fetchRazorpaySubscriptionByIdService(subscriptionId);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error fetching Razorpay subscription by ID:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch Razorpay subscription'
+    });
+  }
+};
+
+export const cancelRazorpaySubscription = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { subscriptionId } = req.params;
+    const cancelAtCycleEnd = parseBoolean(
+      req.body?.cancel_at_cycle_end ?? req.query.cancel_at_cycle_end,
+      false
+    );
+
+    const result = await cancelRazorpaySubscriptionService(subscriptionId, cancelAtCycleEnd);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error cancelling Razorpay subscription:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to cancel Razorpay subscription'
+    });
+  }
+};
+
+export const updateRazorpaySubscription = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { subscriptionId } = req.params;
+    const payload = req.body;
+    if (!payload || Object.keys(payload).length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Request body is required'
+      });
+    }
+
+    const result = await updateRazorpaySubscriptionService(subscriptionId, payload);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error updating Razorpay subscription:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update Razorpay subscription'
+    });
+  }
+};
+
+export const fetchRazorpayPendingUpdate = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { subscriptionId } = req.params;
+    const result = await fetchRazorpayPendingUpdateDetailsService(subscriptionId);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error fetching Razorpay pending update:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch Razorpay pending update'
+    });
+  }
+};
+
+export const cancelRazorpayPendingUpdate = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { subscriptionId } = req.params;
+    const result = await cancelRazorpayPendingUpdateService(subscriptionId);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error cancelling Razorpay pending update:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to cancel Razorpay pending update'
+    });
+  }
+};
+
+export const pauseRazorpaySubscription = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { subscriptionId } = req.params;
+    const payload = req.body && Object.keys(req.body).length > 0 ? req.body : { pause_at: 'now' };
+    const result = await pauseRazorpaySubscriptionService(subscriptionId, payload);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error pausing Razorpay subscription:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to pause Razorpay subscription'
+    });
+  }
+};
+
+export const resumeRazorpaySubscription = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { subscriptionId } = req.params;
+    const payload = req.body && Object.keys(req.body).length > 0 ? req.body : { resume_at: 'now' };
+    const result = await resumeRazorpaySubscriptionService(subscriptionId, payload);
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error resuming Razorpay subscription:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to resume Razorpay subscription'
+    });
+  }
+};
+
+export const fetchRazorpaySubscriptionInvoices = async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { subscriptionId } = req.params;
+    const result = await fetchRazorpayInvoicesForSubscriptionService(subscriptionId, parsePaginationQuery(req));
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error fetching Razorpay subscription invoices:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to fetch Razorpay subscription invoices'
     });
   }
 };

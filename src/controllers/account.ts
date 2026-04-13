@@ -428,7 +428,21 @@ export const cancelSubscription = async (req: AuthenticatedRequest, res: Respons
       });
     }
 
-    await User.findByIdAndUpdate(userId, { subscriptionStatus: 'CANCELLED' });
+    const isBrandUser = (userDoc as any).type === 'BRAND';
+    await User.findByIdAndUpdate(
+      userId,
+      isBrandUser
+        ? {
+            subscriptionStatus: 'CANCELLED',
+            currentPlan: 'BRONZE',
+            subscription_plan: 'BRONZE'
+          }
+        : {
+            subscriptionStatus: 'CANCELLED',
+            currentPlan: 'BRONZE'
+          },
+      isBrandUser ? { strict: false } : undefined
+    );
 
     res.json({
       success: true,

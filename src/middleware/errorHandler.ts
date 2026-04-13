@@ -12,10 +12,42 @@ export const errorHandler = (error: unknown, req: Request, res: Response, _next:
     Sentry.captureException(error);
   }
 
+  const genericError = error as {
+    status?: number;
+    statusCode?: number;
+    type?: string;
+    message?: string;
+  } | null;
+
+  const isJsonParseError =
+    error instanceof SyntaxError &&
+    (genericError?.type === 'entity.parse.failed' || genericError?.status === 400);
+
+  if (isJsonParseError) {
+    const statusCode = 400;
+    const message = 'Invalid JSON payload';
+    const details = {
+      name: 'SyntaxError',
+      message: error.message
+    };
+
+    logger.error('Unhandled request error', {
+      requestId: req.requestId,
+      method: req.method,
+      path: req.originalUrl,
+      statusCode,
+      message,
+      details,
+    });
+
+    sendError(res, statusCode, message, details);
+    return;
+  }
+
   const appError = error instanceof AppError ? error : null;
-  const statusCode = appError?.statusCode || 500;
+  const statusCode = appError?.statusCode || genericError?.statusCode || genericError?.status || 500;
   const message = appError?.message || 'Internal server error';
-  const details = appError?.details || (error instanceof Error ? { name: error.name } : {});
+  const details = appError?.details || (error instanceof Error ? { name: error.name, message: error.message } : {});
 
   logger.error('Unhandled request error', {
     requestId: req.requestId,

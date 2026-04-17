@@ -11,9 +11,10 @@ Complete API documentation for the Phyo influencer marketing platform, including
 3. [Base URL](#base-url)
 4. [Influencer APIs](#influencer-apis)
 5. [Brand APIs](#brand-apis)
-6. [Admin APIs](#admin-apis)
-7. [Postman Collection](#postman-collection)
-8. [Environment Setup](#environment-setup)
+6. [Lists APIs](#lists-apis)
+7. [Admin APIs](#admin-apis)
+8. [Postman Collection](#postman-collection)
+9. [Environment Setup](#environment-setup)
 
 ---
 
@@ -22,6 +23,7 @@ Complete API documentation for the Phyo influencer marketing platform, including
 The Phyo Platform provides RESTful APIs for:
 - **Influencer Registration & Management** - Register influencers, fetch Instagram demographics, manage profiles
 - **Brand Registration & Management** - Register brands, upload documents, manage campaigns
+- **Saved Influencer Lists** - Create lists, add influencers, manage statuses and notes, export list data
 - **Admin Approval Workflow** - Review and approve/reject influencer and brand requests
 
 **Key Features:**
@@ -730,6 +732,12 @@ curl -X PUT http://localhost:4000/api/brand-requests/profile \
   }
 }
 ```
+
+---
+
+## Lists APIs
+
+For the complete Lists API reference, see [LISTS_API_DOCS.md](./LISTS_API_DOCS.md).
 
 ---
 

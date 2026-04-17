@@ -59,10 +59,10 @@ const PROFILE_MUTATION_SELECT = '+pendingEmail +pendingEmailVerificationOTP +pen
 const EMAIL_CHANGE_OTP_TTL_MS = 10 * 60 * 1000;
 const EMAIL_PATTERN = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,})+$/;
 
-const EMAIL_USER = process.env.EMAIL_USER || 'phyo.aiofficial@gmail.com';
-const EMAIL_PASS = process.env.EMAIL_PASS || 'antn hqqq pqzw ittq';
-const EMAIL_HOST = process.env.EMAIL_HOST || 'smtp.gmail.com';
-const EMAIL_PORT = parseInt(process.env.EMAIL_PORT || '587', 10);
+const EMAIL_USER = process.env.EMAIL_USER;
+const EMAIL_PASS = process.env.EMAIL_PASS;
+const EMAIL_HOST = process.env.EMAIL_HOST;
+const EMAIL_PORT = parseInt(process.env.EMAIL_PORT || '587');
 
 const transporter = nodemailer.createTransport({
   host: EMAIL_HOST,

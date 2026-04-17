@@ -5,7 +5,8 @@
  */
 
 import swaggerUi from 'swagger-ui-express';
-import { Express } from 'express';
+import express, { Express } from 'express';
+import path from 'path';
 import { correctPaths, correctSchemas } from './swagger-correct-spec';
 
 const swaggerSpec = {
@@ -54,6 +55,7 @@ const swaggerSpec = {
     { name: 'Admin', description: 'Admin management endpoints' },
     { name: 'AI', description: 'AI-powered features (Ask/Claude)' },
     { name: 'Account', description: 'Account and subscription management' },
+    { name: 'Lists', description: 'Saved influencer lists and list management' },
     { name: 'Landing', description: 'Landing page content' },
     { name: 'Realtime', description: 'Socket.IO real-time endpoints and event contracts' },
     { name: 'Documentation', description: 'API documentation' }
@@ -66,6 +68,8 @@ const swaggerSpec = {
  * @param app Express application instance
  */
 export const initSwagger = (app: Express) => {
+  app.use('/docs-files', express.static(path.join(process.cwd(), 'docs')));
+
   // Serve Swagger UI
   app.use('/swagger-ui', swaggerUi.serve);
   app.get('/swagger-ui', swaggerUi.setup(swaggerSpec, {
@@ -246,6 +250,7 @@ export const initSwagger = (app: Express) => {
                   { title: 'Docs Overview', file: 'README.md' },
                   { title: 'Environment Setup', file: 'environment-setup.md' },
                   { title: 'Campaigns', file: 'CAMPAIGN_API_DOCS.md' },
+                  { title: 'Lists', file: 'LISTS_API_DOCS.md' },
                   { title: 'Chat System', file: 'chat-system.md' },
                   { title: 'Brand Requests', file: 'BRAND_REQUEST_API.md' },
                   { title: 'User To Brand Conversion', file: 'USER_TO_BRAND_CONVERSION_API.md' },
@@ -277,22 +282,34 @@ export const initSwagger = (app: Express) => {
 
               // Load documentation
               function loadDoc(index, element, file) {
-                  // In a real app, you'd fetch the markdown file from /docs directory
-                  const docContent = \`# Documentation\n\nDocumentation file: \${file}\n\nFor complete API documentation, please visit:\n\n- **Swagger UI**: /swagger-ui\n- **API Docs JSON**: /api-docs\n- **Postman**: Import Phyo_Server_API.postman_collection.json\`;
+                  fetch('/docs-files/' + encodeURIComponent(file))
+                      .then((response) => {
+                          if (!response.ok) {
+                              throw new Error('Failed to load ' + file);
+                          }
+                          return response.text();
+                      })
+                      .then((docContent) => {
+                          contentDiv.innerHTML = marked.parse(docContent);
 
-                  contentDiv.innerHTML = marked.parse(docContent);
+                          document.querySelectorAll('pre code').forEach((block) => {
+                              hljs.highlightElement(block);
+                          });
 
-                  // Highlight code blocks
-                  document.querySelectorAll('pre code').forEach((block) => {
-                      hljs.highlightElement(block);
-                  });
+                          document.querySelectorAll('.doc-list a').forEach(a => a.classList.remove('active'));
+                          element.classList.add('active');
+                          contentDiv.scrollTop = 0;
+                      })
+                      .catch(() => {
+                          const fallback = '# Documentation\\n\\nFailed to load: ' + file + '\\n\\nFor interactive API docs, visit:\\n\\n- **Swagger UI**: /swagger-ui\\n- **API Docs JSON**: /api-docs';
+                          contentDiv.innerHTML = marked.parse(fallback);
+                          document.querySelectorAll('.doc-list a').forEach(a => a.classList.remove('active'));
+                          element.classList.add('active');
+                      });
+              }
 
-                  // Update active link
-                  document.querySelectorAll('.doc-list a').forEach(a => a.classList.remove('active'));
-                  element.classList.add('active');
-
-                  // Scroll to top
-                  contentDiv.scrollTop = 0;
+              if (docs.length > 0) {
+                  loadDoc(0, docList.querySelector('a'), docs[0].file);
               }
           </script>
       </body>

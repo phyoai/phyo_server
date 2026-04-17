@@ -1,10 +1,13 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export interface IUserListItem {
+  _id?: Types.ObjectId;
   itemId: string;
   itemType: string;
+  status?: string;
   notes?: string;
   addedAt: Date;
+  updatedAt?: Date;
 }
 
 export interface IUserList {
@@ -21,18 +24,29 @@ export interface UserListDocument extends IUserList, Document {}
 const userListItemSchema = new Schema<IUserListItem>({
   itemId: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   itemType: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    default: 'influencer'
+  },
+  status: {
+    type: String,
+    trim: true,
+    default: 'Pending'
   },
   notes: {
     type: String,
     trim: true
   },
   addedAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
     type: Date,
     default: Date.now
   }
@@ -48,11 +62,13 @@ const userListSchema = new Schema<UserListDocument>({
   name: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    maxlength: 120
   },
   description: {
     type: String,
-    trim: true
+    trim: true,
+    maxlength: 500
   },
   items: [userListItemSchema]
 }, {

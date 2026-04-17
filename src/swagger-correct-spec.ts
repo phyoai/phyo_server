@@ -3544,6 +3544,211 @@ export const correctPaths = {
   },
 
   // ============ ACCOUNT & SUBSCRIPTIONS ============
+  '/api/lists': {
+    get: {
+      tags: ['Lists'],
+      summary: 'Get My Lists',
+      security: [{ BearerAuth: [] }],
+      responses: {
+        200: { description: 'Lists retrieved successfully' }
+      }
+    },
+    post: {
+      tags: ['Lists'],
+      summary: 'Create New List',
+      security: [{ BearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                description: { type: 'string' }
+              },
+              required: ['name']
+            }
+          }
+        }
+      },
+      responses: {
+        201: { description: 'List created successfully' }
+      }
+    }
+  },
+
+  '/api/lists/{id}': {
+    get: {
+      tags: ['Lists'],
+      summary: 'Get List Details',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      responses: {
+        200: { description: 'List details retrieved successfully' }
+      }
+    },
+    delete: {
+      tags: ['Lists'],
+      summary: 'Delete List',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      responses: {
+        200: { description: 'List deleted successfully' }
+      }
+    }
+  },
+
+  '/api/lists/{id}/influencers': {
+    post: {
+      tags: ['Lists'],
+      summary: 'Add Influencers To List',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                influencerId: { type: 'string' },
+                username: { type: 'string' },
+                status: { type: 'string' },
+                notes: { type: 'string' },
+                influencerIds: {
+                  type: 'array',
+                  items: { type: 'string' }
+                },
+                influencers: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      influencerId: { type: 'string' },
+                      username: { type: 'string' },
+                      status: { type: 'string' },
+                      notes: { type: 'string' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        201: { description: 'Influencers added successfully' }
+      }
+    }
+  },
+
+  '/api/lists/{id}/influencers/bulk': {
+    patch: {
+      tags: ['Lists'],
+      summary: 'Bulk Update List Influencers',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                action: {
+                  type: 'string',
+                  enum: ['updateStatus', 'remove']
+                },
+                itemIds: {
+                  type: 'array',
+                  items: { type: 'string' }
+                },
+                status: { type: 'string' }
+              },
+              required: ['action', 'itemIds']
+            }
+          }
+        }
+      },
+      responses: {
+        200: { description: 'Bulk action completed successfully' }
+      }
+    }
+  },
+
+  '/api/lists/{id}/influencers/{itemId}': {
+    patch: {
+      tags: ['Lists'],
+      summary: 'Update Single List Influencer',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'itemId', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                status: { type: 'string' },
+                notes: { type: 'string' }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: { description: 'Influencer updated successfully' }
+      }
+    },
+    delete: {
+      tags: ['Lists'],
+      summary: 'Remove Influencer From List',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'itemId', in: 'path', required: true, schema: { type: 'string' } }
+      ],
+      responses: {
+        200: { description: 'Influencer removed successfully' }
+      }
+    }
+  },
+
+  '/api/lists/{id}/export': {
+    get: {
+      tags: ['Lists'],
+      summary: 'Export List Data',
+      security: [{ BearerAuth: [] }],
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+        {
+          name: 'format',
+          in: 'query',
+          required: true,
+          schema: {
+            type: 'string',
+            enum: ['csv', 'excel']
+          }
+        }
+      ],
+      responses: {
+        200: { description: 'List export file download' }
+      }
+    }
+  },
+
   '/api/account/subscriptions/current': {
     get: {
       tags: ['Account'],

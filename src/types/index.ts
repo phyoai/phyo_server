@@ -149,6 +149,10 @@ export interface IConversation {
 // Auth interfaces
 export interface IUser {
   email: string;
+  pendingEmail?: string;
+  pendingEmailVerificationOTP?: string;
+  pendingEmailVerificationExpires?: number;
+  pendingEmailRequestedAt?: Date;
   password?: string; // Made optional for OAuth users
   type: UserType;
   about?: string;
@@ -172,6 +176,7 @@ export interface IUser {
   currentPlan?: SubscriptionPlan;
   subscriptionId?: string;
   subscriptionStatus?: 'ACTIVE' | 'INACTIVE' | 'CANCELLED' | 'EXPIRED' | 'PENDING';
+  subscription_plan?:'BRONZE'| 'SILVER'| 'GOLD'| 'PREMIUM';
   creditsRemaining?: number;
   trialCreditsGiven?: boolean;
   demoCreditsUsed?: boolean;
@@ -185,12 +190,13 @@ export interface IBrand extends IUser {
   industry: string;
   website?: string;
   description?: string;
-  company_type?: 'Brand' | 'Agency' | 'Marketplace';
+  company_type?: 'Brand' | 'Agency' | 'Marketplace' | 'Startup';
   company_size?: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
   location?: string;
   country?: string;
   company_logo?: string;
   brand_images?: string[];
+  categories?: string[];
   social_media?: {
     facebook?: string;
     instagram?: string;
@@ -217,7 +223,7 @@ export interface IBrand extends IUser {
     default_payment?: 'card' | 'bank';
     budget_limit?: number;
   };
-  subscription_plan?: 'FREE' | 'BASIC' | 'PROFESSIONAL' | 'ENTERPRISE';
+  subscription_plan?: 'BRONZE'| 'SILVER'| 'GOLD'| 'PREMIUM';
   team_members?: Array<{
     email: string;
     role: string;
@@ -294,6 +300,44 @@ export interface TargetInfluencer {
   };
 }
 
+export interface CampaignNegotiationOffer {
+  amount: number;
+  message?: string;
+  proposedBy: string;
+  proposedByRole: 'brand' | 'influencer';
+  proposedAt: Date;
+}
+
+export interface CampaignNegotiation {
+  influencerId: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  currentAmount: number;
+  currentMessage?: string;
+  lastOfferedBy: string;
+  lastOfferedByRole: 'brand' | 'influencer';
+  offers: CampaignNegotiationOffer[];
+  acceptedAt?: Date;
+  rejectedAt?: Date;
+  acceptedBy?: string;
+  rejectedBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type BoostDuration = '7days' | '14days' | '30days';
+
+export interface CampaignBoost {
+  duration: BoostDuration;
+  amount: number;
+  startsAt: Date;
+  endsAt: Date;
+  estimatedReach: number;
+  estimatedLiftPercent: number;
+  boostedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface ICampaign {
   campaignId:string;
   brandId: string;
@@ -311,6 +355,8 @@ export interface ICampaign {
   status: 'Draft' | 'Active' | 'Paused' | 'Completed' | 'Cancelled';
   applicants?: string[];
   selectedInfluencers?: string[];
+  negotiations?: CampaignNegotiation[];
+  boost?: CampaignBoost;
   suggestedInfluencers?: Array<{
     username: string;
     reason: string;

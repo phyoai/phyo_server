@@ -65,6 +65,203 @@ const parseBoolean = (value: unknown, defaultValue: boolean = false): boolean =>
   return defaultValue;
 };
 
+type UserSubscriptionStatus = 'ACTIVE' | 'INACTIVE' | 'CANCELLED' | 'EXPIRED' | 'PENDING';
+type UserCurrentPlan = SubscriptionPlan;
+
+const getStringValue = (value: unknown): string | undefined => {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : undefined;
+  }
+
+  if (Array.isArray(value) && value.length > 0) {
+    return getStringValue(value[0]);
+  }
+
+  return undefined;
+};
+
+const parseUserContext = (req: AuthenticatedRequest) => {
+  const rawBody =
+    req.body && typeof req.body === 'object' && !Array.isArray(req.body)
+      ? (req.body as Record<string, unknown>)
+      : {};
+  const rawQuery = req.query as Record<string, unknown>;
+
+  const explicitUserId =
+    getStringValue(rawBody.user_id) ||
+    getStringValue(rawBody.userId) ||
+    getStringValue(rawQuery.user_id) ||
+    getStringValue(rawQuery.userId);
+
+  const resolvedUserId = explicitUserId || req.user?.id;
+  const { user_id: _snakeUserId, userId: _camelUserId, ...cleanBody } = rawBody;
+
+  return {
+    explicitUserId,
+    resolvedUserId,
+    cleanBody
+  };
+};
+
+const getRazorpaySubscriptionId = (...candidates: unknown[]): string | undefined => {
+  for (const candidate of candidates) {
+    const value = getStringValue(candidate);
+    if (value && value.startsWith('sub_')) {
+      return value;
+    }
+  }
+
+  return undefined;
+};
+
+const mapRazorpayStatusToUserStatus = (status: unknown): UserSubscriptionStatus | undefined => {
+  const normalized = getStringValue(status)?.toLowerCase();
+  if (!normalized) return undefined;
+
+  if (normalized === 'active') return 'ACTIVE';
+  if (normalized === 'cancelled') return 'CANCELLED';
+  if (normalized === 'halted') return 'INACTIVE';
+  if (normalized === 'paused') return 'INACTIVE';
+  if (normalized === 'completed') return 'EXPIRED';
+  if (normalized === 'expired') return 'EXPIRED';
+  if (normalized === 'created') return 'PENDING';
+  if (normalized === 'authenticated') return 'PENDING';
+  if (normalized === 'pending') return 'PENDING';
+
+  return undefined;
+};
+
+const normalizePlanName = (value: unknown): UserCurrentPlan | undefined => {
+  const normalized = getStringValue(value)?.trim().toUpperCase();
+  if (!normalized) return undefined;
+
+  if (normalized.includes('BRONZE')) return 'BRONZE';
+  if (normalized.includes('SILVER')) return 'SILVER';
+  if (normalized.includes('GOLD')) return 'GOLD';
+  if (normalized.includes('PREMIUM')) return 'PREMIUM';
+
+  return undefined;
+};
+
+const inferPlanFromCandidates = (...candidates: unknown[]): UserCurrentPlan | undefined => {
+  for (const candidate of candidates) {
+    const planFromName = normalizePlanName(candidate);
+    if (planFromName) {
+      return planFromName;
+    }
+
+    const value = getStringValue(candidate)?.toLowerCase();
+    if (!value) continue;
+
+    const mappedByPredefined = PREDEFINED_PLANS.find((plan) => plan.id.toLowerCase() === value);
+    if (mappedByPredefined) {
+      return mappedByPredefined.name;
+    }
+  }
+
+  return undefined;
+};
+
+const resolveCurrentPlanFromRazorpayPlanId = async (
+  razorpayPlanIdCandidate: unknown
+): Promise<UserCurrentPlan | undefined> => {
+  const razorpayPlanId = getStringValue(razorpayPlanIdCandidate);
+  if (!razorpayPlanId || !razorpayPlanId.startsWith('plan_')) {
+    return undefined;
+  }
+
+  // Primary lookup from local plans collection shared by the user.
+  const collectionNames = ['plans', 'razorpayplans', 'razorpay_plans'];
+
+  for (const collectionName of collectionNames) {
+    try {
+      const planDoc: any = await User.db.collection(collectionName).findOne({
+        razorpayPlanId
+      });
+
+      if (!planDoc) {
+        continue;
+      }
+
+      const mappedPlan = inferPlanFromCandidates(
+        planDoc?.item?.name,
+        planDoc?.planName,
+        planDoc?.name
+      );
+
+      if (mappedPlan) {
+        return mappedPlan;
+      }
+    } catch {
+      // Ignore collection lookup errors and continue with fallback mapping.
+    }
+  }
+
+  return undefined;
+};
+
+const syncUserSubscriptionState = async ({
+  userId,
+  subscriptionId,
+  subscriptionStatus,
+  currentPlan
+}: {
+  userId?: string;
+  subscriptionId?: string;
+  subscriptionStatus?: UserSubscriptionStatus;
+  currentPlan?: UserCurrentPlan;
+}) => {
+  const updateData: Record<string, unknown> = {
+    lastPlanUpdate: new Date()
+  };
+
+  if (subscriptionId) {
+    updateData.subscriptionId = subscriptionId;
+  }
+
+  if (subscriptionStatus) {
+    updateData.subscriptionStatus = subscriptionStatus;
+  }
+
+  if (currentPlan !== undefined) {
+    updateData.currentPlan = currentPlan;
+    updateData.subscription_plan = currentPlan;
+  }
+
+  if (Object.keys(updateData).length === 1) {
+    return null;
+  }
+
+  if (userId) {
+    const updated = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    ).select('_id subscriptionId subscriptionStatus currentPlan subscription_plan');
+
+    console.log("updateData:", updateData);
+    console.log("updated user:", updated);
+
+    if (updated) return updated;
+  }
+
+  if (subscriptionId) {
+    const updated = await User.findOneAndUpdate(
+      { subscriptionId },
+      { $set: updateData },
+      { new: true, runValidators: true }
+    ).select('_id subscriptionId subscriptionStatus currentPlan subscription_plan');
+
+    console.log("updateData:", updateData);
+    console.log("updated user:", updated);
+
+    if (updated) return updated;
+  }
+
+  return null;
+};
+
 // Helper function to reset monthly credits (now uses CreditService)
 const resetMonthlyCredits = async (userId: string, planCredits: number | 'UNLIMITED') => {
   const creditsToReset = planCredits === 'UNLIMITED' ? 999999 : planCredits;
@@ -560,18 +757,66 @@ export const fetchRazorpayPlanById = async (req: AuthenticatedRequest, res: Resp
 
 export const createRazorpaySubscription = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const payload = req.body;
-    if (!payload || !payload.plan_id || !payload.total_count) {
+    const { resolvedUserId, cleanBody: razorpayPayload } = parseUserContext(req);
+
+    if (!razorpayPayload.plan_id || !razorpayPayload.total_count) {
       return res.status(400).json({
         success: false,
         error: 'plan_id and total_count are required'
       });
     }
 
-    const result = await createRazorpaySubscriptionService(payload);
+    if (!resolvedUserId) {
+      return res.status(400).json({
+        success: false,
+        error: 'user_id is required'
+      });
+    }
+
+    const existingUser = await User.findById(resolvedUserId).select('_id');
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    const result = await createRazorpaySubscriptionService(razorpayPayload as any);
+    const razorpaySubscriptionId = getRazorpaySubscriptionId((result as any)?.id);
+    const inferredPlan = inferPlanFromCandidates(
+      (razorpayPayload as any)?.plan_name,
+      (razorpayPayload as any)?.planName,
+      (razorpayPayload as any)?.currentPlan,
+      (razorpayPayload as any)?.subscription_plan,
+      (razorpayPayload as any)?.plan_id,
+      (result as any)?.plan_id,
+      (result as any)?.planId
+    );
+
+    if (!razorpaySubscriptionId) {
+      return res.status(502).json({
+        success: false,
+        error: 'Invalid Razorpay subscription id returned'
+      });
+    }
+
+    const updatedUser = await syncUserSubscriptionState({
+      userId: resolvedUserId,
+      subscriptionId: razorpaySubscriptionId,
+      subscriptionStatus: mapRazorpayStatusToUserStatus((result as any)?.status) || 'PENDING',
+      currentPlan: inferredPlan
+    });
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      user: {
+        user_id: updatedUser?._id ?? resolvedUserId,
+        subscriptionId: updatedUser?.subscriptionId ?? razorpaySubscriptionId,
+        subscriptionStatus: updatedUser?.subscriptionStatus ?? 'PENDING',
+        currentPlan: (updatedUser as any)?.currentPlan ?? inferredPlan,
+        subscription_plan: (updatedUser as any)?.subscription_plan ?? inferredPlan
+      }
     });
   } catch (error) {
     console.error('Error creating Razorpay subscription:', error);
@@ -584,11 +829,44 @@ export const createRazorpaySubscription = async (req: AuthenticatedRequest, res:
 
 export const createRazorpaySubscriptionLink = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const payload = req.body;
+    const { resolvedUserId, cleanBody: payload } = parseUserContext(req);
     const result = await createRazorpaySubscriptionLinkService(payload);
+
+    const subscriptionId = getRazorpaySubscriptionId(
+      (result as any)?.subscription_id,
+      (result as any)?.subscriptionId,
+      (payload as any)?.subscription_id,
+      (payload as any)?.subscriptionId
+    );
+    const inferredPlan = inferPlanFromCandidates(
+      (payload as any)?.plan_name,
+      (payload as any)?.planName,
+      (payload as any)?.currentPlan,
+      (payload as any)?.subscription_plan,
+      (payload as any)?.plan_id,
+      (result as any)?.plan_id,
+      (result as any)?.planId
+    );
+
+    const updatedUser = await syncUserSubscriptionState({
+      userId: resolvedUserId,
+      subscriptionId,
+      subscriptionStatus: mapRazorpayStatusToUserStatus((result as any)?.status) || (subscriptionId ? 'PENDING' : undefined),
+      currentPlan: inferredPlan
+    });
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      ...(updatedUser && {
+        user: {
+          user_id: updatedUser._id,
+          subscriptionId: updatedUser.subscriptionId,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          currentPlan: (updatedUser as any).currentPlan,
+          subscription_plan: (updatedUser as any).subscription_plan
+        }
+      })
     });
   } catch (error) {
     console.error('Error creating Razorpay subscription link:', error);
@@ -602,9 +880,44 @@ export const createRazorpaySubscriptionLink = async (req: AuthenticatedRequest, 
 export const fetchRazorpaySubscriptions = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const result = await fetchAllRazorpaySubscriptionsService(parsePaginationQuery(req));
+
+    const { resolvedUserId } = parseUserContext(req);
+    let updatedUser: any = null;
+
+    if (resolvedUserId) {
+      const currentUser = await User.findById(resolvedUserId).select('_id subscriptionId');
+      const currentSubId = getRazorpaySubscriptionId(currentUser?.subscriptionId);
+      const items = Array.isArray((result as any)?.items) ? (result as any).items : [];
+      const matchedSubscription = currentSubId
+        ? items.find((item: any) => getRazorpaySubscriptionId(item?.id) === currentSubId)
+        : undefined;
+
+      if (matchedSubscription) {
+        updatedUser = await syncUserSubscriptionState({
+          userId: resolvedUserId,
+          subscriptionId: currentSubId,
+          subscriptionStatus: mapRazorpayStatusToUserStatus(matchedSubscription.status),
+          currentPlan: inferPlanFromCandidates(
+            matchedSubscription.plan_name,
+            matchedSubscription.planName,
+            matchedSubscription.plan_id
+          )
+        });
+      }
+    }
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      ...(updatedUser && {
+        user: {
+          user_id: updatedUser._id,
+          subscriptionId: updatedUser.subscriptionId,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          currentPlan: (updatedUser as any).currentPlan,
+          subscription_plan: (updatedUser as any).subscription_plan
+        }
+      })
     });
   } catch (error) {
     console.error('Error fetching Razorpay subscriptions:', error);
@@ -619,9 +932,35 @@ export const fetchRazorpaySubscriptionById = async (req: AuthenticatedRequest, r
   try {
     const { subscriptionId } = req.params;
     const result = await fetchRazorpaySubscriptionByIdService(subscriptionId);
+
+    const { resolvedUserId } = parseUserContext(req);
+    const planIdFromRazorpay = getStringValue((result as any)?.plan_id) || getStringValue((result as any)?.planId);
+    const planFromCollection = await resolveCurrentPlanFromRazorpayPlanId(planIdFromRazorpay);
+    const canonicalSubscriptionId = getRazorpaySubscriptionId((result as any)?.id, subscriptionId);
+    const updatedUser = await syncUserSubscriptionState({
+      userId: resolvedUserId,
+      subscriptionId: canonicalSubscriptionId,
+      subscriptionStatus: mapRazorpayStatusToUserStatus((result as any)?.status),
+      currentPlan: planFromCollection || inferPlanFromCandidates(
+        (result as any)?.plan_name,
+        (result as any)?.planName,
+        (result as any)?.plan_id,
+        (result as any)?.planId
+      )
+    });
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      ...(updatedUser && {
+        user: {
+          user_id: updatedUser._id,
+          subscriptionId: updatedUser.subscriptionId,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          currentPlan: (updatedUser as any).currentPlan,
+          subscription_plan: (updatedUser as any).subscription_plan
+        }
+      })
     });
   } catch (error) {
     console.error('Error fetching Razorpay subscription by ID:', error);
@@ -635,15 +974,37 @@ export const fetchRazorpaySubscriptionById = async (req: AuthenticatedRequest, r
 export const cancelRazorpaySubscription = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { subscriptionId } = req.params;
+    const { resolvedUserId } = parseUserContext(req);
     const cancelAtCycleEnd = parseBoolean(
       req.body?.cancel_at_cycle_end ?? req.query.cancel_at_cycle_end,
       false
     );
 
     const result = await cancelRazorpaySubscriptionService(subscriptionId, cancelAtCycleEnd);
+
+    const updatedUser = await syncUserSubscriptionState({
+      userId: resolvedUserId,
+      subscriptionId: getRazorpaySubscriptionId((result as any)?.id, subscriptionId),
+      subscriptionStatus:
+        mapRazorpayStatusToUserStatus((result as any)?.status) ||
+        (cancelAtCycleEnd ? 'ACTIVE' : 'CANCELLED'),
+      currentPlan: cancelAtCycleEnd
+        ? inferPlanFromCandidates((result as any)?.plan_name, (result as any)?.planName, (result as any)?.plan_id)
+        : 'BRONZE'
+    });
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      ...(updatedUser && {
+        user: {
+          user_id: updatedUser._id,
+          subscriptionId: updatedUser.subscriptionId,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          currentPlan: (updatedUser as any).currentPlan,
+          subscription_plan: (updatedUser as any).subscription_plan
+        }
+      })
     });
   } catch (error) {
     console.error('Error cancelling Razorpay subscription:', error);
@@ -657,7 +1018,7 @@ export const cancelRazorpaySubscription = async (req: AuthenticatedRequest, res:
 export const updateRazorpaySubscription = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { subscriptionId } = req.params;
-    const payload = req.body;
+    const { resolvedUserId, cleanBody: payload } = parseUserContext(req);
     if (!payload || Object.keys(payload).length === 0) {
       return res.status(400).json({
         success: false,
@@ -666,9 +1027,35 @@ export const updateRazorpaySubscription = async (req: AuthenticatedRequest, res:
     }
 
     const result = await updateRazorpaySubscriptionService(subscriptionId, payload);
+
+    const updatedUser = await syncUserSubscriptionState({
+      userId: resolvedUserId,
+      subscriptionId: getRazorpaySubscriptionId((result as any)?.id, subscriptionId),
+      subscriptionStatus: mapRazorpayStatusToUserStatus((result as any)?.status),
+      currentPlan: inferPlanFromCandidates(
+        (payload as any)?.plan_name,
+        (payload as any)?.planName,
+        (payload as any)?.currentPlan,
+        (payload as any)?.subscription_plan,
+        (payload as any)?.plan_id,
+        (result as any)?.plan_name,
+        (result as any)?.planName,
+        (result as any)?.plan_id
+      )
+    });
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      ...(updatedUser && {
+        user: {
+          user_id: updatedUser._id,
+          subscriptionId: updatedUser.subscriptionId,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          currentPlan: (updatedUser as any).currentPlan,
+          subscription_plan: (updatedUser as any).subscription_plan
+        }
+      })
     });
   } catch (error) {
     console.error('Error updating Razorpay subscription:', error);
@@ -683,9 +1070,38 @@ export const fetchRazorpayPendingUpdate = async (req: AuthenticatedRequest, res:
   try {
     const { subscriptionId } = req.params;
     const result = await fetchRazorpayPendingUpdateDetailsService(subscriptionId);
+
+    const { resolvedUserId } = parseUserContext(req);
+    const statusFromResult =
+      mapRazorpayStatusToUserStatus((result as any)?.status) ||
+      mapRazorpayStatusToUserStatus((result as any)?.subscription?.status);
+
+    const updatedUser = await syncUserSubscriptionState({
+      userId: resolvedUserId,
+      subscriptionId: getRazorpaySubscriptionId(subscriptionId),
+      subscriptionStatus: statusFromResult,
+      currentPlan: inferPlanFromCandidates(
+        (result as any)?.plan_name,
+        (result as any)?.planName,
+        (result as any)?.plan_id,
+        (result as any)?.subscription?.plan_name,
+        (result as any)?.subscription?.planName,
+        (result as any)?.subscription?.plan_id
+      )
+    });
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      ...(updatedUser && {
+        user: {
+          user_id: updatedUser._id,
+          subscriptionId: updatedUser.subscriptionId,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          currentPlan: (updatedUser as any).currentPlan,
+          subscription_plan: (updatedUser as any).subscription_plan
+        }
+      })
     });
   } catch (error) {
     console.error('Error fetching Razorpay pending update:', error);
@@ -700,9 +1116,36 @@ export const cancelRazorpayPendingUpdate = async (req: AuthenticatedRequest, res
   try {
     const { subscriptionId } = req.params;
     const result = await cancelRazorpayPendingUpdateService(subscriptionId);
+
+    const { resolvedUserId } = parseUserContext(req);
+    const updatedUser = await syncUserSubscriptionState({
+      userId: resolvedUserId,
+      subscriptionId: getRazorpaySubscriptionId(subscriptionId),
+      subscriptionStatus:
+        mapRazorpayStatusToUserStatus((result as any)?.status) ||
+        mapRazorpayStatusToUserStatus((result as any)?.subscription?.status),
+      currentPlan: inferPlanFromCandidates(
+        (result as any)?.plan_name,
+        (result as any)?.planName,
+        (result as any)?.plan_id,
+        (result as any)?.subscription?.plan_name,
+        (result as any)?.subscription?.planName,
+        (result as any)?.subscription?.plan_id
+      )
+    });
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      ...(updatedUser && {
+        user: {
+          user_id: updatedUser._id,
+          subscriptionId: updatedUser.subscriptionId,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          currentPlan: (updatedUser as any).currentPlan,
+          subscription_plan: (updatedUser as any).subscription_plan
+        }
+      })
     });
   } catch (error) {
     console.error('Error cancelling Razorpay pending update:', error);
@@ -716,11 +1159,38 @@ export const cancelRazorpayPendingUpdate = async (req: AuthenticatedRequest, res
 export const pauseRazorpaySubscription = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { subscriptionId } = req.params;
-    const payload = req.body && Object.keys(req.body).length > 0 ? req.body : { pause_at: 'now' };
+    const { resolvedUserId, cleanBody } = parseUserContext(req);
+    const payload = cleanBody && Object.keys(cleanBody).length > 0 ? cleanBody : { pause_at: 'now' };
     const result = await pauseRazorpaySubscriptionService(subscriptionId, payload);
+
+    const updatedUser = await syncUserSubscriptionState({
+      userId: resolvedUserId,
+      subscriptionId: getRazorpaySubscriptionId((result as any)?.id, subscriptionId),
+      subscriptionStatus: mapRazorpayStatusToUserStatus((result as any)?.status) || 'INACTIVE',
+      currentPlan: inferPlanFromCandidates(
+        (cleanBody as any)?.plan_name,
+        (cleanBody as any)?.planName,
+        (cleanBody as any)?.currentPlan,
+        (cleanBody as any)?.subscription_plan,
+        (cleanBody as any)?.plan_id,
+        (result as any)?.plan_name,
+        (result as any)?.planName,
+        (result as any)?.plan_id
+      )
+    });
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      ...(updatedUser && {
+        user: {
+          user_id: updatedUser._id,
+          subscriptionId: updatedUser.subscriptionId,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          currentPlan: (updatedUser as any).currentPlan,
+          subscription_plan: (updatedUser as any).subscription_plan
+        }
+      })
     });
   } catch (error) {
     console.error('Error pausing Razorpay subscription:', error);
@@ -734,11 +1204,38 @@ export const pauseRazorpaySubscription = async (req: AuthenticatedRequest, res: 
 export const resumeRazorpaySubscription = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { subscriptionId } = req.params;
-    const payload = req.body && Object.keys(req.body).length > 0 ? req.body : { resume_at: 'now' };
+    const { resolvedUserId, cleanBody } = parseUserContext(req);
+    const payload = cleanBody && Object.keys(cleanBody).length > 0 ? cleanBody : { resume_at: 'now' };
     const result = await resumeRazorpaySubscriptionService(subscriptionId, payload);
+
+    const updatedUser = await syncUserSubscriptionState({
+      userId: resolvedUserId,
+      subscriptionId: getRazorpaySubscriptionId((result as any)?.id, subscriptionId),
+      subscriptionStatus: mapRazorpayStatusToUserStatus((result as any)?.status) || 'ACTIVE',
+      currentPlan: inferPlanFromCandidates(
+        (cleanBody as any)?.plan_name,
+        (cleanBody as any)?.planName,
+        (cleanBody as any)?.currentPlan,
+        (cleanBody as any)?.subscription_plan,
+        (cleanBody as any)?.plan_id,
+        (result as any)?.plan_name,
+        (result as any)?.planName,
+        (result as any)?.plan_id
+      )
+    });
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      ...(updatedUser && {
+        user: {
+          user_id: updatedUser._id,
+          subscriptionId: updatedUser.subscriptionId,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          currentPlan: (updatedUser as any).currentPlan,
+          subscription_plan: (updatedUser as any).subscription_plan
+        }
+      })
     });
   } catch (error) {
     console.error('Error resuming Razorpay subscription:', error);
@@ -753,9 +1250,25 @@ export const fetchRazorpaySubscriptionInvoices = async (req: AuthenticatedReques
   try {
     const { subscriptionId } = req.params;
     const result = await fetchRazorpayInvoicesForSubscriptionService(subscriptionId, parsePaginationQuery(req));
+
+    const { resolvedUserId } = parseUserContext(req);
+    const updatedUser = await syncUserSubscriptionState({
+      userId: resolvedUserId,
+      subscriptionId: getRazorpaySubscriptionId(subscriptionId)
+    });
+
     res.json({
       success: true,
-      data: result
+      data: result,
+      ...(updatedUser && {
+        user: {
+          user_id: updatedUser._id,
+          subscriptionId: updatedUser.subscriptionId,
+          subscriptionStatus: updatedUser.subscriptionStatus,
+          currentPlan: (updatedUser as any).currentPlan,
+          subscription_plan: (updatedUser as any).subscription_plan
+        }
+      })
     });
   } catch (error) {
     console.error('Error fetching Razorpay subscription invoices:', error);

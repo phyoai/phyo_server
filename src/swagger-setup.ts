@@ -55,6 +55,7 @@ const swaggerSpec = {
     { name: 'AI', description: 'AI-powered features (Ask/Claude)' },
     { name: 'Account', description: 'Account and subscription management' },
     { name: 'Landing', description: 'Landing page content' },
+    { name: 'Realtime', description: 'Socket.IO real-time endpoints and event contracts' },
     { name: 'Documentation', description: 'API documentation' }
   ],
   paths: correctPaths

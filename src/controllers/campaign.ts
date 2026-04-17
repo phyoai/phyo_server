@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import Campaign from '../models/campaign';
-import { AuthenticatedRequest, ICampaign } from '../types';
+import { AuthenticatedRequest, ICampaign, CampaignNegotiation, CampaignNegotiationOffer, BoostDuration } from '../types';
 import { getPublicUrl } from '../services/s3';
 import Anthropic from '@anthropic-ai/sdk';
 import Influencer from '../models/influencer';
@@ -15,6 +15,113 @@ interface CreateCampaignBody extends Omit<ICampaign, 'brandId' | 'createdAt' | '
 }
 
 interface UpdateCampaignBody extends Partial<CreateCampaignBody> {}
+
+type NegotiationRole = 'brand' | 'influencer';
+
+const normalizeOptionalString = (value: unknown): string | undefined => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : undefined;
+};
+
+const hasNegotiationAccess = (campaignBrandId: string, requesterId: string, influencerId: string): boolean => {
+  return campaignBrandId === requesterId || requesterId === influencerId;
+};
+
+const deriveNegotiationStatus = (
+  campaign: {
+    applicants?: string[];
+    selectedInfluencers?: string[];
+  },
+  influencerId: string,
+  persistedStatus?: CampaignNegotiation['status']
+): CampaignNegotiation['status'] | 'not_started' => {
+  if (persistedStatus) {
+    return persistedStatus;
+  }
+
+  if (campaign.selectedInfluencers?.includes(influencerId)) {
+    return 'accepted';
+  }
+
+  if (campaign.applicants?.includes(influencerId)) {
+    return 'pending';
+  }
+
+  return 'not_started';
+};
+
+interface BoostCampaignBody {
+  duration?: BoostDuration;
+  amount?: number | string;
+}
+
+const BOOST_DURATION_OPTIONS: BoostDuration[] = ['7days', '14days', '30days'];
+
+const BOOST_DURATION_DAYS: Record<BoostDuration, number> = {
+  '7days': 7,
+  '14days': 14,
+  '30days': 30
+};
+
+const BOOST_PRICE_BY_DURATION: Record<BoostDuration, number> = {
+  '7days': 500,
+  '14days': 900,
+  '30days': 1500
+};
+
+const BOOST_LIFT_BY_DURATION: Record<BoostDuration, number> = {
+  '7days': 15,
+  '14days': 28,
+  '30days': 45
+};
+
+const BOOST_REACH_MULTIPLIER_BY_DURATION: Record<BoostDuration, number> = {
+  '7days': 1.0,
+  '14days': 1.7,
+  '30days': 2.6
+};
+
+const isValidBoostDuration = (value: unknown): value is BoostDuration => {
+  return typeof value === 'string' && BOOST_DURATION_OPTIONS.includes(value as BoostDuration);
+};
+
+const toValidPage = (value: unknown, defaultValue: number): number => {
+  const parsed = Number.parseInt(String(value ?? defaultValue), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
+};
+
+const isBoostActive = (campaign: { boost?: { endsAt?: Date | string | null } } | null | undefined, now: Date): boolean => {
+  if (!campaign?.boost?.endsAt) {
+    return false;
+  }
+
+  const endsAt = new Date(campaign.boost.endsAt);
+  if (Number.isNaN(endsAt.getTime())) {
+    return false;
+  }
+
+  return endsAt.getTime() > now.getTime();
+};
+
+const getCampaignBaseReach = (campaign: {
+  selectedInfluencers?: unknown[];
+  applicants?: unknown[];
+  budget?: number;
+}): number => {
+  const selectedCount = campaign.selectedInfluencers?.length || 0;
+  const applicantsCount = campaign.applicants?.length || 0;
+  const budget = Number.isFinite(campaign.budget) ? (campaign.budget as number) : 0;
+
+  return Math.max(10000, selectedCount * 10000 + applicantsCount * 2500 + Math.round(budget * 0.2));
+};
+
+const getEstimatedBoostReach = (baseReach: number, duration: BoostDuration): number => {
+  return Math.round(baseReach * BOOST_REACH_MULTIPLIER_BY_DURATION[duration]);
+};
 
 /**
  * Helper function to generate AI-powered influencer suggestions for a campaign
@@ -335,8 +442,8 @@ export const getCampaigns = async (req: Request, res: Response): Promise<void> =
       maxBudget
     } = req.query;
 
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
+    const pageNum = toValidPage(page, 1);
+    const limitNum = toValidPage(limit, 10);
     const skip = (pageNum - 1) * limitNum;
 
     // Build filter object
@@ -361,18 +468,43 @@ export const getCampaigns = async (req: Request, res: Response): Promise<void> =
       if (maxBudget) filter.budget.$lte = parseFloat(maxBudget as string);
     }
 
-    const campaigns = await Campaign.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limitNum)
-      .populate('brandId', 'companyName email')
-      .lean();
+    const now = new Date();
 
-    const total = await Campaign.countDocuments(filter);
+    const [campaigns, total] = await Promise.all([
+      Campaign.aggregate([
+        { $match: filter },
+        {
+          $addFields: {
+            boostActiveRank: {
+              $cond: [
+                { $gt: ['$boost.endsAt', now] },
+                1,
+                0
+              ]
+            }
+          }
+        },
+        { $sort: { boostActiveRank: -1, createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limitNum },
+        {
+          $project: {
+            boostActiveRank: 0
+          }
+        }
+      ]),
+      Campaign.countDocuments(filter)
+    ]);
+
+    const populatedCampaigns = await Campaign.populate(campaigns, {
+      path: 'brandId',
+      select: 'companyName email'
+    });
+
     const totalPages = Math.ceil(total / limitNum);
 
     // Exclude aiSuggestionMetadata from all campaigns
-    const campaignsWithoutMetadata = campaigns.map(campaign => {
+    const campaignsWithoutMetadata = populatedCampaigns.map(campaign => {
       const { aiSuggestionMetadata, ...campaignData } = campaign as any;
       return {
         ...campaignData,
@@ -591,6 +723,7 @@ export const updateCampaign = async (req: AuthenticatedRequest<{ id: string }, {
       'brandId',
       'applicants',
       'selectedInfluencers',
+      'negotiations',
       'suggestedInfluencers',
       'aiSuggestionMetadata',
       'createdAt',
@@ -1010,7 +1143,10 @@ export const addCampaignDeliverable = async (req: AuthenticatedRequest<{ id: str
 };
 
 // Submit counter offer
-export const counterOffer = async (req: AuthenticatedRequest<{ id: string }>, res: Response): Promise<void> => {
+export const counterOffer = async (
+  req: AuthenticatedRequest<{ id: string }, {}, { influencerId?: string; amount?: number; message?: string }>,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
@@ -1020,25 +1156,110 @@ export const counterOffer = async (req: AuthenticatedRequest<{ id: string }>, re
       return;
     }
 
-    const { influencerId, amount, message } = req.body;
+    const rawInfluencerId = normalizeOptionalString(req.body?.influencerId);
+    const amount = typeof req.body?.amount === 'number' ? req.body.amount : Number(req.body?.amount);
+    const message = normalizeOptionalString(req.body?.message);
 
-    if (!influencerId || !amount) {
-      res.status(400).json({ success: false, message: 'influencerId and amount are required' });
+    if (!Number.isFinite(amount) || amount <= 0) {
+      res.status(400).json({ success: false, message: 'amount must be a positive number' });
       return;
     }
 
-    const campaign = await Campaign.findOne({campaignId:id});
+    const campaign = await Campaign.findOne({ campaignId: id });
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });
       return;
     }
 
-    // Counter offer logic - stored as metadata or handled via messaging
+    const isBrandOwner = campaign.brandId === userId;
+    if (isBrandOwner && !rawInfluencerId) {
+      res.status(400).json({ success: false, message: 'influencerId is required for brand counter offers' });
+      return;
+    }
+
+    const influencerId = rawInfluencerId || userId;
+    if (!hasNegotiationAccess(campaign.brandId, userId, influencerId)) {
+      res.status(403).json({ success: false, message: 'You do not have permission to update this negotiation' });
+      return;
+    }
+
+    const influencerInCampaign =
+      campaign.applicants?.includes(influencerId) ||
+      campaign.selectedInfluencers?.includes(influencerId);
+
+    if (!influencerInCampaign) {
+      res.status(400).json({
+        success: false,
+        message: 'Influencer must apply to this campaign before negotiation'
+      });
+      return;
+    }
+
+    const offeredByRole: NegotiationRole = isBrandOwner ? 'brand' : 'influencer';
+    const now = new Date();
+    const offer: CampaignNegotiationOffer = {
+      amount,
+      proposedBy: userId,
+      proposedByRole: offeredByRole,
+      proposedAt: now,
+      ...(message ? { message } : {})
+    };
+
+    if (!Array.isArray(campaign.negotiations)) {
+      campaign.negotiations = [];
+    }
+
+    let negotiation = campaign.negotiations.find((item) => item.influencerId === influencerId);
+
+    if (!negotiation) {
+      negotiation = {
+        influencerId,
+        status: 'pending',
+        currentAmount: amount,
+        ...(message ? { currentMessage: message } : {}),
+        lastOfferedBy: userId,
+        lastOfferedByRole: offeredByRole,
+        offers: [offer],
+        createdAt: now,
+        updatedAt: now
+      };
+      campaign.negotiations.push(negotiation);
+    } else {
+      negotiation.status = 'pending';
+      negotiation.currentAmount = amount;
+      if (message) {
+        negotiation.currentMessage = message;
+      } else {
+        delete negotiation.currentMessage;
+      }
+      negotiation.lastOfferedBy = userId;
+      negotiation.lastOfferedByRole = offeredByRole;
+      negotiation.updatedAt = now;
+      delete negotiation.acceptedAt;
+      delete negotiation.acceptedBy;
+      delete negotiation.rejectedAt;
+      delete negotiation.rejectedBy;
+
+      if (!Array.isArray(negotiation.offers)) {
+        negotiation.offers = [];
+      }
+      negotiation.offers.push(offer);
+    }
+
+    campaign.markModified('negotiations');
+    await campaign.save();
+
+    const savedNegotiation = campaign.negotiations?.find((item) => item.influencerId === influencerId) || null;
+
     res.json({
       success: true,
       message: 'Counter offer submitted successfully',
-      data: { campaignId: id, influencerId, amount, message }
+      data: {
+        campaignId: id,
+        influencerId,
+        negotiation: savedNegotiation
+      }
     });
   } catch (error) {
     console.error('Counter offer error:', error);
@@ -1060,22 +1281,31 @@ export const getNegotiation = async (req: AuthenticatedRequest<{ id: string; inf
       return;
     }
 
-    const campaign = await Campaign.findOne({campaignId:id}).lean();
+    const campaign = await Campaign.findOne({ campaignId: id }).lean();
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });
       return;
     }
 
-    const isApplicant = campaign.applicants?.includes(influencerId);
-    const isSelected = campaign.selectedInfluencers?.includes(influencerId);
+    if (!hasNegotiationAccess(campaign.brandId, userId, influencerId)) {
+      res.status(403).json({ success: false, message: 'You do not have permission to view this negotiation' });
+      return;
+    }
+
+    const negotiations = Array.isArray((campaign as any).negotiations)
+      ? ((campaign as any).negotiations as CampaignNegotiation[])
+      : [];
+    const negotiation = negotiations.find((item) => item.influencerId === influencerId) || null;
+    const status = deriveNegotiationStatus(campaign, influencerId, negotiation?.status);
 
     res.json({
       success: true,
       data: {
         campaignId: id,
         influencerId,
-        status: isSelected ? 'accepted' : isApplicant ? 'pending' : 'not_applied',
+        status,
+        negotiation,
         campaign: {
           budget: campaign.budget,
           compensation: campaign.compensation,
@@ -1103,20 +1333,81 @@ export const acceptNegotiation = async (req: AuthenticatedRequest<{ id: string; 
       return;
     }
 
-    const campaign = await Campaign.findOneAndUpdate(
-      { campaignId: id, brandId: userId },
-      { $addToSet: { selectedInfluencers: influencerId } },
-      { new: true }
-    );
+    const campaign = await Campaign.findOne({ campaignId: id });
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });
       return;
     }
 
+    if (!hasNegotiationAccess(campaign.brandId, userId, influencerId)) {
+      res.status(403).json({ success: false, message: 'You do not have permission to accept this negotiation' });
+      return;
+    }
+
+    const influencerInCampaign =
+      campaign.applicants?.includes(influencerId) ||
+      campaign.selectedInfluencers?.includes(influencerId);
+
+    if (!influencerInCampaign) {
+      res.status(400).json({
+        success: false,
+        message: 'Influencer is not part of this campaign'
+      });
+      return;
+    }
+
+    if (!Array.isArray(campaign.negotiations)) {
+      campaign.negotiations = [];
+    }
+
+    const now = new Date();
+    let negotiation = campaign.negotiations.find((item) => item.influencerId === influencerId);
+
+    if (!negotiation) {
+      negotiation = {
+        influencerId,
+        status: 'accepted',
+        currentAmount: campaign.compensation?.amount ?? 0,
+        lastOfferedBy: campaign.brandId,
+        lastOfferedByRole: 'brand',
+        offers: [],
+        acceptedAt: now,
+        acceptedBy: userId,
+        createdAt: now,
+        updatedAt: now
+      };
+      campaign.negotiations.push(negotiation);
+    } else {
+      negotiation.status = 'accepted';
+      negotiation.acceptedAt = now;
+      negotiation.acceptedBy = userId;
+      negotiation.updatedAt = now;
+      delete negotiation.rejectedAt;
+      delete negotiation.rejectedBy;
+    }
+
+    if (!Array.isArray(campaign.selectedInfluencers)) {
+      campaign.selectedInfluencers = [];
+    }
+
+    if (!campaign.selectedInfluencers.includes(influencerId)) {
+      campaign.selectedInfluencers.push(influencerId);
+    }
+
+    campaign.markModified('negotiations');
+    await campaign.save();
+
+    const savedNegotiation = campaign.negotiations.find((item) => item.influencerId === influencerId) || null;
+
     res.json({
       success: true,
-      message: 'Negotiation accepted successfully'
+      message: 'Negotiation accepted successfully',
+      data: {
+        campaignId: id,
+        influencerId,
+        negotiation: savedNegotiation
+      }
     });
   } catch (error) {
     console.error('Accept negotiation error:', error);
@@ -1138,20 +1429,76 @@ export const rejectNegotiation = async (req: AuthenticatedRequest<{ id: string; 
       return;
     }
 
-    const campaign = await Campaign.findOneAndUpdate(
-      { campaignId: id, brandId: userId },
-      { $pull: { selectedInfluencers: influencerId } },
-      { new: true }
-    );
+    const campaign = await Campaign.findOne({ campaignId: id });
 
     if (!campaign) {
       res.status(404).json({ success: false, message: 'Campaign not found' });
       return;
     }
 
+    if (!hasNegotiationAccess(campaign.brandId, userId, influencerId)) {
+      res.status(403).json({ success: false, message: 'You do not have permission to reject this negotiation' });
+      return;
+    }
+
+    const influencerInCampaign =
+      campaign.applicants?.includes(influencerId) ||
+      campaign.selectedInfluencers?.includes(influencerId);
+
+    if (!influencerInCampaign) {
+      res.status(400).json({
+        success: false,
+        message: 'Influencer is not part of this campaign'
+      });
+      return;
+    }
+
+    if (!Array.isArray(campaign.negotiations)) {
+      campaign.negotiations = [];
+    }
+
+    const now = new Date();
+    let negotiation = campaign.negotiations.find((item) => item.influencerId === influencerId);
+
+    if (!negotiation) {
+      const rejectedByRole: NegotiationRole = campaign.brandId === userId ? 'brand' : 'influencer';
+      negotiation = {
+        influencerId,
+        status: 'rejected',
+        currentAmount: campaign.compensation?.amount ?? 0,
+        lastOfferedBy: userId,
+        lastOfferedByRole: rejectedByRole,
+        offers: [],
+        rejectedAt: now,
+        rejectedBy: userId,
+        createdAt: now,
+        updatedAt: now
+      };
+      campaign.negotiations.push(negotiation);
+    } else {
+      negotiation.status = 'rejected';
+      negotiation.rejectedAt = now;
+      negotiation.rejectedBy = userId;
+      negotiation.updatedAt = now;
+      delete negotiation.acceptedAt;
+      delete negotiation.acceptedBy;
+    }
+
+    campaign.selectedInfluencers = (campaign.selectedInfluencers || []).filter((value) => value !== influencerId);
+
+    campaign.markModified('negotiations');
+    await campaign.save();
+
+    const savedNegotiation = campaign.negotiations.find((item) => item.influencerId === influencerId) || null;
+
     res.json({
       success: true,
-      message: 'Negotiation rejected successfully'
+      message: 'Negotiation rejected successfully',
+      data: {
+        campaignId: id,
+        influencerId,
+        negotiation: savedNegotiation
+      }
     });
   } catch (error) {
     console.error('Reject negotiation error:', error);
@@ -1163,7 +1510,10 @@ export const rejectNegotiation = async (req: AuthenticatedRequest<{ id: string; 
 };
 
 // Boost campaign
-export const boostCampaign = async (req: AuthenticatedRequest<{ id: string }>, res: Response): Promise<void> => {
+export const boostCampaign = async (
+  req: AuthenticatedRequest<{ id: string }, {}, BoostCampaignBody>,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
@@ -1180,14 +1530,74 @@ export const boostCampaign = async (req: AuthenticatedRequest<{ id: string }>, r
       return;
     }
 
-    // Boost logic - currently returns a success placeholder
+    if (campaign.status !== 'Active') {
+      res.status(400).json({ success: false, message: 'Only active campaigns can be boosted' });
+      return;
+    }
+
+    const duration = req.body?.duration;
+
+    if (!isValidBoostDuration(duration)) {
+      res.status(400).json({
+        success: false,
+        message: 'duration must be one of: 7days, 14days, 30days'
+      });
+      return;
+    }
+
+    const rawAmount = req.body?.amount;
+    let providedAmount: number | undefined;
+
+    if (rawAmount !== undefined) {
+      const parsedAmount = typeof rawAmount === 'number' ? rawAmount : Number(rawAmount);
+      if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+        res.status(400).json({
+          success: false,
+          message: 'amount must be a positive number when provided'
+        });
+        return;
+      }
+      providedAmount = parsedAmount;
+    }
+
+    const serverAmount = BOOST_PRICE_BY_DURATION[duration];
+    if (providedAmount !== undefined && providedAmount !== serverAmount) {
+      res.status(400).json({
+        success: false,
+        message: 'amount does not match server pricing for selected duration',
+        expectedAmount: serverAmount
+      });
+      return;
+    }
+
+    const now = new Date();
+    const durationDays = BOOST_DURATION_DAYS[duration];
+    const endsAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+    const baseReach = getCampaignBaseReach(campaign);
+    const estimatedReach = getEstimatedBoostReach(baseReach, duration);
+    const estimatedLiftPercent = BOOST_LIFT_BY_DURATION[duration];
+
+    campaign.boost = {
+      duration,
+      amount: serverAmount,
+      startsAt: now,
+      endsAt,
+      estimatedReach,
+      estimatedLiftPercent,
+      boostedBy: userId,
+      createdAt: now,
+      updatedAt: now
+    };
+    campaign.markModified('boost');
+    await campaign.save();
+
     res.json({
       success: true,
       message: 'Campaign boosted successfully',
       data: {
         campaignId: id,
-        boostedAt: new Date(),
-        estimatedReach: 50000
+        chargeMode: 'record_only',
+        boost: campaign.boost
       }
     });
   } catch (error) {
@@ -1217,23 +1627,45 @@ export const getBoostRecommendations = async (req: AuthenticatedRequest<{ id: st
       return;
     }
 
+    const applicantsCount = campaign.applicants?.length || 0;
+    const budget = campaign.budget || 0;
+
+    let recommendedDuration: BoostDuration = '7days';
+    if (budget >= 150000 || applicantsCount >= 25) {
+      recommendedDuration = '30days';
+    } else if (budget >= 50000 || applicantsCount >= 10) {
+      recommendedDuration = '14days';
+    }
+
+    const reasonByDuration: Record<BoostDuration, string> = {
+      '7days': 'Short test run to quickly increase visibility with lower spend.',
+      '14days': 'Balanced option for sustained reach and cost efficiency.',
+      '30days': 'Long-run exposure for high-demand or high-budget campaigns.'
+    };
+
+    const baseReach = getCampaignBaseReach(campaign);
+    const now = new Date();
+
+    const recommendations = BOOST_DURATION_OPTIONS.map((duration) => ({
+      duration,
+      amount: BOOST_PRICE_BY_DURATION[duration],
+      estimatedReach: getEstimatedBoostReach(baseReach, duration),
+      estimatedLiftPercent: BOOST_LIFT_BY_DURATION[duration],
+      isRecommended: duration === recommendedDuration,
+      reason: duration === recommendedDuration
+        ? 'Recommended based on your current budget and application volume.'
+        : reasonByDuration[duration]
+    }));
+
+    const activeBoost = isBoostActive(campaign, now) ? campaign.boost : null;
+
     res.json({
       success: true,
       data: {
-        recommendations: [
-          {
-            type: 'sponsored_listing',
-            description: 'Feature your campaign at the top of search results',
-            estimatedReach: 10000,
-            cost: 500
-          },
-          {
-            type: 'influencer_match',
-            description: 'Get matched with top influencers in your niche',
-            estimatedReach: 25000,
-            cost: 1200
-          }
-        ]
+        campaignId: id,
+        recommendedDuration,
+        activeBoost,
+        recommendations
       }
     });
   } catch (error) {
@@ -1256,26 +1688,44 @@ export const getCampaignsForMe = async (req: AuthenticatedRequest, res: Response
     }
 
     const { page = '1', limit = '10' } = req.query;
-    const pageNum = parseInt(page as string);
-    const limitNum = parseInt(limit as string);
+    const pageNum = toValidPage(page, 1);
+    const limitNum = toValidPage(limit, 10);
     const skip = (pageNum - 1) * limitNum;
 
-    // Return active campaigns that the user hasn't applied to yet
-    const campaigns = await Campaign.find({
-      status: 'Active',
-      applicants: { $ne: userId },
-      brandId: { $ne: userId }
-    })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limitNum)
-      .lean();
+    const now = new Date();
 
-    const total = await Campaign.countDocuments({
+    const filter = {
       status: 'Active',
       applicants: { $ne: userId },
       brandId: { $ne: userId }
-    });
+    };
+
+    // Return active campaigns that the user hasn't applied to yet
+    const [campaigns, total] = await Promise.all([
+      Campaign.aggregate([
+        { $match: filter },
+        {
+          $addFields: {
+            boostActiveRank: {
+              $cond: [
+                { $gt: ['$boost.endsAt', now] },
+                1,
+                0
+              ]
+            }
+          }
+        },
+        { $sort: { boostActiveRank: -1, createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limitNum },
+        {
+          $project: {
+            boostActiveRank: 0
+          }
+        }
+      ]),
+      Campaign.countDocuments(filter)
+    ]);
 
     const cleanedCampaigns = campaigns.map((c: any) => {
       const { aiSuggestionMetadata, ...rest } = c;

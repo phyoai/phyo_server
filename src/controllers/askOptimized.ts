@@ -6,7 +6,7 @@ import DemographicsCache from "../models/demographicsCache";
 import getDemographics from "../utils/getDemographics";
 import {
   getInstagramProfileData,
-  scrapNewInstagramProfileData,
+  getprofileAnalytics,
 } from "../utils/getProfileData";
 
 interface AskRequest {
@@ -117,6 +117,18 @@ export const handleAsk = async (
           .map((username) => username.replace(/^@/, "").trim().toLowerCase())
           .filter(Boolean);
 
+        // set usernames for downstream processing instead of returning
+        if (normalizedUsernames.length !== 0) {
+          res.status(404).json({
+            success: true,
+            result: searchCriteria,
+            data:normalizedUsernames ,
+            message: "No valid usernames found after normalization",
+            error: "No valid usernames",
+          });
+          return;
+        }
+
         let cachedDemographics = await DemographicsCache.find({
           username: { $in: normalizedUsernames },
         });
@@ -156,36 +168,39 @@ export const handleAsk = async (
         //   return;
         // }
 
-        let profileData = [] as any[];
-        let scrapedData = {} as any;
+        console.log(`fetching profile data ${normalizedUsernames}`);
+        const profileData = await getInstagramProfileData(normalizedUsernames);
 
-        try {
-          profileData = await Promise.all(
-            normalizedUsernames.map((u) => getInstagramProfileData(u)),
-          );
-          console.log(
-            `\n📊 Instagram profile data fetched for ${profileData.length} username(s):`,
-          );
+        const analytics = await getprofileAnalytics(normalizedUsernames);
+        // let scrapedData = {} as any;
 
-          // run scrapNewInstagramProfileData for any usernames that did not return profile data from getInstagramProfileData
-          const usernamesForScraping = normalizedUsernames.filter(
-            (u) => !profileData.some((p) => p?.username?.toLowerCase() === u),
-          );
+        // try {
+        //   profileData = await Promise.all(
+        //     normalizedUsernames.map((u) => getInstagramProfileData(u)),
+        //   );
+        //   console.log(
+        //     `\n📊 Instagram profile data fetched for ${profileData.length} username(s):`,
+        //   );
 
-          if (usernamesForScraping.length > 0) {
-            scrapedData =
-              await scrapNewInstagramProfileData(usernamesForScraping);
-          }
+        // // run scrapNewInstagramProfileData for any usernames that did not return profile data from getInstagramProfileData
+        // const usernamesForScraping = normalizedUsernames.filter(
+        //   (u) => !profileData.some((p) => p?.username?.toLowerCase() === u),
+        // );
 
-          // if (
-          //   profileData.length !== normalizedUsernames.length ||
-          //   profileData.some((item) => item == null)
-          // ) {
-          //   profileData = await scrapNewInstagramProfileData(normalizedUsernames);
-          // }
-        } catch (error) {
-          console.error("❌ Error fetching Instagram profile data:", error);
-        }
+        // if (usernamesForScraping.length > 0) {
+        //   scrapedData =
+        //     await scrapNewInstagramProfileData(usernamesForScraping);
+        // }
+
+        // if (
+        //   profileData.length !== normalizedUsernames.length ||
+        //   profileData.some((item) => item == null)
+        // ) {
+        //   profileData = await scrapNewInstagramProfileData(normalizedUsernames);
+        // }
+        // } catch (error) {
+        //   console.error("❌ Error fetching Instagram profile data:", error);
+        // }
 
         // if (profileData.length != normalizedUsernames.length) {
         //   console.error("❌ Incomplete profile data fetched");
@@ -198,14 +213,15 @@ export const handleAsk = async (
               {
                 demographics: cachedDemographics,
                 profileData: profileData,
-                scrapedData: {
-                  job_id: scrapedData?.job_id || null,
-                  job_type: scrapedData?.job_type || null,
-                  status: scrapedData?.status || null,
-                  queued_at: scrapedData?.queued_at || null,
-                  usernames: scrapedData?.usernames || [],
-                  result: scrapedData?.result || {},
-                },
+                analytics: analytics,
+                // scrapedData: {
+                //   job_id: scrapedData?.job_id || null,
+                //   job_type: scrapedData?.job_type || null,
+                //   status: scrapedData?.status || null,
+                //   queued_at: scrapedData?.queued_at || null,
+                //   usernames: scrapedData?.usernames || [],
+                //   result: scrapedData?.result || {},
+                // },
               },
             ],
             message: `Retrieved ${cachedDemographics.length} cached demographic record(s) with profile data`,

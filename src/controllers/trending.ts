@@ -50,17 +50,30 @@ export const getTrendingCampaigns = async (req: AuthenticatedRequest, res: Respo
     const limit = parseInt(req.query.limit as string) || 10;
     const page = parseInt(req.query.page as string) || 1;
     const skip = (page - 1) * limit;
+    const now = new Date();
 
     // Aggregate to find campaigns with most applicants
     const [campaigns, total] = await Promise.all([
       Campaign.aggregate([
         { $match: { status: 'Active' } },
-        { $addFields: { applicantCount: { $size: { $ifNull: ['$applicants', []] } } } },
-        { $sort: { applicantCount: -1, createdAt: -1 } },
+        {
+          $addFields: {
+            applicantCount: { $size: { $ifNull: ['$applicants', []] } },
+            boostActiveRank: {
+              $cond: [
+                { $gt: ['$boost.endsAt', now] },
+                1,
+                0
+              ]
+            }
+          }
+        },
+        { $sort: { boostActiveRank: -1, applicantCount: -1, createdAt: -1 } },
         { $skip: skip },
         { $limit: limit },
         {
           $project: {
+            boostActiveRank: 0,
             aiSuggestionMetadata: 0,
             suggestedInfluencers: 0
           }

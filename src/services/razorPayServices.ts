@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const RAZORPAY_API_BASE = 'https://api.razorpay.com/v1';
+const RAZORPAY_API_BASE = process.env.RAZORPAY_BASE_URL;
 
 type RazorpayHttpMethod = 'GET' | 'POST' | 'PATCH';
 

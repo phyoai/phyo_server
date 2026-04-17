@@ -1,7 +1,7 @@
 /**
  * COMPREHENSIVE Swagger Specification with Request/Response Schemas
  * 231+ API Endpoints with full payload definitions
- * Last Updated: 2026-03-27
+ * Last Updated: 2026-04-16
  */
 
 // Schema Definitions
@@ -35,6 +35,7 @@ export const correctSchemas = {
       requirements: { type: 'array', items: { type: 'string' } },
       status: { type: 'string', enum: ['active', 'closed', 'pending'] },
       applications: { type: 'number' },
+      boost: { $ref: '#/components/schemas/CampaignBoost' },
       createdAt: { type: 'string', format: 'date-time' }
     }
   },
@@ -162,6 +163,414 @@ export const correctSchemas = {
       message: { type: 'string' },
       data: { type: 'object' }
     }
+  },
+  UserProfileSocialMedia: {
+    type: 'object',
+    properties: {
+      facebook: { type: 'string', example: 'https://facebook.com/pyromedia' },
+      instagram: { type: 'string', example: 'https://instagram.com/pyromedia' },
+      twitter: { type: 'string', example: 'https://twitter.com/pyromedia' },
+      linkedin: { type: 'string', example: 'https://linkedin.com/company/pyromedia' },
+      youtube: { type: 'string', example: 'https://youtube.com/@pyromedia' },
+      tiktok: { type: 'string', example: 'https://tiktok.com/@pyromedia' }
+    }
+  },
+  UserProfileVerificationDocuments: {
+    type: 'object',
+    properties: {
+      business_registration: { type: 'string' },
+      tax_id: { type: 'string' },
+      company_registration_number: { type: 'string' },
+      authorization_letter: { type: 'string' }
+    }
+  },
+  UserProfileBillingInfo: {
+    type: 'object',
+    properties: {
+      billing_address: { type: 'string' },
+      contact_person: { type: 'string' },
+      finance_email: { type: 'string', format: 'email' }
+    }
+  },
+  UserProfilePaymentMethod: {
+    type: 'object',
+    properties: {
+      card_details: {
+        type: 'object',
+        nullable: true,
+        additionalProperties: true
+      },
+      bank_account: {
+        type: 'object',
+        nullable: true,
+        additionalProperties: true
+      },
+      default_payment: {
+        type: 'string',
+        enum: ['card', 'bank']
+      },
+      budget_limit: {
+        type: 'number',
+        minimum: 0
+      }
+    }
+  },
+  UserProfileTeamMember: {
+    type: 'object',
+    properties: {
+      email: { type: 'string', format: 'email' },
+      role: { type: 'string' },
+      permissions: {
+        type: 'array',
+        items: { type: 'string' }
+      }
+    }
+  },
+  UserProfilePreferences: {
+    type: 'object',
+    properties: {
+      notifications: { type: 'boolean' },
+      email_preferences: {
+        type: 'array',
+        items: { type: 'string' }
+      },
+      timezone: { type: 'string' },
+      language: { type: 'string' }
+    }
+  },
+  UserProfileContact: {
+    type: 'object',
+    properties: {
+      first_name: { type: 'string' },
+      last_name: { type: 'string' },
+      phone: { type: 'string' },
+      job_title: { type: 'string' }
+    }
+  },
+  UserProfileDocument: {
+    type: 'object',
+    description: 'Authenticated user profile document. Shape varies by account type and may include legacy persisted fields beyond the ones listed here.',
+    additionalProperties: true,
+    properties: {
+      _id: { type: 'string', readOnly: true },
+      email: { type: 'string', format: 'email', readOnly: true },
+      pendingEmail: { type: 'string', format: 'email', readOnly: true },
+      pendingEmailRequestedAt: { type: 'string', format: 'date-time', readOnly: true },
+      type: { type: 'string', enum: ['BRAND', 'INFLUENCER', 'SERVICE_PROVIDER', 'USER'], readOnly: true },
+      name: { type: 'string' },
+      username: { type: 'string' },
+      bio: { type: 'string' },
+      profilePicture: { type: 'string' },
+      about: { type: 'string' },
+      gender: { type: 'string', enum: ['Male', 'Female', 'Other'] },
+      phoneNumber: { type: 'string' },
+      companyName: { type: 'string' },
+      industry: { type: 'string' },
+      website: { type: 'string' },
+      description: { type: 'string' },
+      company_type: { type: 'string', enum: ['Brand', 'Agency', 'Marketplace', 'Startup'] },
+      company_size: { type: 'string', enum: ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'] },
+      location: { type: 'string' },
+      country: { type: 'string' },
+      company_logo: { type: 'string' },
+      brand_images: {
+        type: 'array',
+        items: { type: 'string' }
+      },
+      categories: {
+        type: 'array',
+        items: { type: 'string' }
+      },
+      social_media: { $ref: '#/components/schemas/UserProfileSocialMedia' },
+      brand_story: { type: 'string' },
+      verification_documents: { $ref: '#/components/schemas/UserProfileVerificationDocuments' },
+      billing_info: { $ref: '#/components/schemas/UserProfileBillingInfo' },
+      payment_method: { $ref: '#/components/schemas/UserProfilePaymentMethod' },
+      team_members: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/UserProfileTeamMember' }
+      },
+      preferences: { $ref: '#/components/schemas/UserProfilePreferences' },
+      contact: { $ref: '#/components/schemas/UserProfileContact' },
+      services: {
+        type: 'array',
+        items: { type: 'string' }
+      },
+      isCodeVerified: { type: 'boolean', readOnly: true },
+      isEmailVerified: { type: 'boolean', readOnly: true },
+      isOnline: { type: 'boolean', readOnly: true },
+      isOAuthUser: { type: 'boolean', readOnly: true },
+      googleId: { type: 'string', readOnly: true },
+      googleEmail: { type: 'string', format: 'email', readOnly: true },
+      googleName: { type: 'string', readOnly: true },
+      googlePicture: { type: 'string', readOnly: true },
+      currentPlan: { type: 'string', enum: ['BRONZE', 'SILVER', 'GOLD', 'PREMIUM'], readOnly: true },
+      subscriptionId: { type: 'string', readOnly: true },
+      subscriptionStatus: {
+        type: 'string',
+        enum: ['ACTIVE', 'INACTIVE', 'CANCELLED', 'EXPIRED', 'PENDING'],
+        readOnly: true
+      },
+      subscription_plan: { type: 'string', enum: ['BRONZE', 'SILVER', 'GOLD', 'PREMIUM'], readOnly: true },
+      creditsRemaining: { type: 'number', readOnly: true },
+      trialCreditsGiven: { type: 'boolean', readOnly: true },
+      demoCreditsUsed: { type: 'boolean', readOnly: true },
+      lastPlanUpdate: { type: 'string', format: 'date-time', readOnly: true },
+      lastSeen: { type: 'string', format: 'date-time', readOnly: true },
+      socketId: { type: 'string', readOnly: true },
+      createdAt: { type: 'string', format: 'date-time', readOnly: true },
+      updatedAt: { type: 'string', format: 'date-time', readOnly: true }
+    }
+  },
+  UserProfileUpdateRequest: {
+    type: 'object',
+    description: 'Partial update payload for the authenticated user profile. Persisted field names like contact, billing_info, social_media, and brand_images are accepted, and brand-friendly aliases like firstName, lastName, phone, socialMedia, brandImages, billingAddress, and financeEmail are mapped to those nested fields. If email is provided, the API stages the new address in pendingEmail and sends an OTP; the current email remains active until verification. Nested object patches are merged by path, so sending { "preferences": { "notifications": false } } does not erase sibling preference fields. Unknown or immutable account, subscription, verification, and credit fields are ignored.',
+    additionalProperties: true,
+    properties: {
+      email: { type: 'string', format: 'email' },
+      name: { type: 'string' },
+      fullName: { type: 'string' },
+      firstName: { type: 'string' },
+      lastName: { type: 'string' },
+      username: { type: 'string' },
+      bio: { type: 'string', maxLength: 500 },
+      profilePicture: { type: 'string' },
+      about: { type: 'string', maxLength: 1000 },
+      gender: { type: 'string', enum: ['Male', 'Female', 'Other'] },
+      phoneNumber: { type: 'string' },
+      phone: { type: 'string' },
+      companyName: { type: 'string' },
+      industry: { type: 'string' },
+      website: { type: 'string' },
+      description: { type: 'string', maxLength: 1000 },
+      company_type: { type: 'string', enum: ['Brand', 'Agency', 'Marketplace', 'Startup'] },
+      company_size: { type: 'string', enum: ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'] },
+      location: { type: 'string' },
+      country: { type: 'string' },
+      company_logo: { type: 'string' },
+      brand_images: {
+        type: 'array',
+        items: { type: 'string' }
+      },
+      brandImages: {
+        type: 'array',
+        items: { type: 'string' }
+      },
+      categories: {
+        type: 'array',
+        items: { type: 'string' }
+      },
+      social_media: { $ref: '#/components/schemas/UserProfileSocialMedia' },
+      socialMedia: { $ref: '#/components/schemas/UserProfileSocialMedia' },
+      brand_story: { type: 'string', maxLength: 2000 },
+      verification_documents: { $ref: '#/components/schemas/UserProfileVerificationDocuments' },
+      billing_info: { $ref: '#/components/schemas/UserProfileBillingInfo' },
+      billingAddress: { type: 'string' },
+      financeEmail: { type: 'string', format: 'email' },
+      payment_method: { $ref: '#/components/schemas/UserProfilePaymentMethod' },
+      team_members: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/UserProfileTeamMember' }
+      },
+      preferences: { $ref: '#/components/schemas/UserProfilePreferences' },
+      contact: { $ref: '#/components/schemas/UserProfileContact' },
+      services: {
+        type: 'array',
+        items: { type: 'string' }
+      }
+    },
+    example: {
+      email: 'brand@pyromedia.com',
+      companyName: 'Pyromedia',
+      firstName: 'Abhishek',
+      lastName: 'Sharma',
+      phone: '+91 9876543210',
+      bio: 'Building creator partnerships for modern consumer brands.',
+      about: 'We run performance-led brand campaigns across creator, paid, and affiliate channels.',
+      location: 'Delhi',
+      country: 'India',
+      industry: 'Marketing',
+      website: 'https://pyromedia.com',
+      brandImages: [
+        'https://example.com/assets/brand-1.jpg',
+        'https://example.com/assets/brand-2.jpg'
+      ],
+      socialMedia: {
+        instagram: 'https://instagram.com/pyromedia'
+      },
+      categories: ['Fashion', 'Lifestyle', 'Beauty'],
+      billingAddress: '123 Main Street, Delhi',
+      financeEmail: 'finance@pyromedia.com'
+    }
+  },
+  UserEmailChangeVerifyRequest: {
+    type: 'object',
+    properties: {
+      otp: { type: 'string', example: '123456' },
+      code: { type: 'string', example: '123456' }
+    },
+    required: ['otp']
+  },
+  CampaignNegotiationOffer: {
+    type: 'object',
+    properties: {
+      amount: { type: 'number', minimum: 0, example: 750 },
+      message: { type: 'string', example: 'Can we include 2 reels for this amount?' },
+      proposedBy: { type: 'string', example: 'user_123' },
+      proposedByRole: { type: 'string', enum: ['brand', 'influencer'], example: 'brand' },
+      proposedAt: { type: 'string', format: 'date-time' }
+    },
+    required: ['amount', 'proposedBy', 'proposedByRole', 'proposedAt']
+  },
+  CampaignNegotiation: {
+    type: 'object',
+    properties: {
+      influencerId: { type: 'string', example: 'influencer_456' },
+      status: { type: 'string', enum: ['pending', 'accepted', 'rejected'], example: 'pending' },
+      currentAmount: { type: 'number', minimum: 0, example: 750 },
+      currentMessage: { type: 'string', example: 'Can we include 2 reels for this amount?' },
+      lastOfferedBy: { type: 'string', example: 'user_123' },
+      lastOfferedByRole: { type: 'string', enum: ['brand', 'influencer'], example: 'brand' },
+      offers: {
+        type: 'array',
+        items: { $ref: '#/components/schemas/CampaignNegotiationOffer' }
+      },
+      acceptedAt: { type: 'string', format: 'date-time', nullable: true },
+      rejectedAt: { type: 'string', format: 'date-time', nullable: true },
+      acceptedBy: { type: 'string', nullable: true },
+      rejectedBy: { type: 'string', nullable: true },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' }
+    },
+    required: [
+      'influencerId',
+      'status',
+      'currentAmount',
+      'lastOfferedBy',
+      'lastOfferedByRole',
+      'offers',
+      'createdAt',
+      'updatedAt'
+    ]
+  },
+  CampaignBoost: {
+    type: 'object',
+    properties: {
+      duration: { type: 'string', enum: ['7days', '14days', '30days'], example: '14days' },
+      amount: { type: 'number', minimum: 0, example: 900 },
+      startsAt: { type: 'string', format: 'date-time' },
+      endsAt: { type: 'string', format: 'date-time' },
+      estimatedReach: { type: 'number', minimum: 0, example: 34000 },
+      estimatedLiftPercent: { type: 'number', minimum: 0, example: 28 },
+      boostedBy: { type: 'string', example: 'user_123' },
+      createdAt: { type: 'string', format: 'date-time' },
+      updatedAt: { type: 'string', format: 'date-time' }
+    },
+    required: [
+      'duration',
+      'amount',
+      'startsAt',
+      'endsAt',
+      'estimatedReach',
+      'estimatedLiftPercent',
+      'boostedBy',
+      'createdAt',
+      'updatedAt'
+    ]
+  },
+  BoostRecommendation: {
+    type: 'object',
+    properties: {
+      duration: { type: 'string', enum: ['7days', '14days', '30days'], example: '7days' },
+      amount: { type: 'number', minimum: 0, example: 500 },
+      estimatedReach: { type: 'number', minimum: 0, example: 18000 },
+      estimatedLiftPercent: { type: 'number', minimum: 0, example: 15 },
+      isRecommended: { type: 'boolean', example: true },
+      reason: { type: 'string', example: 'Recommended based on your current budget and application volume.' }
+    },
+    required: ['duration', 'amount', 'estimatedReach', 'estimatedLiftPercent', 'isRecommended', 'reason']
+  },
+  SocketConnectionQuery: {
+    type: 'object',
+    properties: {
+      userId: {
+        type: 'string',
+        description: 'Authenticated user ID passed via Socket.IO query string'
+      }
+    }
+  },
+  SocketJoinLeaveConversationPayload: {
+    type: 'object',
+    properties: {
+      conversationId: { type: 'string' }
+    },
+    required: ['conversationId']
+  },
+  SocketSendMessagePayload: {
+    type: 'object',
+    properties: {
+      sender: { type: 'string' },
+      content: { type: 'string' },
+      conversationId: { type: 'string' },
+      mediaUrl: { type: 'string' },
+      mediaKey: { type: 'string' },
+      fileName: { type: 'string' },
+      fileSize: { type: 'number' },
+      messageType: { type: 'string', enum: ['text', 'image', 'file'] },
+      mimeType: { type: 'string' }
+    },
+    required: ['sender', 'conversationId']
+  },
+  SocketSeenMessagePayload: {
+    type: 'object',
+    properties: {
+      messageId: { type: 'string' },
+      userId: { type: 'string' }
+    },
+    required: ['messageId', 'userId']
+  },
+  SocketTypingPayload: {
+    type: 'object',
+    properties: {
+      conversationId: { type: 'string' },
+      isTyping: { type: 'boolean' }
+    },
+    required: ['conversationId', 'isTyping']
+  },
+  SocketMessageErrorPayload: {
+    type: 'object',
+    properties: {
+      error: { type: 'string' },
+      details: { type: 'string' }
+    }
+  },
+  SocketMessageSeenPayload: {
+    type: 'object',
+    properties: {
+      messageId: { type: 'string' },
+      userId: { type: 'string' },
+      readAt: { type: 'string', format: 'date-time' }
+    }
+  },
+  SocketUserTypingPayload: {
+    type: 'object',
+    properties: {
+      userId: { type: 'string' },
+      isTyping: { type: 'boolean' }
+    }
+  },
+  SocketPresencePayload: {
+    type: 'object',
+    properties: {
+      userId: { type: 'string' },
+      isOnline: { type: 'boolean' },
+      lastSeen: { type: 'string', format: 'date-time' }
+    }
+  },
+  SocketReceiveMessagePayload: {
+    type: 'object',
+    description: 'Populated message document emitted from sendMessage handler',
+    additionalProperties: true
   }
 };
 
@@ -448,58 +857,67 @@ export const correctPaths = {
     }
   },
 
-  // ============ USERS (8 endpoints) ============
+  // ============ USERS ============
   '/api/users/profile': {
     get: {
       tags: ['Users'],
-      summary: 'Get User Profile',
+      summary: 'Get Current User Profile',
       security: [{ BearerAuth: [] }],
+      description: 'Returns the authenticated user profile using the persisted database field names.',
       responses: {
         200: {
-          description: 'User profile',
+          description: 'Authenticated user profile',
           content: {
             'application/json': {
               schema: {
                 type: 'object',
                 properties: {
-                  success: { type: 'boolean' },
-                  message: { type: 'string' },
-                  data: {
-                    type: 'object',
-                    additionalProperties: true
-                  }
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'User profile retrieved successfully' },
+                  data: { $ref: '#/components/schemas/UserProfileDocument' }
                 }
               }
             }
           }
         },
-        401: { description: 'Unauthorized' }
+        401: { description: 'Unauthorized' },
+        404: { description: 'User not found' },
+        500: { description: 'Server error' }
       }
     },
     patch: {
       tags: ['Users'],
-      summary: 'Update Profile',
+      summary: 'Update Current User Profile',
       security: [{ BearerAuth: [] }],
+      description: 'Updates only mutable profile fields for the authenticated user. The API accepts partial payloads, supports staged account email updates, and merges nested objects like preferences, contact, billing_info, and social_media instead of replacing them wholesale. When email is provided, the current address stays active until the OTP sent to the new address is verified.',
       requestBody: {
         required: true,
         content: {
           'application/json': {
-            schema: {
-              type: 'object',
-              properties: {
-                firstName: { type: 'string' },
-                lastName: { type: 'string' },
-                bio: { type: 'string' },
-                location: { type: 'string' },
-                phone: { type: 'string' }
-              }
-            }
+            schema: { $ref: '#/components/schemas/UserProfileUpdateRequest' }
           }
         }
       },
       responses: {
-        200: { description: 'Profile updated' },
-        400: { description: 'Validation error' }
+        200: {
+          description: 'Profile updated',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  message: { type: 'string', example: 'User profile updated successfully' },
+                  data: { $ref: '#/components/schemas/UserProfileDocument' }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'No valid profile fields were provided or validation failed' },
+        409: { description: 'Email or username is already in use' },
+        401: { description: 'Unauthorized' },
+        404: { description: 'User not found' },
+        500: { description: 'Server error' }
       }
     },
     delete: {
@@ -508,6 +926,73 @@ export const correctPaths = {
       security: [{ BearerAuth: [] }],
       responses: {
         200: { description: 'Account deleted' }
+      }
+    }
+  },
+
+  '/api/users/profile/email-change/verify': {
+    post: {
+      tags: ['Users'],
+      summary: 'Verify Pending Email Change',
+      security: [{ BearerAuth: [] }],
+      description: 'Confirms a staged email change for the authenticated user using the OTP sent to the pending email address.',
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/UserEmailChangeVerifyRequest' }
+          }
+        }
+      },
+      responses: {
+        200: {
+          description: 'Email updated',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  message: { type: 'string', example: 'Email address updated successfully' },
+                  data: { $ref: '#/components/schemas/UserProfileDocument' }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'OTP missing, invalid, expired, or no pending email change exists' },
+        401: { description: 'Unauthorized' },
+        404: { description: 'User not found' },
+        409: { description: 'Email is already in use' },
+        500: { description: 'Server error' }
+      }
+    }
+  },
+
+  '/api/users/profile/email-change/resend-otp': {
+    post: {
+      tags: ['Users'],
+      summary: 'Resend Pending Email Change OTP',
+      security: [{ BearerAuth: [] }],
+      description: 'Generates and sends a fresh OTP to the pending email address for the authenticated user.',
+      responses: {
+        200: {
+          description: 'OTP resent',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  message: { type: 'string', example: 'A new OTP has been sent to your pending email address' },
+                  data: { $ref: '#/components/schemas/UserProfileDocument' }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'No pending email change exists' },
+        401: { description: 'Unauthorized' },
+        404: { description: 'User not found' },
+        500: { description: 'Server error' }
       }
     }
   },
@@ -1016,8 +1501,9 @@ export const correctPaths = {
   '/api/campaigns/{id}/counter-offer': {
     post: {
       tags: ['Campaigns'],
-      summary: 'Make Counter Offer',
+      summary: 'Submit Counter Offer',
       security: [{ BearerAuth: [] }],
+      description: 'Creates or updates a persisted negotiation for the influencer inside the campaign document. Brand users should provide influencerId. Influencer users can omit influencerId to negotiate for themselves.',
       parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
       requestBody: {
         required: true,
@@ -1026,16 +1512,46 @@ export const correctPaths = {
             schema: {
               type: 'object',
               properties: {
-                influencerId: { type: 'string' },
-                amount: { type: 'number' }
+                influencerId: {
+                  type: 'string',
+                  description: 'Required for brand users. Optional for influencer users (defaults to the logged-in user).',
+                  example: 'influencer_456'
+                },
+                amount: { type: 'number', minimum: 0.01, example: 750 },
+                message: { type: 'string', example: 'Can we do 2 reels and 1 story?' }
               },
-              required: ['influencerId', 'amount']
+              required: ['amount']
             }
           }
         }
       },
       responses: {
-        200: { description: 'Counter offer made' }
+        200: {
+          description: 'Counter offer submitted and saved in campaign negotiations',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Counter offer submitted successfully' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      campaignId: { type: 'string', example: 'camp_001' },
+                      influencerId: { type: 'string', example: 'influencer_456' },
+                      negotiation: { $ref: '#/components/schemas/CampaignNegotiation' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'Invalid request payload or influencer not part of campaign' },
+        401: { description: 'Unauthorized' },
+        403: { description: 'Forbidden: no permission to modify this negotiation' },
+        404: { description: 'Campaign not found' }
       }
     }
   },
@@ -1045,12 +1561,52 @@ export const correctPaths = {
       tags: ['Campaigns'],
       summary: 'Get Negotiation Details',
       security: [{ BearerAuth: [] }],
+      description: 'Returns persisted negotiation data for a campaign-influencer pair, plus a derived status for quick UI display.',
       parameters: [
         { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
         { name: 'influencerId', in: 'path', required: true, schema: { type: 'string' } }
       ],
       responses: {
-        200: { description: 'Negotiation details' }
+        200: {
+          description: 'Negotiation details',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      campaignId: { type: 'string', example: 'camp_001' },
+                      influencerId: { type: 'string', example: 'influencer_456' },
+                      status: {
+                        type: 'string',
+                        enum: ['not_started', 'pending', 'accepted', 'rejected'],
+                        example: 'pending'
+                      },
+                      negotiation: {
+                        allOf: [{ $ref: '#/components/schemas/CampaignNegotiation' }],
+                        nullable: true
+                      },
+                      campaign: {
+                        type: 'object',
+                        properties: {
+                          budget: { type: 'number', example: 5000 },
+                          compensation: { type: 'object' },
+                          deliverables: { type: 'array', items: { type: 'string' } }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        401: { description: 'Unauthorized' },
+        403: { description: 'Forbidden: no permission to view this negotiation' },
+        404: { description: 'Campaign not found' }
       }
     }
   },
@@ -1060,12 +1616,38 @@ export const correctPaths = {
       tags: ['Campaigns'],
       summary: 'Accept Negotiation',
       security: [{ BearerAuth: [] }],
+      description: 'Marks negotiation as accepted and ensures influencer is included in selectedInfluencers.',
       parameters: [
         { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
         { name: 'influencerId', in: 'path', required: true, schema: { type: 'string' } }
       ],
       responses: {
-        200: { description: 'Negotiation accepted' }
+        200: {
+          description: 'Negotiation accepted',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Negotiation accepted successfully' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      campaignId: { type: 'string', example: 'camp_001' },
+                      influencerId: { type: 'string', example: 'influencer_456' },
+                      negotiation: { $ref: '#/components/schemas/CampaignNegotiation' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'Influencer is not part of this campaign' },
+        401: { description: 'Unauthorized' },
+        403: { description: 'Forbidden: no permission to accept this negotiation' },
+        404: { description: 'Campaign not found' }
       }
     }
   },
@@ -1075,12 +1657,38 @@ export const correctPaths = {
       tags: ['Campaigns'],
       summary: 'Reject Negotiation',
       security: [{ BearerAuth: [] }],
+      description: 'Marks negotiation as rejected and removes influencer from selectedInfluencers if present.',
       parameters: [
         { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
         { name: 'influencerId', in: 'path', required: true, schema: { type: 'string' } }
       ],
       responses: {
-        200: { description: 'Negotiation rejected' }
+        200: {
+          description: 'Negotiation rejected',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Negotiation rejected successfully' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      campaignId: { type: 'string', example: 'camp_001' },
+                      influencerId: { type: 'string', example: 'influencer_456' },
+                      negotiation: { $ref: '#/components/schemas/CampaignNegotiation' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'Influencer is not part of this campaign' },
+        401: { description: 'Unauthorized' },
+        403: { description: 'Forbidden: no permission to reject this negotiation' },
+        404: { description: 'Campaign not found' }
       }
     }
   },
@@ -1107,7 +1715,31 @@ export const correctPaths = {
         }
       },
       responses: {
-        200: { description: 'Campaign boosted' }
+        200: {
+          description: 'Campaign boosted',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Campaign boosted successfully' },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      campaignId: { type: 'string', example: 'camp_001' },
+                      chargeMode: { type: 'string', example: 'record_only' },
+                      boost: { $ref: '#/components/schemas/CampaignBoost' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: { description: 'Invalid payload, amount mismatch, or campaign is not Active' },
+        401: { description: 'Unauthorized' },
+        404: { description: 'Campaign not found' }
       }
     }
   },
@@ -1119,7 +1751,36 @@ export const correctPaths = {
       security: [{ BearerAuth: [] }],
       parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
       responses: {
-        200: { description: 'Recommendations' }
+        200: {
+          description: 'Recommendations',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      campaignId: { type: 'string', example: 'camp_001' },
+                      recommendedDuration: { type: 'string', enum: ['7days', '14days', '30days'] },
+                      activeBoost: {
+                        allOf: [{ $ref: '#/components/schemas/CampaignBoost' }],
+                        nullable: true,
+                      },
+                      recommendations: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/BoostRecommendation' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        401: { description: 'Unauthorized' },
+        404: { description: 'Campaign not found' }
       }
     }
   },
@@ -1528,6 +2189,281 @@ export const correctPaths = {
     }
   },
 
+  // ============ REALTIME SOCKET.IO (ALL EVENTS) ============
+  '/socket.io/': {
+    get: {
+      tags: ['Realtime'],
+      summary: 'Socket.IO handshake endpoint',
+      description:
+        'Underlying Socket.IO transport endpoint for polling/WebSocket upgrades. Use query param `userId` when connecting clients for chat presence and conversation events.',
+      parameters: [
+        {
+          name: 'userId',
+          in: 'query',
+          required: false,
+          schema: { type: 'string' },
+          description: 'Current authenticated user ID used by socket handler'
+        },
+        {
+          name: 'transport',
+          in: 'query',
+          required: false,
+          schema: { type: 'string', enum: ['polling', 'websocket'] }
+        },
+        {
+          name: 'EIO',
+          in: 'query',
+          required: false,
+          schema: { type: 'string', example: '4' }
+        },
+        {
+          name: 'sid',
+          in: 'query',
+          required: false,
+          schema: { type: 'string' }
+        }
+      ],
+      responses: {
+        101: { description: 'WebSocket upgrade successful' },
+        200: { description: 'Polling handshake response' },
+        400: { description: 'Invalid handshake parameters' }
+      }
+    }
+  },
+
+  '/socket/events/connect': {
+    get: {
+      tags: ['Realtime'],
+      summary: 'Socket event: connection',
+      description: 'Triggered when client connects to default namespace and optional `userId` query is read.',
+      responses: {
+        200: {
+          description: 'Connection event contract',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SocketConnectionQuery' }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  '/socket/events/disconnect': {
+    get: {
+      tags: ['Realtime'],
+      summary: 'Socket event: disconnect',
+      description: 'Built-in disconnect event. Server updates user offline presence and emits `userOffline` to related conversation rooms.',
+      responses: {
+        200: { description: 'Disconnect event contract' }
+      }
+    }
+  },
+
+  '/socket/events/joinConversation': {
+    post: {
+      tags: ['Realtime'],
+      summary: 'Client emit: joinConversation',
+      description: 'Join a conversation room by ID.',
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/SocketJoinLeaveConversationPayload' }
+          }
+        }
+      },
+      responses: {
+        202: { description: 'Event accepted by server' }
+      }
+    }
+  },
+
+  '/socket/events/leaveConversation': {
+    post: {
+      tags: ['Realtime'],
+      summary: 'Client emit: leaveConversation',
+      description: 'Leave a conversation room by ID.',
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/SocketJoinLeaveConversationPayload' }
+          }
+        }
+      },
+      responses: {
+        202: { description: 'Event accepted by server' }
+      }
+    }
+  },
+
+  '/socket/events/sendMessage': {
+    post: {
+      tags: ['Realtime'],
+      summary: 'Client emit: sendMessage',
+      description: 'Send text, image, or file message payload. Server persists message and emits `receiveMessage` to room.',
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/SocketSendMessagePayload' }
+          }
+        }
+      },
+      responses: {
+        202: { description: 'Message event accepted by server' },
+        400: { description: 'Invalid payload; server may emit `messageError`' }
+      }
+    }
+  },
+
+  '/socket/events/seenMessage': {
+    post: {
+      tags: ['Realtime'],
+      summary: 'Client emit: seenMessage',
+      description: 'Mark a message as seen/read and notify room participants via `messageSeen`.',
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/SocketSeenMessagePayload' }
+          }
+        }
+      },
+      responses: {
+        202: { description: 'Seen event accepted by server' }
+      }
+    }
+  },
+
+  '/socket/events/typing': {
+    post: {
+      tags: ['Realtime'],
+      summary: 'Client emit: typing',
+      description: 'Send typing status to conversation participants. Server emits `userTyping` to room except sender.',
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: { $ref: '#/components/schemas/SocketTypingPayload' }
+          }
+        }
+      },
+      responses: {
+        202: { description: 'Typing event accepted by server' }
+      }
+    }
+  },
+
+  '/socket/events/receiveMessage': {
+    get: {
+      tags: ['Realtime'],
+      summary: 'Server emit: receiveMessage',
+      description: 'Emitted to conversation room after successful `sendMessage` persistence.',
+      responses: {
+        200: {
+          description: 'Event payload',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SocketReceiveMessagePayload' }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  '/socket/events/messageError': {
+    get: {
+      tags: ['Realtime'],
+      summary: 'Server emit: messageError',
+      description: 'Emitted back to sender when `sendMessage` fails.',
+      responses: {
+        200: {
+          description: 'Event payload',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SocketMessageErrorPayload' }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  '/socket/events/messageSeen': {
+    get: {
+      tags: ['Realtime'],
+      summary: 'Server emit: messageSeen',
+      description: 'Emitted to conversation room when message seen state is updated.',
+      responses: {
+        200: {
+          description: 'Event payload',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SocketMessageSeenPayload' }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  '/socket/events/userTyping': {
+    get: {
+      tags: ['Realtime'],
+      summary: 'Server emit: userTyping',
+      description: 'Emitted to conversation room when another participant updates typing status.',
+      responses: {
+        200: {
+          description: 'Event payload',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SocketUserTypingPayload' }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  '/socket/events/userOnline': {
+    get: {
+      tags: ['Realtime'],
+      summary: 'Server emit: userOnline',
+      description: 'Presence broadcast when participant comes online.',
+      responses: {
+        200: {
+          description: 'Event payload',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SocketPresencePayload' }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  '/socket/events/userOffline': {
+    get: {
+      tags: ['Realtime'],
+      summary: 'Server emit: userOffline',
+      description: 'Presence broadcast when participant disconnects/goes offline.',
+      responses: {
+        200: {
+          description: 'Event payload',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SocketPresencePayload' }
+            }
+          }
+        }
+      }
+    }
+  },
+
   // ============ MESSAGES (10 endpoints) ============
   '/api/messages/conversations': {
     get: {
@@ -1543,7 +2479,7 @@ export const correctPaths = {
     },
     post: {
       tags: ['Messages'],
-      summary: 'Create Conversation',
+      summary: 'Create Conversation (Direct or Group)',
       security: [{ BearerAuth: [] }],
       requestBody: {
         required: true,
@@ -1552,16 +2488,30 @@ export const correctPaths = {
             schema: {
               type: 'object',
               properties: {
-                participantId: { type: 'string' },
-                message: { type: 'string' }
+                participantId: {
+                  type: 'string',
+                  description: 'Single participant user ID for a direct conversation'
+                },
+                participantIds: {
+                  type: 'array',
+                  description: 'List of participant user IDs for creating a group conversation',
+                  items: { type: 'string' },
+                  minItems: 1
+                }
               },
-              required: ['participantId']
+              oneOf: [
+                { required: ['participantId'] },
+                { required: ['participantIds'] }
+              ]
             }
           }
         }
       },
       responses: {
-        201: { description: 'Conversation created' }
+        201: { description: 'Conversation created' },
+        200: { description: 'Conversation already exists' },
+        400: { description: 'Invalid participant payload' },
+        404: { description: 'One or more participants not found' }
       }
     }
   },
@@ -1680,6 +2630,46 @@ export const correctPaths = {
       parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
       responses: {
         200: { description: 'Deleted' }
+      }
+    }
+  },
+
+  '/api/conversation': {
+    post: {
+      tags: ['Messages'],
+      summary: 'Create Conversation via Conversation Route (Direct or Group)',
+      security: [{ BearerAuth: [] }],
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                participantId: {
+                  type: 'string',
+                  description: 'Single participant user ID for a direct conversation'
+                },
+                participantIds: {
+                  type: 'array',
+                  description: 'List of participant user IDs for creating a group conversation',
+                  items: { type: 'string' },
+                  minItems: 1
+                }
+              },
+              oneOf: [
+                { required: ['participantId'] },
+                { required: ['participantIds'] }
+              ]
+            }
+          }
+        }
+      },
+      responses: {
+        201: { description: 'Conversation created' },
+        200: { description: 'Conversation already exists' },
+        400: { description: 'Invalid participant payload' },
+        404: { description: 'One or more participants not found' }
       }
     }
   },
@@ -1954,18 +2944,21 @@ export const correctPaths = {
       tags: ['Payments'],
       summary: 'Fetch All Razorpay Subscriptions',
       security: [{ BearerAuth: [] }],
+      description: 'Fetches subscriptions from Razorpay. If user_id is provided (or inferred from auth), server syncs User.subscriptionId/subscriptionStatus/currentPlan/subscription_plan when data can be resolved.',
       parameters: [
         { name: 'count', in: 'query', required: false, schema: { type: 'integer' } },
-        { name: 'skip', in: 'query', required: false, schema: { type: 'integer' } }
+        { name: 'skip', in: 'query', required: false, schema: { type: 'integer' } },
+        { name: 'user_id', in: 'query', required: false, schema: { type: 'string' } }
       ],
       responses: {
-        200: { description: 'Razorpay subscriptions fetched' }
+        200: { description: 'Razorpay subscriptions fetched and user status synchronized when applicable' }
       }
     },
     post: {
       tags: ['Payments'],
       summary: 'Create Razorpay Subscription',
       security: [{ BearerAuth: [] }],
+      description: 'Creates a Razorpay subscription and syncs User.subscriptionId/subscriptionStatus/currentPlan/subscription_plan for the provided user_id (or authenticated user if omitted).',
       requestBody: {
         required: true,
         content: {
@@ -1973,6 +2966,8 @@ export const correctPaths = {
             schema: {
               type: 'object',
               properties: {
+                user_id: { type: 'string', example: '680e8ab12f5a8d1234567890' },
+                userId: { type: 'string', example: '680e8ab12f5a8d1234567890' },
                 plan_id: { type: 'string' },
                 total_count: { type: 'integer' },
                 quantity: { type: 'integer' },
@@ -1985,7 +2980,10 @@ export const correctPaths = {
         }
       },
       responses: {
-        200: { description: 'Razorpay subscription created' }
+        200: { description: 'Razorpay subscription created and user.subscriptionId updated' },
+        400: { description: 'Missing required fields or user_id not resolvable' },
+        404: { description: 'User not found' },
+        502: { description: 'Invalid Razorpay subscription id returned' }
       }
     }
   },
@@ -1995,19 +2993,24 @@ export const correctPaths = {
       tags: ['Payments'],
       summary: 'Create Razorpay Subscription Link',
       security: [{ BearerAuth: [] }],
+      description: 'Creates a Razorpay subscription link. Optional user_id/userId can be passed to sync User.subscriptionId/subscriptionStatus/currentPlan/subscription_plan when resolvable.',
       requestBody: {
         required: true,
         content: {
           'application/json': {
             schema: {
               type: 'object',
+              properties: {
+                user_id: { type: 'string', example: '680e8ab12f5a8d1234567890' },
+                userId: { type: 'string', example: '680e8ab12f5a8d1234567890' }
+              },
               additionalProperties: true
             }
           }
         }
       },
       responses: {
-        200: { description: 'Razorpay subscription link created' }
+        200: { description: 'Razorpay subscription link created and user sync attempted when possible' }
       }
     }
   },
@@ -2017,17 +3020,20 @@ export const correctPaths = {
       tags: ['Payments'],
       summary: 'Fetch Razorpay Subscription By ID',
       security: [{ BearerAuth: [] }],
+      description: 'Fetches one Razorpay subscription and syncs User.subscriptionId/subscriptionStatus/currentPlan/subscription_plan for user_id (or authenticated user).',
       parameters: [
-        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'user_id', in: 'query', required: false, schema: { type: 'string' } }
       ],
       responses: {
-        200: { description: 'Razorpay subscription details fetched' }
+        200: { description: 'Razorpay subscription details fetched and user synchronized' }
       }
     },
     patch: {
       tags: ['Payments'],
       summary: 'Update Razorpay Subscription',
       security: [{ BearerAuth: [] }],
+      description: 'Updates a Razorpay subscription and syncs User.subscriptionId/subscriptionStatus/currentPlan/subscription_plan for user_id (or authenticated user).',
       parameters: [
         { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
       ],
@@ -2037,13 +3043,17 @@ export const correctPaths = {
           'application/json': {
             schema: {
               type: 'object',
+              properties: {
+                user_id: { type: 'string', example: '680e8ab12f5a8d1234567890' },
+                userId: { type: 'string', example: '680e8ab12f5a8d1234567890' }
+              },
               additionalProperties: true
             }
           }
         }
       },
       responses: {
-        200: { description: 'Razorpay subscription updated' }
+        200: { description: 'Razorpay subscription updated and user synchronized' }
       }
     }
   },
@@ -2053,9 +3063,11 @@ export const correctPaths = {
       tags: ['Payments'],
       summary: 'Cancel Razorpay Subscription',
       security: [{ BearerAuth: [] }],
+      description: 'Cancels Razorpay subscription and syncs User.subscriptionStatus/currentPlan/subscription_plan for user_id (or authenticated user).',
       parameters: [
         { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } },
-        { name: 'cancel_at_cycle_end', in: 'query', required: false, schema: { type: 'boolean' } }
+        { name: 'cancel_at_cycle_end', in: 'query', required: false, schema: { type: 'boolean' } },
+        { name: 'user_id', in: 'query', required: false, schema: { type: 'string' } }
       ],
       requestBody: {
         required: false,
@@ -2064,14 +3076,16 @@ export const correctPaths = {
             schema: {
               type: 'object',
               properties: {
-                cancel_at_cycle_end: { type: 'boolean' }
+                cancel_at_cycle_end: { type: 'boolean' },
+                user_id: { type: 'string', example: '680e8ab12f5a8d1234567890' },
+                userId: { type: 'string', example: '680e8ab12f5a8d1234567890' }
               }
             }
           }
         }
       },
       responses: {
-        200: { description: 'Razorpay subscription cancelled' }
+        200: { description: 'Razorpay subscription cancelled and user synchronized' }
       }
     }
   },
@@ -2081,11 +3095,13 @@ export const correctPaths = {
       tags: ['Payments'],
       summary: 'Fetch Razorpay Pending Update Details',
       security: [{ BearerAuth: [] }],
+      description: 'Fetches pending update details and syncs User.subscriptionStatus/currentPlan/subscription_plan for user_id (or authenticated user).',
       parameters: [
-        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'user_id', in: 'query', required: false, schema: { type: 'string' } }
       ],
       responses: {
-        200: { description: 'Razorpay pending update details fetched' }
+        200: { description: 'Razorpay pending update details fetched and user synchronized' }
       }
     }
   },
@@ -2095,11 +3111,27 @@ export const correctPaths = {
       tags: ['Payments'],
       summary: 'Cancel Razorpay Pending Update',
       security: [{ BearerAuth: [] }],
+      description: 'Cancels scheduled changes and syncs User.subscriptionStatus/currentPlan/subscription_plan for user_id (or authenticated user).',
       parameters: [
-        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'user_id', in: 'query', required: false, schema: { type: 'string' } }
       ],
+      requestBody: {
+        required: false,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                user_id: { type: 'string', example: '680e8ab12f5a8d1234567890' },
+                userId: { type: 'string', example: '680e8ab12f5a8d1234567890' }
+              }
+            }
+          }
+        }
+      },
       responses: {
-        200: { description: 'Razorpay pending update cancelled' }
+        200: { description: 'Razorpay pending update cancelled and user synchronized' }
       }
     }
   },
@@ -2109,8 +3141,10 @@ export const correctPaths = {
       tags: ['Payments'],
       summary: 'Pause Razorpay Subscription',
       security: [{ BearerAuth: [] }],
+      description: 'Pauses subscription and syncs User.subscriptionStatus/currentPlan/subscription_plan for user_id (or authenticated user).',
       parameters: [
-        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'user_id', in: 'query', required: false, schema: { type: 'string' } }
       ],
       requestBody: {
         required: false,
@@ -2121,14 +3155,16 @@ export const correctPaths = {
               properties: {
                 pause_at: {
                   oneOf: [{ type: 'string', enum: ['now', 'cycle_end'] }, { type: 'integer' }]
-                }
+                },
+                user_id: { type: 'string', example: '680e8ab12f5a8d1234567890' },
+                userId: { type: 'string', example: '680e8ab12f5a8d1234567890' }
               }
             }
           }
         }
       },
       responses: {
-        200: { description: 'Razorpay subscription paused' }
+        200: { description: 'Razorpay subscription paused and user synchronized' }
       }
     }
   },
@@ -2138,8 +3174,10 @@ export const correctPaths = {
       tags: ['Payments'],
       summary: 'Resume Razorpay Subscription',
       security: [{ BearerAuth: [] }],
+      description: 'Resumes subscription and syncs User.subscriptionStatus/currentPlan/subscription_plan for user_id (or authenticated user).',
       parameters: [
-        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } }
+        { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } },
+        { name: 'user_id', in: 'query', required: false, schema: { type: 'string' } }
       ],
       requestBody: {
         required: false,
@@ -2150,14 +3188,16 @@ export const correctPaths = {
               properties: {
                 resume_at: {
                   oneOf: [{ type: 'string', enum: ['now'] }, { type: 'integer' }]
-                }
+                },
+                user_id: { type: 'string', example: '680e8ab12f5a8d1234567890' },
+                userId: { type: 'string', example: '680e8ab12f5a8d1234567890' }
               }
             }
           }
         }
       },
       responses: {
-        200: { description: 'Razorpay subscription resumed' }
+        200: { description: 'Razorpay subscription resumed and user synchronized' }
       }
     }
   },
@@ -2167,13 +3207,15 @@ export const correctPaths = {
       tags: ['Payments'],
       summary: 'Fetch All Invoices For Razorpay Subscription',
       security: [{ BearerAuth: [] }],
+      description: 'Fetches invoices and ensures user record is synced (subscriptionId/subscriptionStatus/currentPlan/subscription_plan) for user_id (or authenticated user) when resolvable.',
       parameters: [
         { name: 'subscriptionId', in: 'path', required: true, schema: { type: 'string' } },
         { name: 'count', in: 'query', required: false, schema: { type: 'integer' } },
-        { name: 'skip', in: 'query', required: false, schema: { type: 'integer' } }
+        { name: 'skip', in: 'query', required: false, schema: { type: 'integer' } },
+        { name: 'user_id', in: 'query', required: false, schema: { type: 'string' } }
       ],
       responses: {
-        200: { description: 'Razorpay subscription invoices fetched' }
+        200: { description: 'Razorpay subscription invoices fetched and user synchronized' }
       }
     }
   },

@@ -5,7 +5,8 @@ import { AuthenticatedRequest } from '../types';
 import { user } from '../models/auth';
 
 interface CreateConversationBody {
-  participantId: string;
+  participantId?: string;
+  participantIds?: string[];
 }
 
 interface GetConversationsParams {
@@ -14,7 +15,7 @@ interface GetConversationsParams {
 
 export const createConversation = async (req: AuthenticatedRequest<{}, {}, CreateConversationBody>, res: Response): Promise<void> => {
   try {
-    const { participantId } = req.body;
+    const { participantId, participantIds } = req.body;
     const userId = req.user?.id;
 
     if (!userId) {
@@ -22,30 +23,53 @@ export const createConversation = async (req: AuthenticatedRequest<{}, {}, Creat
       return;
     }
 
-    if (!participantId) {
-      res.status(400).json({ message: 'Participant ID is required' });
+    const requestedParticipantIds = [
+      ...(typeof participantId === 'string' ? [participantId] : []),
+      ...(Array.isArray(participantIds) ? participantIds : [])
+    ]
+      .map((id) => (typeof id === 'string' ? id.trim() : ''))
+      .filter(Boolean);
+
+    if (requestedParticipantIds.length === 0) {
+      res.status(400).json({ message: 'At least one participant ID is required' });
       return;
     }
 
-    if (!mongoose.Types.ObjectId.isValid(participantId)) {
-      res.status(400).json({ message: 'Participant ID must be a valid user ID' });
-      return;
-    }
+    const uniqueRequestedParticipantIds = [...new Set(requestedParticipantIds)];
+    const otherParticipantIds = uniqueRequestedParticipantIds.filter((id) => id !== userId);
 
-    if (userId === participantId) {
+    if (otherParticipantIds.length === 0) {
       res.status(400).json({ message: 'Cannot create conversation with yourself' });
       return;
     }
 
-    const participant = await user.findById(participantId).select('_id').lean();
-    if (!participant) {
-      res.status(404).json({ message: 'Participant not found' });
+    const invalidParticipantIds = otherParticipantIds.filter((id) => !mongoose.Types.ObjectId.isValid(id));
+    if (invalidParticipantIds.length > 0) {
+      res.status(400).json({
+        message: 'All participant IDs must be valid user IDs',
+        invalidParticipantIds
+      });
       return;
     }
 
+    const existingParticipants = await user.find({ _id: { $in: otherParticipantIds } }).select('_id').lean();
+    if (existingParticipants.length !== otherParticipantIds.length) {
+      const existingParticipantIds = new Set(existingParticipants.map((participant) => String(participant._id)));
+      const missingParticipantIds = otherParticipantIds.filter((id) => !existingParticipantIds.has(id));
+
+      res.status(404).json({
+        message: 'One or more participants were not found',
+        missingParticipantIds
+      });
+      return;
+    }
+
+    const allParticipants = [userId, ...otherParticipantIds];
+
     // Check if conversation already exists
     const existingConversation = await Conversation.findOne({
-      participants: { $all: [userId, participantId] }
+      participants: { $all: allParticipants },
+      $expr: { $eq: [{ $size: '$participants' }, allParticipants.length] }
     });
 
     if (existingConversation) {
@@ -57,7 +81,7 @@ export const createConversation = async (req: AuthenticatedRequest<{}, {}, Creat
     }
 
     const newConversation = new Conversation({
-      participants: [userId, participantId]
+      participants: allParticipants
     });
 
     await newConversation.save();

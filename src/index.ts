@@ -180,6 +180,7 @@ app.use("/api/payments", paymentAliasRoute);
 app.use("/api", locationRoute);
 
 // Serve static files from the "public" directory
+app.use(express.static(path.join(process.cwd(), 'src/public')));
 app.use(express.static(path.join(__dirname, 'public')));
 Sentry.setupExpressErrorHandler(app);
 app.use(notFoundHandler);

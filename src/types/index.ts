@@ -190,7 +190,7 @@ export interface IBrand extends IUser {
   industry: string;
   website?: string;
   description?: string;
-  company_type?: 'Brand' | 'Agency' | 'Marketplace' | 'Startup';
+  company_type?: string;
   company_size?: '1-10' | '11-50' | '51-200' | '201-500' | '501-1000' | '1000+';
   location?: string;
   country?: string;
@@ -350,6 +350,10 @@ export interface ICampaign {
   budget: number;
   timelines: CampaignTimelines;
   targetInfluencer: TargetInfluencer;
+  city?: string;
+  state?: string;
+  country?: string;
+  engagement?: number;
   numberOfLivePosts?: number;
   reels?: string[];
   status: 'Draft' | 'Active' | 'Paused' | 'Completed' | 'Cancelled';

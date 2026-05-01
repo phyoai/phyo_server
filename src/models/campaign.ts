@@ -284,6 +284,22 @@ const campaignSchema = new Schema<CampaignDocument>({
     type: targetInfluencerSchema,
     required: true
   },
+  city: {
+    type: String,
+    trim: true
+  },
+  state: {
+    type: String,
+    trim: true
+  },
+  country: {
+    type: String,
+    trim: true
+  },
+  engagement: {
+    type: Number,
+    min: 0
+  },
   numberOfLivePosts: {
     type: Number,
     required: false,
@@ -343,6 +359,7 @@ campaignSchema.index({ brandId: 1 });
 campaignSchema.index({ status: 1 });
 campaignSchema.index({ 'timelines.applicationDeadline': 1 });
 campaignSchema.index({ 'timelines.campaignStartDate': 1 });
+campaignSchema.index({ city: 1, state: 1, country: 1 });
 campaignSchema.index({ 'targetInfluencer.targetNiche': 1 });
 campaignSchema.index({ 'negotiations.influencerId': 1 });
 campaignSchema.index({ 'boost.endsAt': 1 });

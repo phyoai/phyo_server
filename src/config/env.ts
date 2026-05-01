@@ -21,7 +21,7 @@ export const env = {
   corsOrigin: process.env.CORS_ORIGIN || '*',
   requestLogEnabled: toBoolean(process.env.REQUEST_LOG_ENABLED, true),
   rateLimitWindowMs: toNumber(process.env.RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000),
-  rateLimitMax: toNumber(process.env.RATE_LIMIT_MAX, 300),
+  rateLimitMax: toNumber(process.env.RATE_LIMIT_MAX, 600),
   healthPath: process.env.HEALTH_PATH || '/health',
 };
 

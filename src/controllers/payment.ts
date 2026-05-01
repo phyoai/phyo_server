@@ -115,8 +115,17 @@ const getRazorpaySubscriptionId = (...candidates: unknown[]): string | undefined
   return undefined;
 };
 
+const getRazorpayStatus = (status: unknown): string | undefined => {
+  return getStringValue(status)?.toLowerCase();
+};
+
+const shouldSyncPaidPlan = (status: unknown): boolean => {
+  const normalized = getRazorpayStatus(status);
+  return normalized === 'active' || normalized === 'completed';
+};
+
 const mapRazorpayStatusToUserStatus = (status: unknown): UserSubscriptionStatus | undefined => {
-  const normalized = getStringValue(status)?.toLowerCase();
+  const normalized = getRazorpayStatus(status);
   if (!normalized) return undefined;
 
   if (normalized === 'active') return 'ACTIVE';
@@ -196,6 +205,23 @@ const resolveCurrentPlanFromRazorpayPlanId = async (
     } catch {
       // Ignore collection lookup errors and continue with fallback mapping.
     }
+  }
+
+  // Fallback: fetch plan details directly from Razorpay and infer the canonical plan name.
+  try {
+    const planDetails = await fetchRazorpayPlanByIdService(razorpayPlanId);
+    const mappedPlan = inferPlanFromCandidates(
+      (planDetails as any)?.item?.name,
+      (planDetails as any)?.planName,
+      (planDetails as any)?.name,
+      (planDetails as any)?.id
+    );
+
+    if (mappedPlan) {
+      return mappedPlan;
+    }
+  } catch {
+    // Ignore Razorpay lookup failure and let caller proceed without plan mutation.
   }
 
   return undefined;
@@ -937,16 +963,20 @@ export const fetchRazorpaySubscriptionById = async (req: AuthenticatedRequest, r
     const planIdFromRazorpay = getStringValue((result as any)?.plan_id) || getStringValue((result as any)?.planId);
     const planFromCollection = await resolveCurrentPlanFromRazorpayPlanId(planIdFromRazorpay);
     const canonicalSubscriptionId = getRazorpaySubscriptionId((result as any)?.id, subscriptionId);
+    const inferredPlanFromPayload = inferPlanFromCandidates(
+      (result as any)?.plan_name,
+      (result as any)?.planName,
+      (result as any)?.plan_id,
+      (result as any)?.planId
+    );
+    const paidPlan = planFromCollection || inferredPlanFromPayload;
+    const shouldUpdatePlanFields = shouldSyncPaidPlan((result as any)?.status);
+
     const updatedUser = await syncUserSubscriptionState({
       userId: resolvedUserId,
       subscriptionId: canonicalSubscriptionId,
       subscriptionStatus: mapRazorpayStatusToUserStatus((result as any)?.status),
-      currentPlan: planFromCollection || inferPlanFromCandidates(
-        (result as any)?.plan_name,
-        (result as any)?.planName,
-        (result as any)?.plan_id,
-        (result as any)?.planId
-      )
+      currentPlan: shouldUpdatePlanFields ? paidPlan : undefined
     });
 
     res.json({

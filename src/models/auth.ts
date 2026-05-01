@@ -58,7 +58,8 @@ const userSchema = new Schema<UserDocument>({
   about: {
     type: String,
     trim: true,
-    maxlength: 1000
+    maxlength: 1000,
+    default: ''
   },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Number },
@@ -154,8 +155,8 @@ const brandSchema = new Schema<BrandDocument>({
   // New fields for enhanced brand profile
   company_type: {
     type: String,
-    enum: ['Brand', 'Agency', 'Marketplace', 'Startup'],
-    trim: true
+    trim: true,
+    maxlength: 100
   },
   company_size: {
     type: String,

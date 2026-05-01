@@ -165,7 +165,7 @@ export const handleSignup = async (req: Request<{}, {}, SignupRequestBody>, res:
             company_name: 'string (required)',
             website_url: 'string (required, valid URL)',
             industry: 'string (required)',
-            company_type: 'string (optional: Brand, Agency, Marketplace)',
+            company_type: 'string (optional)',
             company_size: 'string (optional: 1-10, 11-50, 51-200, 201-500, 501-1000, 1000+)',
             contact: {
               first_name: 'string (required)',

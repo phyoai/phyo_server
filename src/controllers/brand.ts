@@ -3,6 +3,16 @@ import { AuthenticatedRequest } from '../types';
 import { user as User } from '../models/auth';
 import Campaign from '../models/campaign';
 
+type BrandWithOptionalAbout = {
+  about?: string | null;
+  [key: string]: any;
+};
+
+const normalizeBrandAbout = <T extends BrandWithOptionalAbout>(brand: T): T & { about: string } => ({
+  ...brand,
+  about: typeof brand.about === 'string' ? brand.about : ''
+});
+
 // GET /brands - get all brands
 export const getBrands = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
@@ -41,10 +51,11 @@ export const getBrands = async (req: AuthenticatedRequest, res: Response): Promi
     ]);
 
     const totalPages = Math.ceil(total / limit);
+    const normalizedBrands = brands.map(normalizeBrandAbout);
 
     res.json({
       success: true,
-      data: brands,
+      data: normalizedBrands,
       pagination: {
         page,
         limit,
@@ -79,7 +90,7 @@ export const getBrandById = async (req: AuthenticatedRequest<{ id: string }>, re
 
     res.json({
       success: true,
-      data: brand
+      data: normalizeBrandAbout(brand)
     });
   } catch (error) {
     console.error('Get brand by ID error:', error);
@@ -188,7 +199,7 @@ export const getMyBrand = async (req: AuthenticatedRequest, res: Response): Prom
 
     res.json({
       success: true,
-      data: brand
+      data: normalizeBrandAbout(brand)
     });
   } catch (error) {
     console.error('Get my brand error:', error);
@@ -227,10 +238,11 @@ export const getNearbyBrands = async (req: AuthenticatedRequest, res: Response):
       .select('-password -resetPasswordToken -resetPasswordExpires -emailVerificationOTP -emailVerificationExpires')
       .limit(limit)
       .lean();
+    const normalizedBrands = brands.map(normalizeBrandAbout);
 
     res.json({
       success: true,
-      data: brands
+      data: normalizedBrands
     });
   } catch (error) {
     console.error('Get nearby brands error:', error);
@@ -282,10 +294,11 @@ export const searchBrandsByLocation = async (req: AuthenticatedRequest, res: Res
     ]);
 
     const totalPages = Math.ceil(total / limit);
+    const normalizedBrands = brands.map(normalizeBrandAbout);
 
     res.json({
       success: true,
-      data: brands,
+      data: normalizedBrands,
       pagination: {
         page,
         limit,

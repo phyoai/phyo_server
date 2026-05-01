@@ -17,7 +17,7 @@ COPY --from=build /app/src ./src
 
 EXPOSE 4000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=300s --timeout=10s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:4000/health', (r) => { if (r.statusCode !== 200) process.exit(1); }).on('error', () => process.exit(1))"
 
 CMD ["node", "dist/index.js"]

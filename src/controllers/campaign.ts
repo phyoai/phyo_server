@@ -4,6 +4,7 @@ import { AuthenticatedRequest, ICampaign, CampaignNegotiation, CampaignNegotiati
 import { getPublicUrl } from '../services/s3';
 import Anthropic from '@anthropic-ai/sdk';
 import Influencer from '../models/influencer';
+import { user } from '../models/auth';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!
@@ -25,6 +26,161 @@ const normalizeOptionalString = (value: unknown): string | undefined => {
 
   const normalized = value.trim();
   return normalized.length > 0 ? normalized : undefined;
+};
+
+const parseBooleanQueryFlag = (value: unknown): boolean => {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.some((entry) => parseBooleanQueryFlag(entry));
+  }
+
+  const normalized = normalizeOptionalString(value)?.toLowerCase();
+  return normalized === 'true' || normalized === '1' || normalized === 'yes';
+};
+
+const APPLICANT_USER_SAFE_SELECT = [
+  'email',
+  'type',
+  'about',
+  'isEmailVerified',
+  'createdAt',
+  'updatedAt',
+  'name',
+  'username',
+  'bio',
+  'profilePicture',
+  'gender',
+  'phoneNumber',
+  'companyName',
+  'industry',
+  'website',
+  'description',
+  'company_type',
+  'company_size',
+  'location',
+  'country',
+  'company_logo',
+  'brand_images',
+  'categories',
+  'social_media',
+  'brand_story',
+  'billing_info',
+  'team_members',
+  'preferences',
+  'contact',
+  'services'
+].join(' ');
+
+const APPLICANT_INFLUENCER_PROFILE_SELECT = [
+  'user_name',
+  'name',
+  'profile_name',
+  'profile_pic_url',
+  'biography',
+  'categoryInstagram',
+  'categoryYouTube',
+  'is_verified',
+  'is_business',
+  'city',
+  'state',
+  'language',
+  'averageLikes',
+  'averageViews',
+  'averageComments',
+  'averageEngagement',
+  'instagramData',
+  'youtubeData',
+  'image'
+].join(' ');
+
+type ApplicantUserRecord = Record<string, unknown> & {
+  _id?: unknown;
+  username?: string;
+};
+
+type ApplicantInfluencerRecord = Record<string, unknown> & {
+  user_name?: string;
+};
+
+type ApplicantDetailsRecord = ApplicantUserRecord & {
+  influencerProfile: ApplicantInfluencerRecord | null;
+};
+
+type GetCampaignApplicationsQuery = {
+  get_id_only?: string | string[];
+};
+
+const normalizeLookupKey = (value: unknown): string | undefined => normalizeOptionalString(value)?.toLowerCase();
+
+// Campaign applicants are auth users; richer creator analytics live in the Influencer collection.
+const fetchApplicantDetails = async (applicantIds: string[]): Promise<ApplicantDetailsRecord[]> => {
+  if (!applicantIds.length) {
+    return [];
+  }
+
+  const uniqueApplicantIds = Array.from(
+    new Set(
+      applicantIds
+        .map((applicantId) => applicantId.trim())
+        .filter(Boolean)
+    )
+  );
+
+  const applicantUsers = await user.find({ _id: { $in: uniqueApplicantIds } })
+    .select(APPLICANT_USER_SAFE_SELECT)
+    .lean<ApplicantUserRecord[]>();
+
+  const applicantById = new Map<string, ApplicantUserRecord>();
+  applicantUsers.forEach((record) => {
+    if (record._id) {
+      applicantById.set(String(record._id), record);
+    }
+  });
+
+  const usernames = Array.from(
+    new Set(
+      applicantUsers
+        .map((record) => normalizeLookupKey(record.username))
+        .filter((value): value is string => Boolean(value))
+    )
+  );
+
+  const influencerProfiles = usernames.length
+    ? await Influencer.find({
+        $expr: {
+          $in: [{ $toLower: { $ifNull: ['$user_name', ''] } }, usernames]
+        }
+      })
+        .select(APPLICANT_INFLUENCER_PROFILE_SELECT)
+        .lean<ApplicantInfluencerRecord[]>()
+    : [];
+
+  const influencerByUsername = new Map<string, ApplicantInfluencerRecord>();
+  influencerProfiles.forEach((record) => {
+    const lookupKey = normalizeLookupKey(record.user_name);
+    if (lookupKey) {
+      influencerByUsername.set(lookupKey, record);
+    }
+  });
+
+  return uniqueApplicantIds
+    .map((applicantId) => {
+      const applicant = applicantById.get(applicantId);
+      if (!applicant) {
+        return null;
+      }
+
+      const usernameKey = normalizeLookupKey(applicant.username);
+
+      return {
+        ...applicant,
+        influencerProfile: usernameKey ? influencerByUsername.get(usernameKey) ?? null : null
+      };
+    })
+    .filter((record): record is ApplicantDetailsRecord => record !== null);
 };
 
 const hasNegotiationAccess = (campaignBrandId: string, requesterId: string, influencerId: string): boolean => {
@@ -309,6 +465,10 @@ export const createCampaign = async (req: AuthenticatedRequest<{}, {}, CreateCam
       budget,
       timelines,
       targetInfluencer,
+      city,
+      state,
+      country,
+      engagement,
       numberOfLivePosts,
       reels,
       status = 'Draft',
@@ -368,6 +528,22 @@ export const createCampaign = async (req: AuthenticatedRequest<{}, {}, CreateCam
       return;
     }
 
+    const normalizedCity = normalizeOptionalString(city);
+    const normalizedState = normalizeOptionalString(state);
+    const normalizedCountry = normalizeOptionalString(country);
+
+    let normalizedEngagement: number | undefined;
+    if (engagement !== undefined && engagement !== null && String(engagement).trim() !== '') {
+      const parsedEngagement = typeof engagement === 'number' ? engagement : Number(engagement);
+      if (!Number.isFinite(parsedEngagement) || parsedEngagement < 0) {
+        res.status(400).json({
+          message: 'engagement must be a non-negative number when provided'
+        });
+        return;
+      }
+      normalizedEngagement = parsedEngagement;
+    }
+
     // Generate AI-powered influencer suggestions if requested
     let aiSuggestions: any = null;
     if (generateSuggestions) {
@@ -399,6 +575,10 @@ export const createCampaign = async (req: AuthenticatedRequest<{}, {}, CreateCam
       budget,
       timelines: parsedTimelines,
       targetInfluencer: parsedTargetInfluencer,
+      ...(normalizedCity ? { city: normalizedCity } : {}),
+      ...(normalizedState ? { state: normalizedState } : {}),
+      ...(normalizedCountry ? { country: normalizedCountry } : {}),
+      ...(normalizedEngagement !== undefined ? { engagement: normalizedEngagement } : {}),
       numberOfLivePosts,
       reels: parsedReels,
       status,
@@ -689,8 +869,12 @@ export const updateCampaign = async (req: AuthenticatedRequest<{ id: string }, {
       }
     }
 
+    if (typeof updateData.engagement === 'string' && updateData.engagement.trim().length === 0) {
+      delete updateData.engagement;
+    }
+
     // Parse numeric fields from form-data
-    const numericFields = ['budget', 'numberOfLivePosts'];
+    const numericFields = ['budget', 'numberOfLivePosts', 'engagement'];
     for (const field of numericFields) {
       if (updateData[field] !== undefined && typeof updateData[field] === 'string') {
         const parsed = Number(updateData[field]);
@@ -699,6 +883,23 @@ export const updateCampaign = async (req: AuthenticatedRequest<{ id: string }, {
           return;
         }
         updateData[field] = parsed;
+      }
+    }
+
+    if (updateData.engagement !== undefined && (!Number.isFinite(updateData.engagement) || updateData.engagement < 0)) {
+      res.status(400).json({ message: 'engagement must be a non-negative number' });
+      return;
+    }
+
+    const optionalStringFields = ['city', 'state', 'country'];
+    for (const field of optionalStringFields) {
+      if (updateData[field] !== undefined) {
+        const normalizedValue = normalizeOptionalString(updateData[field]);
+        if (normalizedValue === undefined) {
+          delete updateData[field];
+        } else {
+          updateData[field] = normalizedValue;
+        }
       }
     }
 
@@ -712,6 +913,10 @@ export const updateCampaign = async (req: AuthenticatedRequest<{ id: string }, {
       'budget',
       'timelines',
       'targetInfluencer',
+      'city',
+      'state',
+      'country',
+      'engagement',
       'numberOfLivePosts',
       'reels',
       'status',
@@ -959,18 +1164,22 @@ export const selectInfluencer = async (req: AuthenticatedRequest<{ id: string },
 };
 
 // Get campaign applications
-export const getCampaignApplications = async (req: AuthenticatedRequest<{ id: string }>, res: Response): Promise<void> => {
+export const getCampaignApplications = async (
+  req: AuthenticatedRequest<{ id: string }, any, any, GetCampaignApplicationsQuery>,
+  res: Response
+): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user?.id;
+    const getIdOnly = parseBooleanQueryFlag(req.query.get_id_only);
 
     if (!userId) {
       res.status(401).json({ success: false, message: 'Unauthorized' });
       return;
     }
 
-    const campaign = await Campaign.findOne({campaignId: id })
-      .populate('applicants', 'name email username profilePicture bio')
+    const campaign = await Campaign.findOne({ campaignId: id, brandId: userId })
+      .select('applicants')
       .lean();
 
     if (!campaign) {
@@ -978,9 +1187,15 @@ export const getCampaignApplications = async (req: AuthenticatedRequest<{ id: st
       return;
     }
 
+    const applicantIds = Array.isArray(campaign.applicants)
+      ? campaign.applicants.map((applicantId) => String(applicantId)).filter(Boolean)
+      : [];
+
+    const data = getIdOnly ? applicantIds : await fetchApplicantDetails(applicantIds);
+
     res.json({
       success: true,
-      data: campaign.applicants || [],
+      data,
       message: 'Applications retrieved successfully'
     });
   } catch (error) {

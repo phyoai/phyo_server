@@ -268,7 +268,7 @@ export const correctSchemas = {
       industry: { type: 'string' },
       website: { type: 'string' },
       description: { type: 'string' },
-      company_type: { type: 'string', enum: ['Brand', 'Agency', 'Marketplace', 'Startup'] },
+      company_type: { type: 'string' },
       company_size: { type: 'string', enum: ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'] },
       location: { type: 'string' },
       country: { type: 'string' },
@@ -343,7 +343,7 @@ export const correctSchemas = {
       industry: { type: 'string' },
       website: { type: 'string' },
       description: { type: 'string', maxLength: 1000 },
-      company_type: { type: 'string', enum: ['Brand', 'Agency', 'Marketplace', 'Startup'] },
+      company_type: { type: 'string' },
       company_size: { type: 'string', enum: ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'] },
       location: { type: 'string' },
       country: { type: 'string' },
@@ -1119,7 +1119,7 @@ export const correctPaths = {
     }
   },
 
-  // ============ CAMPAIGNS (21 endpoints) ============
+  // ============ CAMPAIGNS (22 endpoints) ============
   '/api/campaigns': {
     get: {
       tags: ['Campaigns'],
@@ -1186,6 +1186,147 @@ export const correctPaths = {
       security: [{ BearerAuth: [] }],
       responses: {
         200: { description: 'Trending campaigns' }
+      }
+    }
+  },
+
+  '/api/campaigns/nearby': {
+    get: {
+      tags: ['Campaigns'],
+      summary: 'Nearby Campaigns (Legacy Country Filter)',
+      description: 'Legacy nearby campaigns endpoint. Filters active campaigns by optional country against targetInfluencer.countries and supports pagination.',
+      parameters: [
+        { name: 'country', in: 'query', schema: { type: 'string' }, description: 'Country name (case-insensitive regex match)' },
+        { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+        { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } }
+      ],
+      responses: {
+        200: {
+          description: 'Nearby campaigns returned',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  data: { type: 'array', items: { type: 'object' } },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      page: { type: 'integer', example: 1 },
+                      limit: { type: 'integer', example: 20 },
+                      total: { type: 'integer', example: 42 },
+                      totalPages: { type: 'integer', example: 3 },
+                      hasNextPage: { type: 'boolean', example: true },
+                      hasPreviousPage: { type: 'boolean', example: false }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        500: { description: 'Server error' }
+      }
+    },
+    post: {
+      tags: ['Campaigns'],
+      summary: 'Top Nearby Campaigns (Batch + 30-day Window)',
+      description: 'Batch nearby campaign search with AND across provided location fields, OR within each location list, filtered to active campaigns that overlap the next 30 days. Ranked by locationScore, engagement, and recency. Set give_all=true to bypass the active + 30-day window filter while still applying provided location filters.',
+      requestBody: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                city: {
+                  oneOf: [
+                    { type: 'string', example: 'Goa' },
+                    { type: 'array', items: { type: 'string' }, example: ['Goa', 'Mumbai'] }
+                  ]
+                },
+                state: {
+                  oneOf: [
+                    { type: 'string', example: 'Goa' },
+                    { type: 'array', items: { type: 'string' }, example: ['Goa', 'Maharashtra'] }
+                  ]
+                },
+                country: {
+                  oneOf: [
+                    { type: 'string', example: 'India' },
+                    { type: 'array', items: { type: 'string' }, example: ['India'] }
+                  ]
+                },
+                give_all: {
+                  type: 'boolean',
+                  default: false,
+                  description: 'If true, skips active + 30-day window filtering. City/state/country filters are still applied when provided.'
+                },
+                page: { type: 'integer', default: 1, minimum: 1 },
+                limit: { type: 'integer', default: 20, minimum: 1, maximum: 100 }
+              }
+            }
+          }
+        }
+      },
+      responses: {
+        200: {
+          description: 'Top nearby campaigns returned',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  data: { type: 'array', items: { type: 'object' } },
+                  pagination: {
+                    type: 'object',
+                    properties: {
+                      page: { type: 'integer', example: 1 },
+                      limit: { type: 'integer', example: 20 },
+                      total: { type: 'integer', example: 8 },
+                      totalPages: { type: 'integer', example: 1 },
+                      hasNextPage: { type: 'boolean', example: false },
+                      hasPreviousPage: { type: 'boolean', example: false }
+                    }
+                  },
+                  filters: {
+                    type: 'object',
+                    properties: {
+                      giveAll: { type: 'boolean', example: false },
+                      windowStart: { type: 'string', format: 'date-time', nullable: true },
+                      windowEnd: { type: 'string', format: 'date-time', nullable: true },
+                      providedLocations: {
+                        type: 'object',
+                        properties: {
+                          city: { type: 'array', items: { type: 'string' } },
+                          state: { type: 'array', items: { type: 'string' } },
+                          country: { type: 'array', items: { type: 'string' } }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        400: {
+          description: 'Validation error',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: false },
+                  message: { type: 'string', example: 'At least one of city, state, or country is required' }
+                }
+              }
+            }
+          }
+        },
+        500: { description: 'Server error' }
       }
     }
   },
@@ -1423,9 +1564,49 @@ export const correctPaths = {
       tags: ['Campaigns'],
       summary: 'Get Campaign Applications',
       security: [{ BearerAuth: [] }],
-      parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+      parameters: [
+        { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+        {
+          name: 'get_id_only',
+          in: 'query',
+          required: false,
+          description: 'When true, returns only applicant user IDs instead of hydrated applicant details.',
+          schema: { type: 'boolean', default: false }
+        }
+      ],
       responses: {
-        200: { description: 'Applications list' }
+        200: {
+          description: 'Applications list',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  success: { type: 'boolean', example: true },
+                  message: { type: 'string', example: 'Applications retrieved successfully' },
+                  data: {
+                    oneOf: [
+                      {
+                        type: 'array',
+                        description: 'Applicant user IDs when get_id_only=true.',
+                        items: { type: 'string', example: '694e21b231a89fd5bf6cc485' }
+                      },
+                      {
+                        type: 'array',
+                        description: 'Applicant details with optional influencer profile when get_id_only is omitted or false.',
+                        items: {
+                          type: 'object',
+                          additionalProperties: true
+                        }
+                      }
+                    ]
+                  }
+                },
+                required: ['success', 'message', 'data']
+              }
+            }
+          }
+        }
       }
     }
   },

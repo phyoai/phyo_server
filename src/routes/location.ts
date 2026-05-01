@@ -7,7 +7,8 @@ import {
   getNearbyDashboard,
   updateUserLocation,
   getSupportedLocations,
-  getNearbyCampaigns
+  getNearbyCampaigns,
+  getNearbyCampaignsBatch
 } from '../controllers/trending';
 
 const router = express.Router();
@@ -30,6 +31,7 @@ router.get('/locations/supported', getSupportedLocations);
 
 // Nearby campaigns
 router.get('/campaigns/nearby', getNearbyCampaigns);
+router.post('/campaigns/nearby', getNearbyCampaignsBatch);
 
 // ===== ALIASES FOR API COMPATIBILITY =====
 // These routes support the /nearby/* structure for API compatibility

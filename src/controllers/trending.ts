@@ -4,6 +4,89 @@ import Influencer from '../models/influencer';
 import Campaign from '../models/campaign';
 import { user as User } from '../models/auth';
 
+const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const normalizeLocationBatchValue = (value: unknown): string[] => {
+  const rawValues = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
+  const dedupedValues = new Map<string, string>();
+
+  rawValues.forEach((item) => {
+    if (typeof item !== 'string') {
+      return;
+    }
+
+    const normalized = item.trim();
+    if (!normalized) {
+      return;
+    }
+
+    const key = normalized.toLowerCase();
+    if (!dedupedValues.has(key)) {
+      dedupedValues.set(key, normalized);
+    }
+  });
+
+  return Array.from(dedupedValues.values());
+};
+
+const toPositiveInt = (value: unknown, defaultValue: number): number => {
+  const parsed = Number.parseInt(String(value ?? defaultValue), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
+};
+
+const toBoolean = (value: unknown, defaultValue = false): boolean => {
+  if (typeof value === 'boolean') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes'].includes(normalized)) {
+      return true;
+    }
+    if (['false', '0', 'no'].includes(normalized)) {
+      return false;
+    }
+  }
+
+  if (typeof value === 'number') {
+    if (value === 1) {
+      return true;
+    }
+    if (value === 0) {
+      return false;
+    }
+  }
+
+  return defaultValue;
+};
+
+const buildAnyRegexMatchExpr = (inputExpr: string, patterns: string[]): Record<string, any> => ({
+  $anyElementTrue: {
+    $map: {
+      input: patterns,
+      as: 'pattern',
+      in: {
+        $regexMatch: {
+          input: { $ifNull: [inputExpr, ''] },
+          regex: '$$pattern',
+          options: 'i'
+        }
+      }
+    }
+  }
+});
+
+const buildAnyRegexMatchInArrayExpr = (arrayExpr: string, patterns: string[]): Record<string, any> => ({
+  $anyElementTrue: {
+    $map: {
+      input: { $ifNull: [arrayExpr, []] },
+      as: 'item',
+      in: buildAnyRegexMatchExpr('$$item', patterns)
+    }
+  }
+});
+
 // GET /trending/influencers - most followed/engaged from Influencer model
 export const getTrendingInfluencers = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
@@ -50,17 +133,30 @@ export const getTrendingCampaigns = async (req: AuthenticatedRequest, res: Respo
     const limit = parseInt(req.query.limit as string) || 10;
     const page = parseInt(req.query.page as string) || 1;
     const skip = (page - 1) * limit;
+    const now = new Date();
 
     // Aggregate to find campaigns with most applicants
     const [campaigns, total] = await Promise.all([
       Campaign.aggregate([
         { $match: { status: 'Active' } },
-        { $addFields: { applicantCount: { $size: { $ifNull: ['$applicants', []] } } } },
-        { $sort: { applicantCount: -1, createdAt: -1 } },
+        {
+          $addFields: {
+            applicantCount: { $size: { $ifNull: ['$applicants', []] } },
+            boostActiveRank: {
+              $cond: [
+                { $gt: ['$boost.endsAt', now] },
+                1,
+                0
+              ]
+            }
+          }
+        },
+        { $sort: { boostActiveRank: -1, applicantCount: -1, createdAt: -1 } },
         { $skip: skip },
         { $limit: limit },
         {
           $project: {
+            boostActiveRank: 0,
             aiSuggestionMetadata: 0,
             suggestedInfluencers: 0
           }
@@ -498,6 +594,158 @@ export const getNearbyCampaigns = async (req: AuthenticatedRequest, res: Respons
     });
   } catch (error) {
     console.error('Get nearby campaigns error:', error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Server error'
+    });
+  }
+};
+
+// POST /campaigns/nearby
+export const getNearbyCampaignsBatch = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const giveAll = toBoolean(req.body?.give_all, false);
+    const normalizedCities = normalizeLocationBatchValue(req.body?.city);
+    const normalizedStates = normalizeLocationBatchValue(req.body?.state);
+    const normalizedCountries = normalizeLocationBatchValue(req.body?.country);
+
+    if (!giveAll && !normalizedCities.length && !normalizedStates.length && !normalizedCountries.length) {
+      res.status(400).json({
+        success: false,
+        message: 'At least one of city, state, or country is required'
+      });
+      return;
+    }
+
+    const page = toPositiveInt(req.body?.page, 1);
+    const requestedLimit = toPositiveInt(req.body?.limit, 20);
+    const limit = Math.min(requestedLimit, 100);
+    const skip = (page - 1) * limit;
+
+    const cityPatterns = normalizedCities.map(escapeRegex);
+    const statePatterns = normalizedStates.map(escapeRegex);
+    const countryPatterns = normalizedCountries.map(escapeRegex);
+
+    const cityMatchExpr = cityPatterns.length ? buildAnyRegexMatchExpr('$city', cityPatterns) : null;
+    const stateMatchExpr = statePatterns.length ? buildAnyRegexMatchExpr('$state', statePatterns) : null;
+    const countryMatchExpr = countryPatterns.length
+      ? {
+          $or: [
+            buildAnyRegexMatchExpr('$country', countryPatterns),
+            {
+              $and: [
+                {
+                  $eq: [
+                    {
+                      $strLenCP: {
+                        $trim: {
+                          input: { $ifNull: ['$country', ''] }
+                        }
+                      }
+                    },
+                    0
+                  ]
+                },
+                buildAnyRegexMatchInArrayExpr('$targetInfluencer.countries', countryPatterns)
+              ]
+            }
+          ]
+        }
+      : null;
+
+    const locationMatchExprs = [cityMatchExpr, stateMatchExpr, countryMatchExpr].filter(Boolean) as Record<string, any>[];
+
+    const locationScoreParts: Record<string, any>[] = [];
+    if (cityMatchExpr) {
+      locationScoreParts.push({ $cond: [cityMatchExpr, 3, 0] });
+    }
+    if (stateMatchExpr) {
+      locationScoreParts.push({ $cond: [stateMatchExpr, 2, 0] });
+    }
+    if (countryMatchExpr) {
+      locationScoreParts.push({ $cond: [countryMatchExpr, 1, 0] });
+    }
+
+    const locationScoreExpr =
+      locationScoreParts.length === 0 ? 0 : locationScoreParts.length === 1 ? locationScoreParts[0] : { $add: locationScoreParts };
+
+    const windowStart = new Date();
+    const windowEnd = new Date(windowStart.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    const baseFilter = {
+      status: 'Active',
+      'timelines.campaignStartDate': {
+        $lte: windowEnd
+      },
+      'timelines.campaignEndDate': {
+        $gte: windowStart
+      }
+    };
+
+    const campaignsPipeline: any[] = [];
+    const totalPipeline: any[] = [];
+
+    if (!giveAll) {
+      campaignsPipeline.push({ $match: baseFilter });
+      totalPipeline.push({ $match: baseFilter });
+    }
+
+    if (locationMatchExprs.length) {
+      campaignsPipeline.push({ $match: { $expr: { $and: locationMatchExprs } } });
+      totalPipeline.push({ $match: { $expr: { $and: locationMatchExprs } } });
+    }
+
+    campaignsPipeline.push({
+      $addFields: {
+        locationScore: locationMatchExprs.length ? locationScoreExpr : 0,
+        engagementRank: { $ifNull: ['$engagement', 0] }
+      }
+    });
+    campaignsPipeline.push({ $sort: { locationScore: -1, engagementRank: -1, createdAt: -1 } });
+    campaignsPipeline.push({ $skip: skip });
+    campaignsPipeline.push({ $limit: limit });
+    campaignsPipeline.push({
+      $project: {
+        aiSuggestionMetadata: 0,
+        suggestedInfluencers: 0,
+        engagementRank: 0
+      }
+    });
+
+    totalPipeline.push({ $count: 'total' });
+
+    const [campaigns, totalAggregate] = await Promise.all([
+      Campaign.aggregate(campaignsPipeline),
+      Campaign.aggregate(totalPipeline)
+    ]);
+
+    const total = totalAggregate[0]?.total || 0;
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      success: true,
+      data: campaigns,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1
+      },
+      filters: {
+        giveAll,
+        windowStart: giveAll ? null : windowStart.toISOString(),
+        windowEnd: giveAll ? null : windowEnd.toISOString(),
+        providedLocations: {
+          city: normalizedCities,
+          state: normalizedStates,
+          country: normalizedCountries
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get nearby campaigns batch error:', error);
     res.status(500).json({
       success: false,
       message: error instanceof Error ? error.message : 'Server error'

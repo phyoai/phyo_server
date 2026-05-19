@@ -8,6 +8,7 @@ export interface IBrandRequest {
   company_type?: string;
   company_size?: string;
   company_description?: string;
+  about?: string;
   location?: string;
   country?: string;
   
@@ -99,8 +100,8 @@ const brandRequestSchema = new Schema<BrandRequestDocument>({
     required: true,
     trim: true,
     validate: {
-      validator: function(v: string) {
-        return /^https?:\/\/.+\..+/.test(v);
+      validator: function (v: string) {
+        return /^((https?:\/\/)?)([\w-]+\.)+[\w-]{2,}(\/\S*)?$/.test(v);
       },
       message: 'Please enter a valid URL'
     }
@@ -112,18 +113,22 @@ const brandRequestSchema = new Schema<BrandRequestDocument>({
   },
   company_type: {
     type: String,
-    enum: ['Brand', 'Agency', 'Marketplace', 'Startup', 'Enterprise', 'SMB'],
     trim: true
   },
   company_size: {
     type: String,
-    enum: ['1-10', '11-50', '51-200', '201-1000', '1000+'],
     trim: true
   },
   company_description: {
     type: String,
     trim: true,
     maxlength: 1000
+  },
+  about: {
+    type: String,
+    trim: true,
+    maxlength: 1000,
+    default: ''
   },
   location: {
     type: String,

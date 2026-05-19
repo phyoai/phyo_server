@@ -4,6 +4,8 @@ import { uploadAvatarImageToS3 } from '../services/s3';
 import {
   getUserProfile,
   updateUserProfile,
+  verifyPendingEmailChange,
+  resendPendingEmailChangeOTP,
   getUserById,
   searchUsers,
   deleteUser,
@@ -17,6 +19,8 @@ const router = express.Router();
 
 router.get('/profile', authenticateToken, getUserProfile);
 router.patch('/profile', authenticateToken, updateUserProfile);
+router.post('/profile/email-change/verify', authenticateToken, verifyPendingEmailChange);
+router.post('/profile/email-change/resend-otp', authenticateToken, resendPendingEmailChangeOTP);
 router.get('/search', searchUsers);
 router.get('/list', listUsers);
 router.put('/change-password', authenticateToken, changePassword);

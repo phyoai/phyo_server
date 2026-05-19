@@ -24,6 +24,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const isProduction = process.env.NODE_ENV === 'production';
+const FIRST_SIGNUP_CREDITS = 10;
 
 // Generate OTP
 const generateOTP = (): string => {
@@ -121,6 +122,37 @@ const sendOTPEmailSafely = async (email: string, otp: string, subject: string): 
   }
 };
 
+const ensureUserTypeBrand = async (
+  approvedUserId: mongoose.Types.ObjectId | string,
+  session?: mongoose.ClientSession
+): Promise<void> => {
+  const brandUserQuery = user.findById(approvedUserId).select('_id type');
+  const brandUser = session
+    ? await brandUserQuery.session(session).lean()
+    : await brandUserQuery.lean();
+
+  if (!brandUser) {
+    throw new Error('Failed to persist approved brand in users collection');
+  }
+
+  if (brandUser.type === 'BRAND') {
+    return;
+  }
+
+  const updateQuery = user.findByIdAndUpdate(
+    approvedUserId,
+    { $set: { type: 'BRAND' } },
+    { new: true, runValidators: false, overwriteDiscriminatorKey: true } as any
+  ).select('_id type');
+  const updatedUser = session
+    ? await updateQuery.session(session).lean()
+    : await updateQuery.lean();
+
+  if (!updatedUser || updatedUser.type !== 'BRAND') {
+    throw new Error('Failed to set approved user type to BRAND');
+  }
+};
+
 interface BrandSubmissionRequest {
   // Step 1: Company Information (Required)
   company_name: string;
@@ -129,6 +161,7 @@ interface BrandSubmissionRequest {
   company_type?: string;
   company_size?: string;
   company_description?: string;
+  about?: string;
   location?: string;
   country?: string;
   
@@ -227,6 +260,7 @@ export const submitBrandRegistration = async (
       company_type,
       company_size,
       company_description,
+      about,
       location,
       country,
       social_media,
@@ -324,6 +358,7 @@ export const submitBrandRegistration = async (
       company_type,
       company_size,
       company_description,
+      about: typeof about === 'string' ? about : '',
       location,
       country,
       
@@ -550,6 +585,7 @@ export const approveBrandRequest = async (req: AdminRequest, res: Response): Pro
           industry: brandRequest.industry,
           website: brandRequest.website_url,
           description: brandRequest.company_description,
+          about: brandRequest.about || existingUser.about || '',
           company_type: brandRequest.company_type,
           company_size: brandRequest.company_size,
           location: brandRequest.location,
@@ -588,6 +624,9 @@ export const approveBrandRequest = async (req: AdminRequest, res: Response): Pro
           await convertedBrand.save();
         }
         newBrandId = convertedBrand._id;
+
+        // Ensure approved account has type BRAND in users collection
+        await ensureUserTypeBrand(convertedBrand._id as mongoose.Types.ObjectId, session);
 
         // Update brand request status
         brandRequest.status = 'APPROVED';
@@ -737,6 +776,7 @@ export const approveBrandRequest = async (req: AdminRequest, res: Response): Pro
         industry: brandRequest.industry,
         website: brandRequest.website_url,
         description: brandRequest.company_description,
+        about: brandRequest.about || '',
         company_type: brandRequest.company_type,
         company_size: brandRequest.company_size,
         location: brandRequest.location,
@@ -755,7 +795,7 @@ export const approveBrandRequest = async (req: AdminRequest, res: Response): Pro
         signup_method: brandRequest.account.signup_method,
         isEmailVerified: true, // Email is pre-verified by admin approval
         currentPlan: 'BRONZE',
-        creditsRemaining: 3,
+        creditsRemaining: FIRST_SIGNUP_CREDITS,
         trialCreditsGiven: true,
         subscriptionStatus: 'ACTIVE',
         lastPlanUpdate: new Date()
@@ -763,6 +803,9 @@ export const approveBrandRequest = async (req: AdminRequest, res: Response): Pro
 
       await newBrand.save();
       newBrandId = newBrand._id;
+
+      // Ensure approved account has type BRAND in users collection
+      await ensureUserTypeBrand(newBrand._id as mongoose.Types.ObjectId);
 
       // Update brand request status
       brandRequest.status = 'APPROVED';
@@ -832,7 +875,7 @@ export const approveBrandRequest = async (req: AdminRequest, res: Response): Pro
                   <li>Complete your brand profile</li>
                   <li>Start creating campaigns</li>
                   <li>Connect with influencers</li>
-                  <li>You have <strong style="color: #10b981;">3 free trial credits</strong> to get started!</li>
+                  <li>You have <strong style="color: #10b981;">${FIRST_SIGNUP_CREDITS} free trial credits</strong> to get started!</li>
                 </ul>
               </div>
 
@@ -1040,6 +1083,7 @@ export const updateBrandProfile = async (
       company_type,
       company_size,
       company_description,
+      about,
       location,
       country,
       social_media,
@@ -1063,6 +1107,7 @@ export const updateBrandProfile = async (
     if (company_type) updateData.company_type = company_type;
     if (company_size) updateData.company_size = company_size;
     if (company_description) updateData.description = company_description;
+    if (about !== undefined) updateData.about = about;
     if (location) updateData.location = location;
     if (country) updateData.country = country;
 

@@ -25,6 +25,26 @@ const userSchema = new Schema<UserDocument>({
     lowercase: true,
     trim: true
   },
+  pendingEmail: {
+    type: String,
+    unique: true,
+    sparse: true,
+    lowercase: true,
+    trim: true,
+    select: false
+  },
+  pendingEmailVerificationOTP: {
+    type: String,
+    select: false
+  },
+  pendingEmailVerificationExpires: {
+    type: Number,
+    select: false
+  },
+  pendingEmailRequestedAt: {
+    type: Date,
+    select: false
+  },
   password: { 
     type: String, 
     required: false, // Made optional for OAuth users
@@ -38,7 +58,8 @@ const userSchema = new Schema<UserDocument>({
   about: {
     type: String,
     trim: true,
-    maxlength: 1000
+    maxlength: 1000,
+    default: ''
   },
   resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Number },
@@ -87,9 +108,10 @@ const userSchema = new Schema<UserDocument>({
     enum: ['ACTIVE', 'INACTIVE', 'CANCELLED', 'EXPIRED', 'PENDING'],
     default: 'ACTIVE'
   },
+  subscription_plan:{type: String},
   creditsRemaining: {
     type: Number,
-    default: 3, // Give 3 free searches to new users
+    default: 10, // Give 10 signup reward credits to new users
     min: 0
   },
   trialCreditsGiven: {
@@ -133,8 +155,8 @@ const brandSchema = new Schema<BrandDocument>({
   // New fields for enhanced brand profile
   company_type: {
     type: String,
-    enum: ['Brand', 'Agency', 'Marketplace', 'Startup'],
-    trim: true
+    trim: true,
+    maxlength: 100
   },
   company_size: {
     type: String,
@@ -154,6 +176,10 @@ const brandSchema = new Schema<BrandDocument>({
     trim: true
   },
   brand_images: [{
+    type: String,
+    trim: true
+  }],
+  categories: [{
     type: String,
     trim: true
   }],

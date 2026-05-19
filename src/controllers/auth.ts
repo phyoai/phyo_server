@@ -31,6 +31,8 @@ const createToken = (userId: string): string => {
   });
 };
 
+const FIRST_SIGNUP_CREDITS = 10;
+
 // Generate OTP
 const generateOTP = (): string => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -163,7 +165,7 @@ export const handleSignup = async (req: Request<{}, {}, SignupRequestBody>, res:
             company_name: 'string (required)',
             website_url: 'string (required, valid URL)',
             industry: 'string (required)',
-            company_type: 'string (optional: Brand, Agency, Marketplace)',
+            company_type: 'string (optional)',
             company_size: 'string (optional: 1-10, 11-50, 51-200, 201-500, 501-1000, 1000+)',
             contact: {
               first_name: 'string (required)',
@@ -188,7 +190,7 @@ export const handleSignup = async (req: Request<{}, {}, SignupRequestBody>, res:
           emailVerificationExpires: otpExpiry,
           isEmailVerified: false,
           currentPlan: 'BRONZE',
-          creditsRemaining: 3, // Give 3 free searches to new users
+          creditsRemaining: FIRST_SIGNUP_CREDITS, // Give signup reward credits to new users
           trialCreditsGiven: true, // Mark that trial credits have been given
           subscriptionStatus: 'ACTIVE',
           lastPlanUpdate: new Date(),
@@ -204,7 +206,7 @@ export const handleSignup = async (req: Request<{}, {}, SignupRequestBody>, res:
           emailVerificationExpires: otpExpiry,
           isEmailVerified: false,
           currentPlan: 'BRONZE',
-          creditsRemaining: 3, // Give 3 free searches to new users
+          creditsRemaining: FIRST_SIGNUP_CREDITS, // Give signup reward credits to new users
           trialCreditsGiven: true, // Mark that trial credits have been given
           subscriptionStatus: 'ACTIVE',
           lastPlanUpdate: new Date(),
@@ -236,7 +238,7 @@ export const handleSignup = async (req: Request<{}, {}, SignupRequestBody>, res:
           emailVerificationExpires: otpExpiry,
           isEmailVerified: false,
           currentPlan: 'BRONZE',
-          creditsRemaining: 3, // Give 3 free searches to new users
+          creditsRemaining: FIRST_SIGNUP_CREDITS, // Give signup reward credits to new users
           trialCreditsGiven: true, // Mark that trial credits have been given
           subscriptionStatus: 'ACTIVE',
           lastPlanUpdate: new Date(),
@@ -320,10 +322,10 @@ export const handleLogin = async (req: Request<{}, {}, LoginRequestBody>, res: R
     
     // Only give trial credits to users who haven't received them yet
     if (!foundUser.trialCreditsGiven && foundUser.currentPlan === 'BRONZE') {
-      foundUser.creditsRemaining = 3;
+      foundUser.creditsRemaining = FIRST_SIGNUP_CREDITS;
       foundUser.trialCreditsGiven = true;
       needsUpdate = true;
-      console.log(`Gave 3 trial credits to legacy user: ${foundUser.email}`);
+      console.log(`Gave ${FIRST_SIGNUP_CREDITS} trial credits to legacy user: ${foundUser.email}`);
     }
     
     // Save updates if needed
@@ -652,7 +654,7 @@ export const handleGoogleOAuth = async (req: Request<{}, {}, GoogleOAuthRequestB
             googleName: 'Google Mock User',
             brandRegistrationStatus: 'NONE',
             currentPlan: 'BRONZE',
-            creditsRemaining: 3,
+            creditsRemaining: FIRST_SIGNUP_CREDITS,
             trialCreditsGiven: true,
             subscriptionStatus: 'ACTIVE',
             lastPlanUpdate: new Date()
@@ -670,7 +672,7 @@ export const handleGoogleOAuth = async (req: Request<{}, {}, GoogleOAuthRequestB
             googleName: 'Google Mock User',
             brandRegistrationStatus: 'NONE',
             currentPlan: 'BRONZE',
-            creditsRemaining: 3,
+            creditsRemaining: FIRST_SIGNUP_CREDITS,
             trialCreditsGiven: true,
             subscriptionStatus: 'ACTIVE',
             lastPlanUpdate: new Date()
@@ -802,7 +804,7 @@ export const handleGoogleOAuth = async (req: Request<{}, {}, GoogleOAuthRequestB
               profilePicture: picture, // Use Google profile picture
               brandRegistrationStatus: 'NONE', // Initialize brand registration status
               currentPlan: 'BRONZE',
-              creditsRemaining: 3, // Give 3 free searches to new users
+              creditsRemaining: FIRST_SIGNUP_CREDITS, // Give signup reward credits to new users
               trialCreditsGiven: true, // Mark that trial credits have been given
               subscriptionStatus: 'ACTIVE',
               lastPlanUpdate: new Date()
@@ -862,7 +864,7 @@ export const handleGoogleOAuthCallback = async (req: Request, res: Response): Pr
           googleName: 'Google Callback Mock',
           brandRegistrationStatus: 'NONE',
           currentPlan: 'BRONZE',
-          creditsRemaining: 3,
+          creditsRemaining: FIRST_SIGNUP_CREDITS,
           trialCreditsGiven: true,
           subscriptionStatus: 'ACTIVE',
           lastPlanUpdate: new Date()

@@ -2,6 +2,7 @@ import express from 'express';
 import { user as User } from '../models/auth';
 
 const router = express.Router();
+const FIRST_SIGNUP_CREDITS = 10;
 
 // One-time migration to fix users who were affected by the infinite credits bug
 router.post('/fix-trial-credits', async (req, res) => {
@@ -40,14 +41,14 @@ router.post('/fix-trial-credits', async (req, res) => {
       fixedCount++;
     }
 
-    // Also fix users who have the flag set to false but have credits > 3
+    // Also fix users who have the flag set to false but have credits above initial signup credits
     const overCreditedUsers = await User.find({
       currentPlan: 'BRONZE',
-      creditsRemaining: { $gt: 3 }
+      creditsRemaining: { $gt: FIRST_SIGNUP_CREDITS }
     });
 
     for (const user of overCreditedUsers) {
-      console.log(`User ${user.email}: has ${user.creditsRemaining} credits (more than 3)`);
+      console.log(`User ${user.email}: has ${user.creditsRemaining} credits (more than ${FIRST_SIGNUP_CREDITS})`);
       user.creditsRemaining = 0; // Reset to 0 since they've likely abused the bug
       user.trialCreditsGiven = true;
       await user.save();

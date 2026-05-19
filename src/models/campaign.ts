@@ -100,6 +100,134 @@ const targetInfluencerSchema = new Schema({
   }
 }, { _id: false });
 
+const negotiationOfferSchema = new Schema({
+  amount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  message: {
+    type: String,
+    trim: true
+  },
+  proposedBy: {
+    type: String,
+    required: true,
+    ref: 'User'
+  },
+  proposedByRole: {
+    type: String,
+    enum: ['brand', 'influencer'],
+    required: true
+  },
+  proposedAt: {
+    type: Date,
+    required: true
+  }
+}, { _id: false });
+
+const negotiationSchema = new Schema({
+  influencerId: {
+    type: String,
+    required: true,
+    ref: 'User'
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'accepted', 'rejected'],
+    default: 'pending'
+  },
+  currentAmount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  currentMessage: {
+    type: String,
+    trim: true
+  },
+  lastOfferedBy: {
+    type: String,
+    required: true,
+    ref: 'User'
+  },
+  lastOfferedByRole: {
+    type: String,
+    enum: ['brand', 'influencer'],
+    required: true
+  },
+  offers: {
+    type: [negotiationOfferSchema],
+    default: []
+  },
+  acceptedAt: {
+    type: Date
+  },
+  rejectedAt: {
+    type: Date
+  },
+  acceptedBy: {
+    type: String,
+    ref: 'User'
+  },
+  rejectedBy: {
+    type: String,
+    ref: 'User'
+  },
+  createdAt: {
+    type: Date,
+    required: true
+  },
+  updatedAt: {
+    type: Date,
+    required: true
+  }
+}, { _id: false });
+
+const boostSchema = new Schema({
+  duration: {
+    type: String,
+    enum: ['7days', '14days', '30days'],
+    required: true
+  },
+  amount: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  startsAt: {
+    type: Date,
+    required: true
+  },
+  endsAt: {
+    type: Date,
+    required: true
+  },
+  estimatedReach: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  estimatedLiftPercent: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  boostedBy: {
+    type: String,
+    required: true,
+    ref: 'User'
+  },
+  createdAt: {
+    type: Date,
+    required: true
+  },
+  updatedAt: {
+    type: Date,
+    required: true
+  }
+}, { _id: false });
+
 const campaignSchema = new Schema<CampaignDocument>({
   campaignId:{
     type: String,
@@ -156,6 +284,22 @@ const campaignSchema = new Schema<CampaignDocument>({
     type: targetInfluencerSchema,
     required: true
   },
+  city: {
+    type: String,
+    trim: true
+  },
+  state: {
+    type: String,
+    trim: true
+  },
+  country: {
+    type: String,
+    trim: true
+  },
+  engagement: {
+    type: Number,
+    min: 0
+  },
   numberOfLivePosts: {
     type: Number,
     required: false,
@@ -179,6 +323,13 @@ const campaignSchema = new Schema<CampaignDocument>({
     type: String,
     ref: 'User'
   }],
+  negotiations: {
+    type: [negotiationSchema],
+    default: []
+  },
+  boost: {
+    type: boostSchema
+  },
   suggestedInfluencers: [{
     username: {
       type: String,
@@ -208,7 +359,10 @@ campaignSchema.index({ brandId: 1 });
 campaignSchema.index({ status: 1 });
 campaignSchema.index({ 'timelines.applicationDeadline': 1 });
 campaignSchema.index({ 'timelines.campaignStartDate': 1 });
+campaignSchema.index({ city: 1, state: 1, country: 1 });
 campaignSchema.index({ 'targetInfluencer.targetNiche': 1 });
+campaignSchema.index({ 'negotiations.influencerId': 1 });
+campaignSchema.index({ 'boost.endsAt': 1 });
 
 // Validation middleware
 campaignSchema.pre('save', function(next) {
